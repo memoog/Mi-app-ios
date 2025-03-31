@@ -234,15 +234,13 @@
       background: #3b82f6;
       box-shadow: 0 0 10px #3b82f6;
     }
-    /* ================== NUEVO BOTÓN DE ACCIÓN “PRECIONAR” ================== */
-    /* Ubicado justo arriba de los joysticks */
-    #action-button {
-      position: absolute;
-      bottom: 180px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 3000;
+    /* ================== PANEL DE CONTROLES DEL INSTRUMENTO ================== */
+    .slider-container.z-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
+    /* Agregamos el botón "Precionar" al lado del control Vitrectomo Z */
     #btn-precionar {
       background: #1e3a8a;
       color: white;
@@ -437,9 +435,26 @@
       <button class="toggle-btn" id="btn-injection">Inyección</button>
     </div>
 
-    <!-- NUEVO BOTÓN "PRECIONAR" UBICADO ARRIBA DE LOS JOYSTICKS -->
-    <div id="action-button" style="position:absolute; bottom:180px; left:50%; transform:translateX(-50%); z-index:3000;">
-      <button id="btn-precionar">Precionar</button>
+    <!-- PANEL DE CONTROLES DEL INSTRUMENTO (junto al joystick del Vitrectomo) -->
+    <div id="joystick-vitrectomo-container" class="joystick-container">
+      <div id="joystick-vitrectomo" class="joystick">
+        <div class="joystick-handle"></div>
+      </div>
+      <div class="slider-container z-control">
+        <label for="vitrectomo-z-slider">Vitrectomo Z:</label>
+        <input type="range" id="vitrectomo-z-slider" min="-250" max="-50" value="-150">
+        <!-- Botón Precionar para disparar la acción del instrumento activo -->
+        <button id="btn-precionar">Precionar</button>
+      </div>
+    </div>
+    <div id="joystick-light-container" class="joystick-container">
+      <div id="joystick-light" class="joystick">
+        <div class="joystick-handle"></div>
+      </div>
+      <div class="slider-container z-control">
+        <label for="endo-z-slider">Endoiluminador Z (tamaño luz):</label>
+        <input type="range" id="endo-z-slider" min="0" max="200" value="50">
+      </div>
     </div>
 
     <!-- CONTENEDOR DEL OJO CON RETINA CENTRAL -->
@@ -484,26 +499,6 @@
       <div class="vital-sign">
         <span class="vital-label">Estado Retina:</span>
         <span class="vital-value normal" id="retina-status">Estable</span>
-      </div>
-    </div>
-
-    <!-- JOYSTICKS -->
-    <div id="joystick-vitrectomo-container" class="joystick-container">
-      <div id="joystick-vitrectomo" class="joystick">
-        <div class="joystick-handle"></div>
-      </div>
-      <div class="slider-container z-control">
-        <label for="vitrectomo-z-slider">Vitrectomo Z:</label>
-        <input type="range" id="vitrectomo-z-slider" min="-250" max="-50" value="-150">
-      </div>
-    </div>
-    <div id="joystick-light-container" class="joystick-container">
-      <div id="joystick-light" class="joystick">
-        <div class="joystick-handle"></div>
-      </div>
-      <div class="slider-container z-control">
-        <label for="endo-z-slider">Endoiluminador Z (tamaño luz):</label>
-        <input type="range" id="endo-z-slider" min="0" max="200" value="50">
       </div>
     </div>
   </div>
@@ -572,9 +567,9 @@
       performInjection();
     });
 
-    /* NUEVO BOTÓN: "PRECIONAR" que sustituye la acción manual */
+    /* NUEVO BOTÓN: "PRECIONAR" */
     document.getElementById('btn-precionar').addEventListener('click', () => {
-      // Según el instrumento activo, se simula la acción correspondiente usando la posición actual de la figura
+      // Se utiliza la posición actual de la figura del instrumento activo
       if(activeInstrument === 'laser-probe'){
          const instrument = document.getElementById('laser-probe');
          const retinaRect = document.getElementById('retina').getBoundingClientRect();
@@ -592,16 +587,17 @@
          const syntheticEvent = { clientX: retinaRect.left + x, clientY: retinaRect.top + y };
          vitrectomyFunction(syntheticEvent);
       } else if(activeInstrument === 'end-grasper'){
-         // Para el peeling, se simula el corte forzando el trayecto hasta el borde del overlay
+         // Para el peeling, se simula que se inicia y se fuerza el corte con la "pinza" en su posición actual
          const membrane = document.getElementById('membrane');
          const peelCanvas = document.getElementById('peelCanvas');
          const pinza = document.getElementById('pinza');
          if(membrane && peelCanvas && pinza) {
             const memRect = membrane.getBoundingClientRect();
+            // Se toma la posición actual de la pinza (sin reiniciarla al centro)
+            // Se forzará el corte simulando que el trayecto llega al borde derecho del overlay
             const centerX = memRect.width/2;
             const centerY = memRect.height/2;
             const radius = memRect.width/2;
-            // Se simula que el corte llega al borde derecho
             pinza.setAttribute("cx", centerX + radius);
             pinza.setAttribute("cy", centerY);
             const tearPath = document.getElementById('tearPath');
@@ -740,14 +736,7 @@
     });
 
     /* FUNCIONALIDADES ADICIONALES (integrando práctica6) */
-    // Evento global en la retina para instrumentos que usan clic (láser y vitrectomía)
-    document.getElementById('retina').addEventListener('click', function(e){
-      if(activeInstrument === 'laser-probe') {
-        laserFunction(e);
-      } else if(activeInstrument === 'vitrectome') {
-        vitrectomyFunction(e);
-      }
-    });
+    // Se eliminan las funciones de clic en la retina para que la acción se ejecute solo vía el botón
     // Función para la fotocoagulación láser
     function laserFunction(e) {
       const retina = document.getElementById('retina');
@@ -825,22 +814,18 @@
       membrane.style.left = '50%';
       membrane.style.width = '50%';
       membrane.style.height = '50%';
-      /* Fondo similar al de práctica6, con tonos que simulan el color de la retina central */
       membrane.style.background = 'radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 60%, transparent 100%)';
       membrane.style.borderRadius = '50%';
       membrane.style.transform = 'translate(-50%, -50%)';
       membrane.style.cursor = 'grab';
       retina.appendChild(membrane);
-      // Se crea el SVG que servirá para dibujar el tearPath y gestionar la máscara
       const peelCanvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       peelCanvas.setAttribute('id', 'peelCanvas');
       peelCanvas.setAttribute('style', 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto;');
       membrane.appendChild(peelCanvas);
-      // Se crea un defs con un mask que cubre toda la membrana
       const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
       const mask = document.createElementNS("http://www.w3.org/2000/svg", "mask");
       mask.setAttribute("id", "peelMask");
-      // Fondo blanco (todo visible)
       const fullCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       fullCircle.setAttribute("cx", "50%");
       fullCircle.setAttribute("cy", "50%");
@@ -849,14 +834,11 @@
       mask.appendChild(fullCircle);
       defs.appendChild(mask);
       peelCanvas.appendChild(defs);
-      // Se aplica la máscara al overlay
       membrane.style.webkitMaskImage = "url(#peelMask)";
       membrane.style.maskImage = "url(#peelMask)";
-      // Se añade el path que se irá dibujando durante el peeling
       const tearPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
       tearPath.setAttribute('id', 'tearPath');
       peelCanvas.appendChild(tearPath);
-      // Se añade la “pinza” (punto de control) sin forzar que inicie siempre en el centro
       const pinza = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       pinza.setAttribute('id', 'pinza');
       pinza.setAttribute('cx', '50%');
@@ -918,7 +900,6 @@
       }
       pathElement.setAttribute('d', d);
     }
-    // Cuando se completa el corte, se añade el trayecto como “hueco” en la máscara para que se vea el fondo de la retina en esa zona
     function activarDesgarroPeel(membrane, pinza, peelCanvas) {
       peelAccumulated += peelStep;
       const tearPathEl = document.getElementById('tearPath');
@@ -939,7 +920,6 @@
         showAlert("Peeling Completado", "La membrana ha sido removida. Proceda al siguiente paso.");
       }
       peelAccumulated = 0;
-      // Se deja la pinza en la posición donde finalizó el corte para permitir iniciar el siguiente corte desde allí
       pinza.style.cursor = 'grab';
     }
   </script>
