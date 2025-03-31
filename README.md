@@ -2,25 +2,33 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>App5 Integrada – Retina + OCT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Simulador Quirúrgico Retiniano</title>
   <style>
-    /* ================== ESTILOS GENERALES ================== */
+    /* ================== ESTILOS BASE ================== */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
     body {
       margin: 0;
       padding: 0;
       background: #000;
       overflow: hidden;
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       color: white;
+      touch-action: manipulation;
     }
+    
     #container {
       position: relative;
       width: 100vw;
       height: 100vh;
       perspective: 1200px;
     }
-    /* CONTENEDOR DEL OJO (RETINA CENTRAL) */
+    
+    /* ================== RETINA CENTRAL ================== */
     #eye-chamber {
       position: absolute;
       width: 100%;
@@ -28,17 +36,22 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      touch-action: none;
     }
+    
     .retina-container {
       position: relative;
       width: 80vmin;
       height: 80vmin;
+      max-width: 600px;
+      max-height: 600px;
       transform-style: preserve-3d;
       perspective: 1200px;
       border-radius: 50%;
       overflow: hidden;
       transition: transform 0.3s ease;
     }
+    
     .retina-sphere {
       position: absolute;
       width: 100%;
@@ -49,8 +62,8 @@
       box-shadow: inset 0 0 150px rgba(200,0,0,0.3),
                   inset 0 0 50px rgba(255,0,0,0.2),
                   0 0 100px rgba(0,0,0,0.9);
-      position: relative;
     }
+    
     .retina-texture {
       position: absolute;
       width: 100%;
@@ -62,6 +75,7 @@
       border-radius: 50%;
       mix-blend-mode: multiply;
     }
+    
     .macula {
       position: absolute;
       width: 80px;
@@ -73,6 +87,7 @@
       transform: translate(-50%, -50%);
       z-index: 2;
     }
+    
     .blood-vessels {
       position: absolute;
       width: 100%;
@@ -80,6 +95,7 @@
       z-index: 3;
       pointer-events: none;
     }
+    
     .retina-nerve {
       position: absolute;
       width: 100%;
@@ -90,6 +106,7 @@
       opacity: 0.5;
       z-index: 4;
     }
+    
     .optic-disc {
       position: absolute;
       width: 70px;
@@ -102,6 +119,7 @@
       box-shadow: inset 0 0 15px rgba(200,50,50,0.4), 0 0 20px rgba(200,50,50,0.3);
       z-index: 5;
     }
+    
     .optic-cup {
       position: absolute;
       width: 30px;
@@ -114,7 +132,8 @@
       box-shadow: inset 0 0 10px rgba(150,30,30,0.5);
       z-index: 6;
     }
-    /* CAMPO DE VISIÓN – Endoiluminador */
+    
+    /* ================== CAMPO DE VISIÓN – Endoiluminador ================== */
     #light-mask {
       position: absolute;
       top: 0;
@@ -129,6 +148,7 @@
       pointer-events: none;
       z-index: 7;
     }
+    
     #light-reflection {
       position: absolute;
       width: 100%;
@@ -140,14 +160,17 @@
       pointer-events: none;
       z-index: 8;
     }
-    /* INSTRUMENTOS QUIRÚRGICOS */
+    
+    /* ================== INSTRUMENTOS QUIRÚRGICOS ================== */
     #vitrectome, #end-grasper, #laser-probe {
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
       display: none;
+      z-index: 10;
     }
+    
     #vitrectome {
       width: 20px;
       height: 100px;
@@ -156,6 +179,7 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
+    
     #vitrectome::after {
       content: '';
       position: absolute;
@@ -167,6 +191,7 @@
       background: radial-gradient(circle, #fff, #ccc);
       border-radius: 50%;
     }
+    
     #end-grasper {
       width: 18px;
       height: 90px;
@@ -175,6 +200,7 @@
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.5);
     }
+    
     #laser-probe {
       width: 4px;
       height: 80px;
@@ -182,57 +208,93 @@
       border-radius: 2px;
       box-shadow: 0 0 5px rgba(255,0,0,0.8);
     }
-    /* MINI MAPA (igual que en app5 original) */
-    #miniMapContainer {
+    
+    /* ================== INTERFAZ DE USUARIO ================== */
+    /* Panel de instrumentos */
+    .instrument-panel {
       position: absolute;
       top: 20px;
-      right: 20px;
-      width: 300px;
-      height: 225px;
-      overflow: hidden;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      padding: 12px 15px;
       border-radius: 10px;
-      z-index: 2000;
+      z-index: 5000;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 95%;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
-    #eyeCrossSection {
-      width: 100%;
-      height: 100%;
-      display: block;
+    
+    .toggle-btn {
+      background: #1e3a8a;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      margin: 5px;
+      min-width: 80px;
+      transition: all 0.2s;
+      font-weight: 500;
     }
-    /* PANEL DE PARÁMETROS: se ubica ordenadamente debajo del mini mapa (derecha) */
+    
+    .toggle-btn.active {
+      background: #3b82f6;
+      box-shadow: 0 0 15px #3b82f6;
+    }
+    
+    /* Panel de controles */
     .control-panel {
       position: absolute;
-      top: 250px;
       right: 20px;
-      width: 300px;
-      background: rgba(10,10,10,0.85);
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(10,10,10,0.9);
       padding: 15px;
-      border-radius: 8px;
+      border-radius: 10px;
       z-index: 5000;
-      font-size: 14px;
+      font-size: clamp(0.7rem, 2vw, 0.9rem);
+      width: 140px;
+      max-height: 80vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }
-    .control-panel .vital-sign {
+    
+    .vital-sign {
       display: flex;
       justify-content: space-between;
-      margin: 8px 0;
+      margin: 10px 0;
+      flex-wrap: wrap;
     }
-    .control-panel .vital-label {
+    
+    .vital-label {
       color: #ccc;
+      font-size: 0.85em;
     }
-    .control-panel .vital-value {
+    
+    .vital-value {
       font-family: 'Courier New', monospace;
       font-weight: bold;
+      font-size: 0.95em;
     }
+    
     .normal { color: #2ecc71; }
     .warning { color: #f39c12; }
     .danger { color: #e74c3c; }
+    
     #iop-gauge {
       width: 100%;
       height: 8px;
       background: linear-gradient(to right, #2ecc71 0%, #2ecc71 30%, #f39c12 30%, #f39c12 70%, #e74c3c 70%, #e74c3c 100%);
       border-radius: 4px;
-      margin-top: 5px;
+      margin: 8px 0 15px 0;
       overflow: hidden;
     }
+    
     #iop-level {
       height: 100%;
       width: 50%;
@@ -240,52 +302,29 @@
       border-radius: 4px;
       transition: width 0.5s ease;
     }
-    /* PANEL DE INSTRUMENTOS - CENTRADO COMO EN app.html */
-    .instrument-panel {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      padding: 15px;
-      border-radius: 10px;
-      z-index: 5000;
-    }
-    .toggle-btn {
-      background: #1e3a8a;
-      color: white;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 0.9em;
-      margin: 0 5px;
-    }
-    .toggle-btn.active {
-      background: #3b82f6;
-      box-shadow: 0 0 10px #3b82f6;
-    }
-    /* JOYSTICKS: INTERCAMBIADOS: endoiluminador a la izquierda, vitrectomo a la derecha */
+    
+    /* Joysticks */
     .joystick-container {
       position: absolute;
       bottom: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 15px;
       z-index: 3000;
     }
+    
     #joystick-light-container {
       left: 20px;
-      right: auto;
     }
+    
     #joystick-vitrectomo-container {
       right: 20px;
-      left: auto;
     }
+    
     .joystick {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       background: rgba(255,255,255,0.1);
       border: 2px solid rgba(255,255,255,0.3);
       border-radius: 50%;
@@ -294,16 +333,117 @@
       justify-content: center;
       touch-action: none;
       position: relative;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
+    
     .joystick .joystick-handle {
-      width: 40px;
-      height: 40px;
-      background: rgba(255,255,255,0.5);
+      width: 35px;
+      height: 35px;
+      background: rgba(255,255,255,0.6);
       border-radius: 50%;
       position: absolute;
       transition: transform 0.1s ease;
     }
-    /* EFECTOS ADICIONALES */
+    
+    /* Controles Z */
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    
+    .slider-container label {
+      font-size: 0.75rem;
+      margin-bottom: 8px;
+      text-align: center;
+      color: #eee;
+      font-weight: 500;
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      margin: 5px 0 10px 0;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #3b82f6;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+    }
+    
+    #btn-precionar {
+      background: #dc2626;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-top: 5px;
+      width: 100%;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    }
+    
+    #btn-precionar:active {
+      transform: scale(0.95);
+    }
+    
+    /* Mini mapa */
+    #miniMapContainer {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 150px;
+      height: 110px;
+      overflow: hidden;
+      border-radius: 8px;
+      z-index: 2000;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid #333;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    #eyeCrossSection {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    /* OCT */
+    #oct-container {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: 180px;
+      height: 140px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 8px;
+      border: 1px solid #333;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    
+    #oct-container svg {
+      width: 100%;
+      height: 100%;
+    }
+    
+    /* Efectos visuales */
     .laser-spot {
       width: 25px;
       height: 25px;
@@ -312,11 +452,14 @@
       position: absolute;
       pointer-events: none;
       animation: laser-fade 2.5s ease-out forwards;
+      z-index: 15;
     }
+    
     @keyframes laser-fade {
       0% { opacity: 1; transform: scale(1); }
       100% { opacity: 0; transform: scale(0.3); }
     }
+    
     .laser-burn {
       width: 6px;
       height: 6px;
@@ -324,7 +467,9 @@
       border-radius: 50%;
       position: absolute;
       pointer-events: none;
+      z-index: 16;
     }
+    
     .vitreous-particle {
       width: 5px;
       height: 5px;
@@ -333,10 +478,13 @@
       position: absolute;
       pointer-events: none;
       animation: float-particle 1.5s ease-out forwards;
+      z-index: 12;
     }
+    
     @keyframes float-particle {
       100% { transform: translate(var(--tx, 0px), var(--ty, 0px)); opacity: 0; }
     }
+    
     .injection-bubble {
       position: absolute;
       background: rgba(200,230,255,0.7);
@@ -346,61 +494,171 @@
       filter: blur(1px);
       animation: bubble-float 4s ease-in-out forwards;
     }
+    
     @keyframes bubble-float {
       100% { 
         transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px));
         opacity: 0;
       }
     }
-    /* CLASE PARA EFECTO PEELING (en el OCT) */
+    
+    /* Membrana para peeling */
+    #membrane {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 50%;
+      height: 50%;
+      background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 60%, transparent 100%);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      cursor: grab;
+      z-index: 11;
+    }
+    
+    /* Alertas */
+    #alert-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(20,0,0,0.95);
+      padding: 25px;
+      border-radius: 12px;
+      z-index: 10000;
+      max-width: 90%;
+      text-align: center;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.6);
+      border: 1px solid #800;
+    }
+    
+    #alert-title {
+      color: #f44;
+      font-size: 1.3rem;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+    
+    #alert-message {
+      margin-bottom: 20px;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    
+    .alert-btn {
+      padding: 12px 25px;
+      background: #800;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 10px;
+      font-weight: bold;
+      transition: all 0.2s;
+    }
+    
+    .alert-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* Peeling effect */
     .peel-remove {
       transition: transform 1s ease, opacity 1s ease;
       transform: translateY(-20px);
       opacity: 0;
     }
-    /* ================== DIBUJO OCT ================== */
-    /* Se utiliza el mismo SVG que en practica6 pero se modifica el contenedor */
-    #oct-container {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 1000;
-      width: 400px;  /* 50% del ancho original */
-      height: 350px; /* Extendido en altura para abarcar más hacia abajo */
+    
+    /* ================== RESPONSIVE ADJUSTMENTS ================== */
+    @media (max-width: 768px) {
+      .retina-container {
+        width: 90vmin;
+        height: 90vmin;
+      }
+      
+      .instrument-panel {
+        top: 10px;
+        padding: 10px;
+      }
+      
+      .toggle-btn {
+        padding: 8px 12px;
+        min-width: 70px;
+        margin: 4px;
+        font-size: 0.8rem;
+      }
+      
+      .control-panel {
+        width: 120px;
+        padding: 12px;
+        font-size: 0.75rem;
+      }
+      
+      .joystick {
+        width: 80px;
+        height: 80px;
+      }
+      
+      #miniMapContainer, #oct-container {
+        width: 130px;
+        height: 100px;
+      }
     }
-    #oct-container svg {
-      width: 100%;
-      height: 100%;
+    
+    @media (max-width: 480px) {
+      .retina-container {
+        width: 95vmin;
+        height: 95vmin;
+      }
+      
+      .instrument-panel {
+        width: 98%;
+        padding: 8px;
+      }
+      
+      .toggle-btn {
+        padding: 7px 10px;
+        min-width: 65px;
+        font-size: 0.75rem;
+        margin: 3px;
+      }
+      
+      .control-panel {
+        width: 110px;
+        padding: 10px;
+        right: 10px;
+      }
+      
+      .joystick {
+        width: 75px;
+        height: 75px;
+      }
+      
+      .joystick-container {
+        bottom: 15px;
+      }
+      
+      #miniMapContainer, #oct-container {
+        width: 110px;
+        height: 85px;
+      }
+      
+      #alert-modal {
+        padding: 20px;
+      }
+      
+      #alert-title {
+        font-size: 1.1rem;
+      }
+      
+      #alert-message {
+        font-size: 0.9rem;
+      }
     }
-    /* Posicionamiento de las etiquetas dentro del OCT (calculado en base al viewBox 800×500) */
-    .oct-label {
-      position: absolute;
-      color: white;
-      background: rgba(0,0,0,0.6);
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-size: 12px;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-    }
-    /* Se asignan porcentajes aproximados para que se ubiquen dentro del dibujo, según practica6 */
-    #label-mli    { left: 81.25%; top: 28%; }
-    #label-cfnr   { left: 81.25%; top: 32%; }
-    #label-ccg    { left: 81.25%; top: 37%; }
-    #label-cpi    { left: 81.25%; top: 42%; }
-    #label-cni    { left: 81.25%; top: 47%; }
-    #label-cpe    { left: 81.25%; top: 52%; }
-    #label-cne    { left: 81.25%; top: 57%; }
-    #label-mle    { left: 81.25%; top: 61%; }
-    #label-isos   { left: 81.25%; top: 63.4%; }
-    #label-epr    { left: 81.25%; top: 69%; }
-    #label-mbruch { left: 76.25%; top: 71%; }
-    #label-coro   { left: 78.75%; top: 76%; }
-    #label-fov    { left: 50%;    top: 40%; }
   </style>
 </head>
 <body>
-  <!-- CONTENEDOR PRINCIPAL -->
   <div id="container">
     <!-- MINI MAPA -->
     <div id="miniMapContainer">
@@ -441,56 +699,57 @@
         <line id="probeForcepsInner" x1="575" y1="100" x2="450" y2="300" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" />
       </svg>
     </div>
-    
-    <!-- PANEL DE INSTRUMENTOS - CENTRADO COMO EN app.html -->
+
+    <!-- PANEL DE INSTRUMENTOS -->
     <div class="instrument-panel">
       <button class="toggle-btn" id="btn-vitrectomo">Vitrectomo</button>
       <button class="toggle-btn" id="btn-peeling">Peeling</button>
       <button class="toggle-btn" id="btn-laser">Láser</button>
       <button class="toggle-btn" id="btn-injection">Inyección</button>
     </div>
-    
+
     <!-- PANEL DE PARÁMETROS -->
     <div class="control-panel">
       <div class="vital-sign">
-        <span class="vital-label">Presión Intraocular:</span>
+        <span class="vital-label">Presión:</span>
         <span class="vital-value normal" id="iop-value">16 mmHg</span>
       </div>
       <div id="iop-gauge">
         <div id="iop-level"></div>
       </div>
       <div class="vital-sign">
-        <span class="vital-label">Vitreo Removido:</span>
+        <span class="vital-label">Vitreo:</span>
         <span class="vital-value" id="vitreous-progress">0%</span>
       </div>
       <div class="vital-sign">
-        <span class="vital-label">Estado Retina:</span>
+        <span class="vital-label">Retina:</span>
         <span class="vital-value normal" id="retina-status">Estable</span>
       </div>
     </div>
-    
+
     <!-- JOYSTICKS -->
     <div id="joystick-light-container" class="joystick-container">
       <div id="joystick-light" class="joystick">
         <div class="joystick-handle"></div>
       </div>
-      <div class="slider-container z-control">
-        <label for="endo-z-slider">Endoiluminador Z (tamaño luz):</label>
+      <div class="slider-container">
+        <label>Luz (Z)</label>
         <input type="range" id="endo-z-slider" min="0" max="200" value="50">
       </div>
     </div>
+
     <div id="joystick-vitrectomo-container" class="joystick-container">
       <div id="joystick-vitrectomo" class="joystick">
         <div class="joystick-handle"></div>
       </div>
-      <div class="slider-container z-control">
-        <label for="vitrectomo-z-slider">Vitrectomo Z:</label>
+      <div class="slider-container">
+        <label>Instrumento (Z)</label>
         <input type="range" id="vitrectomo-z-slider" min="-250" max="-50" value="-150">
-        <button id="btn-precionar">Precionar</button>
+        <button id="btn-precionar">Accionar</button>
       </div>
     </div>
-    
-    <!-- CONTENEDOR DEL OJO (RETINA CENTRAL) -->
+
+    <!-- RETINA CENTRAL -->
     <div id="eye-chamber">
       <div class="retina-container" id="retina">
         <div class="retina-sphere">
@@ -513,8 +772,8 @@
         <div id="laser-probe" class="instrument"></div>
       </div>
     </div>
-    
-    <!-- CONTENEDOR DEL OCT (50% del tamaño original, extendido en altura) -->
+
+    <!-- VISUALIZACIÓN OCT -->
     <div id="oct-container">
       <svg class="oct-scan" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
         <!-- Fondo negro -->
@@ -568,47 +827,18 @@
         <path d="M350,200 C380,230 420,230 450,200" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
         <path d="M350,220 C380,250 420,250 450,220" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
       </svg>
-      <!-- Etiquetas dentro del OCT -->
-      <div id="label-mli"    class="oct-label">MLI</div>
-      <div id="label-cfnr"   class="oct-label">CFNR</div>
-      <div id="label-ccg"    class="oct-label">CCG</div>
-      <div id="label-cpi"    class="oct-label">CPI</div>
-      <div id="label-cni"    class="oct-label">CNI</div>
-      <div id="label-cpe"    class="oct-label">CPE</div>
-      <div id="label-cne"    class="oct-label">CNE</div>
-      <div id="label-mle"    class="oct-label">MLE</div>
-      <div id="label-isos"   class="oct-label">IS/OS</div>
-      <div id="label-epr"    class="oct-label">EPR</div>
-      <div id="label-mbruch" class="oct-label">M.Bruch</div>
-      <div id="label-coro"   class="oct-label">Coro</div>
-      <div id="label-fov"    class="oct-label">Fóv</div>
     </div>
   </div>
-  
+
   <!-- ALERTAS -->
-  <div class="alert-modal" id="alert-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(20,0,0,0.9); padding:20px; border-radius:8px; z-index:10000;">
-    <div class="alert-title" id="alert-title" style="color:#f44; font-size:18px; margin-bottom:10px;">Alerta</div>
-    <div class="alert-message" id="alert-message" style="margin-bottom:15px;"></div>
-    <button class="alert-btn" onclick="closeAlert()" style="padding:8px 15px; background:#800; color:white; border:none; border-radius:4px; cursor:pointer;">Aceptar</button>
+  <div id="alert-modal">
+    <div id="alert-title">Alerta</div>
+    <div id="alert-message"></div>
+    <button class="alert-btn" onclick="closeAlert()">Aceptar</button>
   </div>
-  
-  <!-- ================== SCRIPTS ================== -->
+
   <script>
-    /* Función para remover la línea MLI del OCT con efecto peel */
-    function peelMLI_OCT() {
-      var mliGroup = document.getElementById('mli-group');
-      var labelMLI = document.getElementById('label-mli');
-      if(mliGroup) {
-        mliGroup.classList.add('peel-remove');
-        setTimeout(function(){ mliGroup.remove(); }, 1000);
-      }
-      if(labelMLI) {
-        labelMLI.classList.add('peel-remove');
-        setTimeout(function(){ labelMLI.remove(); }, 1000);
-      }
-    }
-    
-    /* VARIABLES GLOBALES */
+    /* ================== VARIABLES GLOBALES ================== */
     let lightJoystickX = 50, lightJoystickY = 50;
     let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
     let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
@@ -619,231 +849,107 @@
     let peelAccumulated = 0;
     const peelStep = 30;
     let tearPoints = [];
-    
-    /* FUNCIONES DE ALERTA */
+    let isPeeling = false;
+    let peelCanvas, pinza, tearPath;
+
+    /* ================== FUNCIONES DE INTERFAZ ================== */
     function showAlert(title, message) {
       document.getElementById('alert-title').innerText = title;
       document.getElementById('alert-message').innerText = message;
       document.getElementById('alert-modal').style.display = 'block';
     }
+
     function closeAlert() {
       document.getElementById('alert-modal').style.display = 'none';
     }
-    
-    /* Función toggle para instrumentos */
+
+    /* ================== GESTIÓN DE INSTRUMENTOS ================== */
     function toggleInstrument(btnId, instrumentId) {
       const btn = document.getElementById(btnId);
       const instr = document.getElementById(instrumentId);
+      
       if(btn.classList.contains('active')) {
         btn.classList.remove('active');
         if(instr) instr.style.display = 'none';
-        if(btnId === 'btn-peeling') {
-          const mem = document.getElementById('membrane');
-          if(mem) mem.remove();
-        }
+        if(btnId === 'btn-peeling') endPeeling();
       } else {
+        // Desactivar todos los instrumentos primero
+        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.instrument').forEach(i => i.style.display = 'none');
+        
+        // Activar el seleccionado
         btn.classList.add('active');
         if(instr) instr.style.display = 'block';
         activeInstrument = instrumentId;
-        if(btnId === 'btn-peeling') {
-          initPeeling();
-        }
+        
+        if(btnId === 'btn-peeling') initPeeling();
       }
     }
-    document.getElementById('btn-vitrectomo').addEventListener('click', function(){
-      toggleInstrument('btn-vitrectomo', 'vitrectome');
-    });
-    document.getElementById('btn-peeling').addEventListener('click', function(){
-      toggleInstrument('btn-peeling', 'end-grasper');
-    });
-    document.getElementById('btn-laser').addEventListener('click', function(){
-      toggleInstrument('btn-laser', 'laser-probe');
-    });
-    document.getElementById('btn-injection').addEventListener('click', function(){
-      performInjection();
-    });
-    
-    /* Botón PRECIONAR */
+
+    // Event listeners para instrumentos
+    document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectome'));
+    document.getElementById('btn-peeling').addEventListener('click', () => toggleInstrument('btn-peeling', 'end-grasper'));
+    document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser-probe'));
+    document.getElementById('btn-injection').addEventListener('click', performInjection);
+
+    /* ================== BOTÓN DE ACCIÓN PRINCIPAL ================== */
     document.getElementById('btn-precionar').addEventListener('click', () => {
-      if(activeInstrument === 'laser-probe'){
-         const instrument = document.getElementById('laser-probe');
-         const retinaRect = document.getElementById('retina').getBoundingClientRect();
-         const instRect = instrument.getBoundingClientRect();
-         const x = instRect.left + instRect.width/2 - retinaRect.left;
-         const y = instRect.top + instRect.height/2 - retinaRect.top;
-         const syntheticEvent = { clientX: retinaRect.left + x, clientY: retinaRect.top + y };
-         laserFunction(syntheticEvent);
-      } else if(activeInstrument === 'vitrectome'){
-         const instrument = document.getElementById('vitrectome');
-         const retinaRect = document.getElementById('retina').getBoundingClientRect();
-         const instRect = instrument.getBoundingClientRect();
-         const x = instRect.left + instRect.width/2 - retinaRect.left;
-         const y = instRect.top + instRect.height/2 - retinaRect.top;
-         const syntheticEvent = { clientX: retinaRect.left + x, clientY: retinaRect.top + y };
-         vitrectomyFunction(syntheticEvent);
-      } else if(activeInstrument === 'end-grasper'){
-         const membrane = document.getElementById('membrane');
-         const peelCanvas = document.getElementById('peelCanvas');
-         const pinza = document.getElementById('pinza');
-         if(membrane && peelCanvas && pinza) {
-            const memRect = membrane.getBoundingClientRect();
-            const centerX = memRect.width/2;
-            const centerY = memRect.height/2;
-            const radius = memRect.width/2;
-            pinza.setAttribute("cx", centerX + radius);
-            pinza.setAttribute("cy", centerY);
-            const tearPath = document.getElementById('tearPath');
-            const d = `M ${centerX} ${centerY} L ${centerX + radius} ${centerY}`;
-            tearPath.setAttribute("d", d);
-            activarDesgarroPeel(membrane, pinza, peelCanvas);
-         }
-      }
-    });
-    
-    /* Actualización de parámetros (vitals) */
-    function updateVitals() {
-      iop += (Math.random() - 0.5) * 0.2;
-      if(activeInstrument === 'vitrectome') iop -= 0.1;
-      document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
-      document.getElementById('iop-level').style.width = Math.min(100, Math.max(0, iop)) + "%";
-      document.getElementById('vitreous-progress').innerText = Math.min(100, vitreousRemoved).toFixed(0) + "%";
-      document.getElementById('retina-status').innerText = retinaStatus;
-    }
-    setInterval(updateVitals, 1000);
-    
-    /* Actualización de posición de instrumentos */
-    function updateVitrectomoPosition(normX, normY) {
+      if(!activeInstrument) return;
+      
+      const instrument = document.getElementById(activeInstrument);
       const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const maxOffset = retinaRect.width / 2;
-      const offsetX = (normX - 50) / 50 * maxOffset;
-      const offsetY = (normY - 50) / 50 * maxOffset;
-      const zVal = document.getElementById('vitrectomo-z-slider').value;
-      if(activeInstrument) {
-        const instr = document.getElementById(activeInstrument);
-        if(instr) {
-          instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${zVal}px)`;
-        }
+      const instRect = instrument.getBoundingClientRect();
+      
+      const x = instRect.left + instRect.width/2 - retinaRect.left;
+      const y = instRect.top + instRect.height/2 - retinaRect.top;
+      
+      const syntheticEvent = { 
+        clientX: retinaRect.left + x, 
+        clientY: retinaRect.top + y,
+        preventDefault: () => {}
+      };
+      
+      if(activeInstrument === 'laser-probe') {
+        laserFunction(syntheticEvent);
+      } else if(activeInstrument === 'vitrectome') {
+        vitrectomyFunction(syntheticEvent);
+      } else if(activeInstrument === 'end-grasper' && isPeeling) {
+        completePeeling();
       }
-      vitrectomoJoystickX = normX;
-      updateMiniLeftLine(normX, normY);
-    }
-    function updateEndoLightEffect(normX, normY) {
-      document.documentElement.style.setProperty('--light-x', normX + '%');
-      document.documentElement.style.setProperty('--light-y', normY + '%');
-      document.getElementById('light-reflection').style.opacity = 0.7;
-      const zVal = parseInt(document.getElementById('endo-z-slider').value);
-      document.getElementById('light-mask').style.transform = `translateZ(${zVal}px)`;
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const minLightSize = 10;
-      const maxLightSize = retinaRect.width;
-      const newLightSize = minLightSize + (maxLightSize - minLightSize) * (zVal / 200);
-      document.documentElement.style.setProperty('--light-size', newLightSize + 'px');
-      lightJoystickX = normX;
-      updateMiniRightLine(normX, normY);
-    }
-    function updateMiniLeftLine(normX, normY) {
-      const defaultTipX = 350;
-      const defaultTipY = 300;
-      const scaleX = 2.5;
-      const scaleY = 1.8;
-      const offsetX = (normX - 50) * scaleX;
-      const offsetY = (normY - 50) * scaleY;
-      let tipX = defaultTipX + offsetX;
-      let tipY = defaultTipY + offsetY;
-      const miniLeft = document.getElementById('probeLight');
-      const miniLeftInner = document.getElementById('probeLightInner');
-      miniLeft.setAttribute('x2', tipX);
-      miniLeftInner.setAttribute('x2', tipX);
-      miniLeft.setAttribute('y2', tipY);
-      miniLeftInner.setAttribute('y2', tipY);
-    }
-    function updateMiniRightLine(normX, normY) {
-      const defaultTipX = 450;
-      const defaultTipY = 300;
-      const scaleX = 2.5;
-      const scaleY = 1.8;
-      const offsetX = (normX - 50) * scaleX;
-      const offsetY = (normY - 50) * scaleY;
-      let tipX = defaultTipX + offsetX;
-      let tipY = defaultTipY + offsetY;
-      const miniRight = document.getElementById('probeForceps');
-      const miniRightInner = document.getElementById('probeForcepsInner');
-      miniRight.setAttribute('x2', tipX);
-      miniRightInner.setAttribute('x2', tipX);
-      miniRight.setAttribute('y2', tipY);
-      miniRightInner.setAttribute('y2', tipY);
-    }
-    function initJoystick(joystickElement, updateCallback) {
-      const handle = joystickElement.querySelector('.joystick-handle');
-      const rect = joystickElement.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const maxDistance = rect.width / 2;
-      let dragging = false;
-      function pointerDown(e) {
-        dragging = true;
-        joystickElement.setPointerCapture(e.pointerId);
-      }
-      function pointerMove(e) {
-        if (!dragging) return;
-        const bounds = joystickElement.getBoundingClientRect();
-        const x = e.clientX - bounds.left;
-        const y = e.clientY - bounds.top;
-        let deltaX = x - centerX;
-        let deltaY = y - centerY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        if (distance > maxDistance) {
-          const angle = Math.atan2(deltaY, deltaX);
-          deltaX = Math.cos(angle) * maxDistance;
-          deltaY = Math.sin(angle) * maxDistance;
-        }
-        handle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-        let normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
-        let normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
-        updateCallback(normalizedX, normalizedY);
-      }
-      function pointerUp(e) {
-        dragging = false;
-        handle.style.transform = `translate(0px, 0px)`;
-        updateCallback(50, 50);
-      }
-      joystickElement.addEventListener('pointerdown', pointerDown);
-      joystickElement.addEventListener('pointermove', pointerMove);
-      joystickElement.addEventListener('pointerup', pointerUp);
-      joystickElement.addEventListener('pointerleave', pointerUp);
-    }
-    const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
-    initJoystick(joystickVitrectomo, updateVitrectomoPosition);
-    const joystickLight = document.getElementById('joystick-light');
-    initJoystick(joystickLight, updateEndoLightEffect);
-    document.getElementById('vitrectomo-z-slider').addEventListener('input', function(){
-      currentDepth = parseInt(this.value);
-      updateVitrectomoPosition(vitrectomoJoystickX, vitrectomoJoystickX);
     });
-    document.getElementById('endo-z-slider').addEventListener('input', function(){
-      updateEndoLightEffect(lightJoystickX, lightJoystickY);
-    });
-    
+
+    /* ================== FUNCIONES DE INSTRUMENTOS ================== */
     function laserFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
+      
+      // Crear efecto de láser
       const laserSpot = document.createElement('div');
       laserSpot.className = 'laser-spot';
       laserSpot.style.left = (e.clientX - rect.left - 12) + 'px';
       laserSpot.style.top = (e.clientY - rect.top - 12) + 'px';
       retina.appendChild(laserSpot);
+      
+      // Crear marca de quemadura
       const burnMark = document.createElement('div');
       burnMark.className = 'laser-burn';
       burnMark.style.left = (e.clientX - rect.left - 3) + 'px';
       burnMark.style.top = (e.clientY - rect.top - 3) + 'px';
       retina.appendChild(burnMark);
-      setTimeout(() => { laserSpot.remove(); }, 2500);
+      
+      // Eliminar después de la animación
+      setTimeout(() => {
+        laserSpot.remove();
+        burnMark.remove();
+      }, 2500);
     }
+
     function vitrectomyFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
-      const particleCount = 10;
-      for (let i = 0; i < particleCount; i++) {
+      
+      // Crear partículas de vítreo
+      for (let i = 0; i < 8; i++) {
         const particle = document.createElement('div');
         particle.className = 'vitreous-particle';
         particle.style.left = (e.clientX - rect.left + (Math.random()*20 - 10)) + 'px';
@@ -851,18 +957,24 @@
         particle.style.setProperty('--tx', Math.random()*40 - 20);
         particle.style.setProperty('--ty', Math.random()*40 - 20);
         retina.appendChild(particle);
+        
         setTimeout(() => particle.remove(), 1500);
       }
+      
+      // Actualizar progreso
       vitreousRemoved = Math.min(100, vitreousRemoved + 0.8);
-      document.getElementById('vitreous-progress').innerText = `${vitreousRemoved.toFixed(0)}%`;
     }
+
     function performInjection() {
-      showAlert("FASE 4: Inyección", "Inyectando solución salina equilibrada...");
+      showAlert("Inyección", "Inyectando solución salina equilibrada...");
+      
       const retina = document.getElementById('retina');
       retina.style.background = `
         radial-gradient(circle at 35% 45%, rgba(100,150,255,0.2) 0%, rgba(50,100,255,0.3) 70%, rgba(20,50,255,0.2) 100%),
         repeating-linear-gradient(45deg, rgba(100,150,255,0.1) 0px, rgba(100,150,255,0.1) 1px, transparent 1px, transparent 10px)`;
-      for (let i = 0; i < 30; i++) {
+      
+      // Crear burbujas de inyección
+      for (let i = 0; i < 20; i++) {
         setTimeout(() => {
           const bubble = document.createElement('div');
           bubble.className = 'injection-bubble';
@@ -873,139 +985,393 @@
           bubble.style.setProperty('--tx', Math.random()*100 - 50);
           bubble.style.setProperty('--ty', Math.random()*100 - 50);
           retina.appendChild(bubble);
+          
           setTimeout(() => bubble.remove(), 4000);
-        }, i*150);
+        }, i*200);
       }
+      
       setTimeout(() => {
-        showAlert("Procedimiento Completado", "Vitrectomía posterior finalizada con éxito");
-      }, 5000);
+        showAlert("Completado", "Procedimiento finalizado con éxito");
+      }, 4000);
     }
-    
-    /* FUNCIONALIDAD DE PEELING: crea overlay en retina y sincroniza con el OCT */
+
+    /* ================== FUNCIONALIDAD DE PEELING ================== */
     function initPeeling() {
       if(document.getElementById('membrane')) return;
+      
       const retina = document.getElementById('retina');
-      // Crear overlay circular en la retina
+      isPeeling = true;
+      
+      // Crear overlay de membrana
       const membrane = document.createElement('div');
       membrane.id = 'membrane';
-      membrane.style.position = 'absolute';
-      membrane.style.top = '50%';
-      membrane.style.left = '50%';
-      membrane.style.width = '50%';
-      membrane.style.height = '50%';
-      membrane.style.background = 'radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.1) 60%, transparent 100%)';
-      membrane.style.borderRadius = '50%';
-      membrane.style.transform = 'translate(-50%, -50%)';
-      membrane.style.cursor = 'grab';
       retina.appendChild(membrane);
-      // Agregar canvas SVG para simular el peeling
-      const peelCanvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      peelCanvas.setAttribute('id', 'peelCanvas');
-      peelCanvas.setAttribute('style', 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto;');
+      
+      // Crear canvas SVG para el peeling
+      peelCanvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      peelCanvas.id = 'peelCanvas';
+      peelCanvas.setAttribute('style', 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;');
       membrane.appendChild(peelCanvas);
+      
+      // Crear máscara
       const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
       const mask = document.createElementNS("http://www.w3.org/2000/svg", "mask");
-      mask.setAttribute("id", "peelMask");
+      mask.id = "peelMask";
+      
       const fullCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
       fullCircle.setAttribute("cx", "50%");
       fullCircle.setAttribute("cy", "50%");
       fullCircle.setAttribute("r", "50%");
       fullCircle.setAttribute("fill", "white");
       mask.appendChild(fullCircle);
+      
       defs.appendChild(mask);
       peelCanvas.appendChild(defs);
       membrane.style.webkitMaskImage = "url(#peelMask)";
       membrane.style.maskImage = "url(#peelMask)";
-      const tearPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      tearPath.setAttribute('id', 'tearPath');
+      
+      // Crear path para el desgarro
+      tearPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      tearPath.id = 'tearPath';
+      tearPath.setAttribute('stroke', 'rgba(0,255,0,0.5)');
+      tearPath.setAttribute('stroke-width', '2');
+      tearPath.setAttribute('fill', 'none');
       peelCanvas.appendChild(tearPath);
-      const pinza = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      pinza.setAttribute('id', 'pinza');
+      
+      // Crear pinza
+      pinza = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      pinza.id = 'pinza';
       pinza.setAttribute('cx', '50%');
       pinza.setAttribute('cy', '50%');
       pinza.setAttribute('r', '7');
       pinza.setAttribute('fill', 'green');
       peelCanvas.appendChild(pinza);
-      let isDragging = false;
+      
+      // Configurar eventos táctiles
+      membrane.addEventListener('touchstart', startPeeling, { passive: false });
+      membrane.addEventListener('touchmove', movePeeling, { passive: false });
+      membrane.addEventListener('touchend', endPeeling);
+      
+      // Eventos de ratón para compatibilidad
+      membrane.addEventListener('mousedown', startPeeling);
+      membrane.addEventListener('mousemove', movePeeling);
+      membrane.addEventListener('mouseup', endPeeling);
+      membrane.addEventListener('mouseleave', endPeeling);
+    }
+
+    function startPeeling(e) {
+      e.preventDefault();
+      if(!isPeeling) return;
+      
+      const membrane = document.getElementById('membrane');
+      const rect = membrane.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      tearPoints = [[centerX, centerY]];
+      updateTearPath(tearPoints, tearPath);
+      
+      membrane.style.cursor = 'grabbing';
+    }
+
+    function movePeeling(e) {
+      if(!isPeeling || tearPoints.length === 0) return;
+      e.preventDefault();
+      
+      const membrane = document.getElementById('membrane');
+      const rect = membrane.getBoundingClientRect();
+      
+      let clientX, clientY;
+      if(e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      
+      pinza.setAttribute('cx', x);
+      pinza.setAttribute('cy', y);
+      
+      tearPoints.push([x, y]);
+      updateTearPath(tearPoints, tearPath);
+      
+      // Comprobar si llegó al borde
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const radius = rect.width / 2;
+      const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+      
+      if(distance >= radius * 0.9) {
+        completePeeling();
+      }
+    }
+
+    function endPeeling() {
+      if(!isPeeling) return;
+      
+      const membrane = document.getElementById('membrane');
+      if(membrane) membrane.style.cursor = 'grab';
+      
       tearPoints = [];
-      pinza.addEventListener('mousedown', (event) => {
-        if(event.button !== 0) return;
-        isDragging = true;
-        tearPoints = [];
-        const pt = getSVGPoint(event, peelCanvas);
-        tearPoints.push([pt.x, pt.y]);
-        pinza.style.cursor = 'grabbing';
-      });
-      peelCanvas.addEventListener('mousemove', (event) => {
-        if(!isDragging) return;
-        const pt = getSVGPoint(event, peelCanvas);
-        pinza.setAttribute('cx', pt.x);
-        pinza.setAttribute('cy', pt.y);
-        tearPoints.push([pt.x, pt.y]);
-        updateTearPath(tearPoints, tearPath);
-        const memRect = membrane.getBoundingClientRect();
-        const center = { x: memRect.width / 2, y: memRect.height / 2 };
-        const current = { x: pt.x, y: pt.y };
-        const dist = Math.hypot(current.x - center.x, current.y - center.y);
-        const radius = memRect.width / 2;
-        if(dist >= radius) {
-          activarDesgarroPeel(membrane, pinza, peelCanvas);
-          isDragging = false;
-        }
-      });
-      document.addEventListener('mouseup', () => {
-        if(isDragging) {
-          isDragging = false;
-          pinza.style.cursor = 'grab';
-          tearPoints = [];
-          updateTearPath([], tearPath);
-        }
-      });
+      updateTearPath([], tearPath);
     }
-    function getSVGPoint(event, svg) {
-      let pt = svg.createSVGPoint();
-      pt.x = event.clientX;
-      pt.y = event.clientY;
-      return pt.matrixTransform(svg.getScreenCTM().inverse());
-    }
-    function updateTearPath(points, pathElement) {
-      if(points.length === 0) {
-        pathElement.setAttribute('d', '');
-        return;
-      }
-      let d = `M ${points[0][0]} ${points[0][1]}`;
-      for(let i = 1; i < points.length; i++){
-        d += ` L ${points[i][0]} ${points[i][1]}`;
-      }
-      pathElement.setAttribute('d', d);
-    }
-    function activarDesgarroPeel(membrane, pinza, peelCanvas) {
-      peelAccumulated += peelStep;
-      const tearPathEl = document.getElementById('tearPath');
-      const d = tearPathEl.getAttribute('d');
-      if(d) {
-        const mask = peelCanvas.querySelector("mask#peelMask");
+
+    function completePeeling() {
+      if(!isPeeling) return;
+      
+      const membrane = document.getElementById('membrane');
+      const mask = document.getElementById('peelMask');
+      
+      if(tearPoints.length > 1 && mask) {
         const hole = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        hole.setAttribute("d", d);
+        hole.setAttribute("d", tearPath.getAttribute('d'));
+        hole.setAttribute("stroke", "none");
         hole.setAttribute("fill", "black");
         mask.appendChild(hole);
-        updateTearPath([], tearPathEl);
-        tearPoints = [];
+        
+        peelAccumulated += peelStep;
+        
         if(peelAccumulated >= 100) {
-          showAlert("Peeling Completado", "La membrana ha sido removida. Proceda al siguiente paso.");
-          // Remover overlay en retina
-          membrane.remove();
-          // En el OCT, remover la línea MLI con efecto peel
+          showAlert("Peeling Completado", "La membrana ha sido removida completamente");
           peelMLI_OCT();
+          if(membrane) membrane.remove();
+          isPeeling = false;
+          document.getElementById('btn-peeling').classList.remove('active');
+        } else {
+          showAlert("Peeling Parcial", `Progreso: ${peelAccumulated}% completado`);
         }
-      } else {
-        membrane.remove();
-        showAlert("Peeling Completado", "La membrana ha sido removida. Proceda al siguiente paso.");
-        peelMLI_OCT();
       }
-      peelAccumulated = 0;
-      pinza.style.cursor = 'grab';
+      
+      tearPoints = [];
+      updateTearPath([], tearPath);
     }
+
+    function peelMLI_OCT() {
+      const mliGroup = document.getElementById('mli-group');
+      if(mliGroup) {
+        mliGroup.classList.add('peel-remove');
+        setTimeout(() => {
+          if(mliGroup.parentNode) mliGroup.parentNode.removeChild(mliGroup);
+        }, 1000);
+      }
+    }
+
+    function updateTearPath(points, pathElement) {
+      if(!pathElement || points.length === 0) {
+        if(pathElement) pathElement.setAttribute('d', '');
+        return;
+      }
+      
+      let d = `M ${points[0][0]} ${points[0][1]}`;
+      for(let i = 1; i < points.length; i++) {
+        d += ` L ${points[i][0]} ${points[i][1]}`;
+      }
+      
+      pathElement.setAttribute('d', d);
+    }
+
+    /* ================== CONTROL DE JOYSTICKS ================== */
+    function initJoystick(joystickElement, updateCallback) {
+      const handle = joystickElement.querySelector('.joystick-handle');
+      const rect = joystickElement.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const maxDistance = rect.width / 2;
+      let isTouching = false;
+      
+      function handleStart(e) {
+        e.preventDefault();
+        isTouching = true;
+        handleMove(e);
+      }
+      
+      function handleMove(e) {
+        if (!isTouching) return;
+        
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        if(!clientX || !clientY) return;
+        
+        const bounds = joystickElement.getBoundingClientRect();
+        const x = clientX - bounds.left;
+        const y = clientY - bounds.top;
+        
+        let deltaX = x - centerX;
+        let deltaY = y - centerY;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        
+        if (distance > maxDistance) {
+          const angle = Math.atan2(deltaY, deltaX);
+          deltaX = Math.cos(angle) * maxDistance;
+          deltaY = Math.sin(angle) * maxDistance;
+        }
+        
+        handle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        
+        const normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
+        const normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
+        
+        updateCallback(normalizedX, normalizedY);
+      }
+      
+      function handleEnd() {
+        isTouching = false;
+        handle.style.transform = `translate(0px, 0px)`;
+        updateCallback(50, 50);
+      }
+      
+      // Eventos táctiles
+      joystickElement.addEventListener('touchstart', handleStart, { passive: false });
+      joystickElement.addEventListener('touchmove', handleMove, { passive: false });
+      joystickElement.addEventListener('touchend', handleEnd);
+      
+      // Eventos de ratón para compatibilidad
+      joystickElement.addEventListener('mousedown', handleStart);
+      document.addEventListener('mousemove', handleMove);
+      document.addEventListener('mouseup', handleEnd);
+    }
+
+    // Inicializar joysticks
+    const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
+    initJoystick(joystickVitrectomo, (x, y) => {
+      vitrectomoJoystickX = x;
+      vitrectomoJoystickY = y;
+      updateVitrectomoPosition(x, y);
+      updateMiniLeftLine(x, y);
+    });
+    
+    const joystickLight = document.getElementById('joystick-light');
+    initJoystick(joystickLight, (x, y) => {
+      lightJoystickX = x;
+      lightJoystickY = y;
+      updateEndoLightEffect(x, y);
+      updateMiniRightLine(x, y);
+    });
+
+    /* ================== ACTUALIZACIÓN DE POSICIONES ================== */
+    function updateVitrectomoPosition(normX, normY) {
+      const retinaRect = document.getElementById('retina').getBoundingClientRect();
+      const maxOffset = retinaRect.width / 2;
+      const offsetX = (normX - 50) / 50 * maxOffset * 0.9;
+      const offsetY = (normY - 50) / 50 * maxOffset * 0.9;
+      
+      if(activeInstrument) {
+        const instr = document.getElementById(activeInstrument);
+        if(instr) {
+          instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${currentDepth}px)`;
+        }
+      }
+    }
+
+    function updateEndoLightEffect(normX, normY) {
+      document.documentElement.style.setProperty('--light-x', normX + '%');
+      document.documentElement.style.setProperty('--light-y', normY + '%');
+      
+      const zVal = parseInt(document.getElementById('endo-z-slider').value);
+      const retinaRect = document.getElementById('retina').getBoundingClientRect();
+      const newLightSize = 20 + (retinaRect.width - 20) * (zVal / 200);
+      
+      document.documentElement.style.setProperty('--light-size', newLightSize + 'px');
+      document.getElementById('light-reflection').style.opacity = 0.7;
+    }
+
+    function updateMiniLeftLine(normX, normY) {
+      const defaultTipX = 350;
+      const defaultTipY = 300;
+      const scaleX = 2.5;
+      const scaleY = 1.8;
+      const offsetX = (normX - 50) * scaleX;
+      const offsetY = (normY - 50) * scaleY;
+      let tipX = defaultTipX + offsetX;
+      let tipY = defaultTipY + offsetY;
+      
+      const miniLeft = document.getElementById('probeLight');
+      const miniLeftInner = document.getElementById('probeLightInner');
+      if(miniLeft && miniLeftInner) {
+        miniLeft.setAttribute('x2', tipX);
+        miniLeftInner.setAttribute('x2', tipX);
+        miniLeft.setAttribute('y2', tipY);
+        miniLeftInner.setAttribute('y2', tipY);
+      }
+    }
+
+    function updateMiniRightLine(normX, normY) {
+      const defaultTipX = 450;
+      const defaultTipY = 300;
+      const scaleX = 2.5;
+      const scaleY = 1.8;
+      const offsetX = (normX - 50) * scaleX;
+      const offsetY = (normY - 50) * scaleY;
+      let tipX = defaultTipX + offsetX;
+      let tipY = defaultTipY + offsetY;
+      
+      const miniRight = document.getElementById('probeForceps');
+      const miniRightInner = document.getElementById('probeForcepsInner');
+      if(miniRight && miniRightInner) {
+        miniRight.setAttribute('x2', tipX);
+        miniRightInner.setAttribute('x2', tipX);
+        miniRight.setAttribute('y2', tipY);
+        miniRightInner.setAttribute('y2', tipY);
+      }
+    }
+
+    /* ================== ACTUALIZACIÓN DE PARÁMETROS ================== */
+    function updateVitals() {
+      // Variación aleatoria de la presión intraocular
+      iop += (Math.random() - 0.5) * 0.2;
+      
+      // Efecto del vitrectomo en la presión
+      if(activeInstrument === 'vitrectome') iop -= 0.1;
+      
+      // Limitar valores entre 10 y 30 mmHg
+      iop = Math.max(10, Math.min(30, iop));
+      
+      // Actualizar visualización
+      document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
+      document.getElementById('iop-level').style.width = ((iop - 10) / 20 * 100) + "%";
+      
+      // Actualizar clase según presión
+      const iopElement = document.getElementById('iop-value');
+      iopElement.classList.remove('normal', 'warning', 'danger');
+      
+      if(iop < 15 || iop > 25) {
+        iopElement.classList.add('danger');
+        retinaStatus = 'Riesgo';
+      } else if(iop < 18 || iop > 22) {
+        iopElement.classList.add('warning');
+        retinaStatus = 'Alerta';
+      } else {
+        iopElement.classList.add('normal');
+        retinaStatus = 'Estable';
+      }
+      
+      // Actualizar otros parámetros
+      document.getElementById('vitreous-progress').innerText = Math.min(100, vitreousRemoved).toFixed(0) + "%";
+      document.getElementById('retina-status').innerText = retinaStatus;
+      document.getElementById('retina-status').className = `vital-value ${iopElement.className.split(' ')[1]}`;
+    }
+
+    // Actualizar parámetros cada segundo
+    setInterval(updateVitals, 1000);
+
+    // Configurar sliders
+    document.getElementById('vitrectomo-z-slider').addEventListener('input', function() {
+      currentDepth = parseInt(this.value);
+      updateVitrectomoPosition(vitrectomoJoystickX, vitrectomoJoystickY);
+    });
+    
+    document.getElementById('endo-z-slider').addEventListener('input', function() {
+      updateEndoLightEffect(lightJoystickX, lightJoystickY);
+    });
+
+    // Inicialización
+    updateVitals();
+    updateEndoLightEffect(50, 50);
   </script>
 </body>
 </html>
