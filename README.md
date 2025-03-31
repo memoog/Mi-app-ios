@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador Quirúrgico Retiniano – Versión Mejorada</title>
+  <title>App5 Integrada – Retina + OCT</title>
   <style>
-    /* ================== BASE ================== */
+    /* ================== ESTILOS GENERALES ================== */
     body {
       margin: 0;
       padding: 0;
@@ -20,7 +20,7 @@
       height: 100vh;
       perspective: 1200px;
     }
-    /* CONTENEDOR PRINCIPAL DEL OJO */
+    /* CONTENEDOR DEL OJO (RETINA CENTRAL) */
     #eye-chamber {
       position: absolute;
       width: 100%;
@@ -29,7 +29,6 @@
       justify-content: center;
       align-items: center;
     }
-    /* ================== RETINA CENTRAL ================== */
     .retina-container {
       position: relative;
       width: 80vmin;
@@ -115,8 +114,7 @@
       box-shadow: inset 0 0 10px rgba(150,30,30,0.5);
       z-index: 6;
     }
-    /* ================== CAMPO DE VISIÓN – Endoiluminador ================== */
-    /* (El joystick para el efecto de luz se mantiene) */
+    /* CAMPO DE VISIÓN – Endoiluminador */
     #light-mask {
       position: absolute;
       top: 0;
@@ -142,8 +140,14 @@
       pointer-events: none;
       z-index: 8;
     }
-    /* ================== INSTRUMENTOS QUIRÚRGICOS ================== */
-    /* Se posicionan dentro de la retina central; se mantienen los estilos originales */
+    /* INSTRUMENTOS QUIRÚRGICOS */
+    #vitrectome, #end-grasper, #laser-probe {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+    }
     #vitrectome {
       width: 20px;
       height: 100px;
@@ -151,11 +155,6 @@
       border: 1px solid #aaa;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: none;
     }
     #vitrectome::after {
       content: '';
@@ -175,11 +174,6 @@
       border: 1px solid #bbb;
       border-radius: 10px;
       box-shadow: 0 0 8px rgba(0,0,0,0.5);
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: none;
     }
     #laser-probe {
       width: 4px;
@@ -187,13 +181,8 @@
       background: linear-gradient(to bottom, #f00, #ff0);
       border-radius: 2px;
       box-shadow: 0 0 5px rgba(255,0,0,0.8);
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: none;
     }
-    /* ================== MINI MAPA (diseño según app5 original) ================== */
+    /* MINI MAPA (igual que en app5 original) */
     #miniMapContainer {
       position: absolute;
       top: 20px;
@@ -209,7 +198,49 @@
       height: 100%;
       display: block;
     }
-    /* ================== PANEL DE INSTRUMENTOS – BOTONES TOGGLE ================== */
+    /* PANEL DE PARÁMETROS: se ubica ordenadamente debajo del mini mapa (derecha) */
+    .control-panel {
+      position: absolute;
+      top: 250px;
+      right: 20px;
+      width: 300px;
+      background: rgba(10,10,10,0.85);
+      padding: 15px;
+      border-radius: 8px;
+      z-index: 5000;
+      font-size: 14px;
+    }
+    .control-panel .vital-sign {
+      display: flex;
+      justify-content: space-between;
+      margin: 8px 0;
+    }
+    .control-panel .vital-label {
+      color: #ccc;
+    }
+    .control-panel .vital-value {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+    }
+    .normal { color: #2ecc71; }
+    .warning { color: #f39c12; }
+    .danger { color: #e74c3c; }
+    #iop-gauge {
+      width: 100%;
+      height: 8px;
+      background: linear-gradient(to right, #2ecc71 0%, #2ecc71 30%, #f39c12 30%, #f39c12 70%, #e74c3c 70%, #e74c3c 100%);
+      border-radius: 4px;
+      margin-top: 5px;
+      overflow: hidden;
+    }
+    #iop-level {
+      height: 100%;
+      width: 50%;
+      background: rgba(255,255,255,0.3);
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    /* PANEL DE INSTRUMENTOS - CENTRADO COMO EN app.html */
     .instrument-panel {
       position: absolute;
       top: 20px;
@@ -234,66 +265,7 @@
       background: #3b82f6;
       box-shadow: 0 0 10px #3b82f6;
     }
-    /* ================== PANEL DE CONTROLES DEL INSTRUMENTO ================== */
-    .slider-container.z-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    /* Agregamos el botón "Precionar" al lado del control Vitrectomo Z */
-    #btn-precionar {
-      background: #1e3a8a;
-      color: white;
-      padding: 8px 12px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 0.9em;
-    }
-    /* ================== PANEL DE MONITOREO (parámetros) ================== */
-    .control-panel {
-      position: absolute;
-      left: 50%;
-      bottom: 20px;
-      transform: translateX(-50%);
-      background: rgba(10,10,10,0.85);
-      padding: 15px;
-      border-radius: 8px;
-      z-index: 5000;
-      font-size: 14px;
-      width: 280px;
-    }
-    .vital-sign {
-      display: flex;
-      justify-content: space-between;
-      margin: 8px 0;
-    }
-    .vital-label {
-      color: #ccc;
-    }
-    .vital-value {
-      font-family: 'Courier New', monospace;
-      font-weight: bold;
-    }
-    .normal { color: #2ecc71; }
-    .warning { color: #f39c12; }
-    .danger { color: #e74c3c; }
-    #iop-gauge {
-      width: 100%;
-      height: 8px;
-      background: linear-gradient(to right, #2ecc71 0%, #2ecc71 30%, #f39c12 30%, #f39c12 70%, #e74c3c 70%, #e74c3c 100%);
-      border-radius: 4px;
-      margin-top: 5px;
-      overflow: hidden;
-    }
-    #iop-level {
-      height: 100%;
-      width: 50%;
-      background: rgba(255,255,255,0.3);
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-    /* ================== JOYSTICKS ================== */
+    /* JOYSTICKS: INTERCAMBIADOS: endoiluminador a la izquierda, vitrectomo a la derecha */
     .joystick-container {
       position: absolute;
       bottom: 20px;
@@ -303,11 +275,13 @@
       gap: 10px;
       z-index: 3000;
     }
-    #joystick-vitrectomo-container {
-      left: 20px;
-    }
     #joystick-light-container {
+      left: 20px;
+      right: auto;
+    }
+    #joystick-vitrectomo-container {
       right: 20px;
+      left: auto;
     }
     .joystick {
       width: 100px;
@@ -329,7 +303,7 @@
       position: absolute;
       transition: transform 0.1s ease;
     }
-    /* ================== NUEVAS REGLAS PARA FUNCIONALIDADES ================== */
+    /* EFECTOS ADICIONALES */
     .laser-spot {
       width: 25px;
       height: 25px;
@@ -363,7 +337,6 @@
     @keyframes float-particle {
       100% { transform: translate(var(--tx, 0px), var(--ty, 0px)); opacity: 0; }
     }
-    /* Estilos para la inyección (copiados de práctica6) */
     .injection-bubble {
       position: absolute;
       background: rgba(200,230,255,0.7);
@@ -379,9 +352,55 @@
         opacity: 0;
       }
     }
+    /* CLASE PARA EFECTO PEELING (en el OCT) */
+    .peel-remove {
+      transition: transform 1s ease, opacity 1s ease;
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    /* ================== DIBUJO OCT ================== */
+    /* Se utiliza el mismo SVG que en practica6 pero se modifica el contenedor */
+    #oct-container {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      width: 400px;  /* 50% del ancho original */
+      height: 350px; /* Extendido en altura para abarcar más hacia abajo */
+    }
+    #oct-container svg {
+      width: 100%;
+      height: 100%;
+    }
+    /* Posicionamiento de las etiquetas dentro del OCT (calculado en base al viewBox 800×500) */
+    .oct-label {
+      position: absolute;
+      color: white;
+      background: rgba(0,0,0,0.6);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 12px;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+    /* Se asignan porcentajes aproximados para que se ubiquen dentro del dibujo, según practica6 */
+    #label-mli    { left: 81.25%; top: 28%; }
+    #label-cfnr   { left: 81.25%; top: 32%; }
+    #label-ccg    { left: 81.25%; top: 37%; }
+    #label-cpi    { left: 81.25%; top: 42%; }
+    #label-cni    { left: 81.25%; top: 47%; }
+    #label-cpe    { left: 81.25%; top: 52%; }
+    #label-cne    { left: 81.25%; top: 57%; }
+    #label-mle    { left: 81.25%; top: 61%; }
+    #label-isos   { left: 81.25%; top: 63.4%; }
+    #label-epr    { left: 81.25%; top: 69%; }
+    #label-mbruch { left: 76.25%; top: 71%; }
+    #label-coro   { left: 78.75%; top: 76%; }
+    #label-fov    { left: 50%;    top: 40%; }
   </style>
 </head>
 <body>
+  <!-- CONTENEDOR PRINCIPAL -->
   <div id="container">
     <!-- MINI MAPA -->
     <div id="miniMapContainer">
@@ -416,74 +435,22 @@
         <circle cx="400" cy="300" r="250" fill="none" stroke="#E0E0E0" stroke-width="4" />
         <circle cx="400" cy="300" r="240" fill="#400000" opacity="0.8" />
         <circle id="miniCenter" cx="400" cy="300" r="8" fill="#00f7ff" />
-        <!-- Palitos blancos en el mini mapa -->
-        <!-- Palito izquierdo (vitrectomo) -->
         <line id="probeLight" x1="225" y1="100" x2="350" y2="300" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" />
         <line id="probeLightInner" x1="225" y1="100" x2="350" y2="300" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" />
-        <!-- Palito derecho (anteriormente endoiluminador, ahora se usará para la inyección) -->
         <line id="probeForceps" x1="575" y1="100" x2="450" y2="300" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" />
         <line id="probeForcepsInner" x1="575" y1="100" x2="450" y2="300" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" />
       </svg>
     </div>
-
-    <!-- PANEL DE INSTRUMENTOS – BOTONES TOGGLE -->
+    
+    <!-- PANEL DE INSTRUMENTOS - CENTRADO COMO EN app.html -->
     <div class="instrument-panel">
       <button class="toggle-btn" id="btn-vitrectomo">Vitrectomo</button>
       <button class="toggle-btn" id="btn-peeling">Peeling</button>
       <button class="toggle-btn" id="btn-laser">Láser</button>
-      <!-- Se sustituye el botón de Endoiluminador por Inyección -->
       <button class="toggle-btn" id="btn-injection">Inyección</button>
     </div>
-
-    <!-- PANEL DE CONTROLES DEL INSTRUMENTO (junto al joystick del Vitrectomo) -->
-    <div id="joystick-vitrectomo-container" class="joystick-container">
-      <div id="joystick-vitrectomo" class="joystick">
-        <div class="joystick-handle"></div>
-      </div>
-      <div class="slider-container z-control">
-        <label for="vitrectomo-z-slider">Vitrectomo Z:</label>
-        <input type="range" id="vitrectomo-z-slider" min="-250" max="-50" value="-150">
-        <!-- Botón Precionar para disparar la acción del instrumento activo -->
-        <button id="btn-precionar">Precionar</button>
-      </div>
-    </div>
-    <div id="joystick-light-container" class="joystick-container">
-      <div id="joystick-light" class="joystick">
-        <div class="joystick-handle"></div>
-      </div>
-      <div class="slider-container z-control">
-        <label for="endo-z-slider">Endoiluminador Z (tamaño luz):</label>
-        <input type="range" id="endo-z-slider" min="0" max="200" value="50">
-      </div>
-    </div>
-
-    <!-- CONTENEDOR DEL OJO CON RETINA CENTRAL -->
-    <div id="eye-chamber">
-      <div class="retina-container" id="retina">
-        <div class="retina-sphere">
-          <div class="retina-texture"></div>
-          <div class="retina-nerve"></div>
-          <div class="optic-disc">
-            <div class="optic-cup"></div>
-          </div>
-          <div class="macula"></div>
-          <svg class="blood-vessels" viewBox="0 0 600 600">
-            <path d="M100,300 Q250,200 300,300 T500,300" fill="none" stroke="#8b0000" stroke-width="2" stroke-opacity="0.7"/>
-            <path d="M100,280 Q250,400 300,280 T500,280" fill="none" stroke="#8b0000" stroke-width="1.5" stroke-opacity="0.6"/>
-            <path d="M300,100 Q200,250 300,300 T300,500" fill="none" stroke="#8b0000" stroke-width="1.8" stroke-opacity="0.7"/>
-          </svg>
-        </div>
-        <!-- Efectos de luz -->
-        <div id="light-mask"></div>
-        <div id="light-reflection"></div>
-        <!-- Instrumentos (se agregan dentro de la retina central) -->
-        <div id="vitrectome" class="instrument"></div>
-        <div id="end-grasper" class="instrument"></div>
-        <div id="laser-probe" class="instrument"></div>
-      </div>
-    </div>
-
-    <!-- PANEL DE MONITOREO (parámetros) -->
+    
+    <!-- PANEL DE PARÁMETROS -->
     <div class="control-panel">
       <div class="vital-sign">
         <span class="vital-label">Presión Intraocular:</span>
@@ -501,29 +468,159 @@
         <span class="vital-value normal" id="retina-status">Estable</span>
       </div>
     </div>
+    
+    <!-- JOYSTICKS -->
+    <div id="joystick-light-container" class="joystick-container">
+      <div id="joystick-light" class="joystick">
+        <div class="joystick-handle"></div>
+      </div>
+      <div class="slider-container z-control">
+        <label for="endo-z-slider">Endoiluminador Z (tamaño luz):</label>
+        <input type="range" id="endo-z-slider" min="0" max="200" value="50">
+      </div>
+    </div>
+    <div id="joystick-vitrectomo-container" class="joystick-container">
+      <div id="joystick-vitrectomo" class="joystick">
+        <div class="joystick-handle"></div>
+      </div>
+      <div class="slider-container z-control">
+        <label for="vitrectomo-z-slider">Vitrectomo Z:</label>
+        <input type="range" id="vitrectomo-z-slider" min="-250" max="-50" value="-150">
+        <button id="btn-precionar">Precionar</button>
+      </div>
+    </div>
+    
+    <!-- CONTENEDOR DEL OJO (RETINA CENTRAL) -->
+    <div id="eye-chamber">
+      <div class="retina-container" id="retina">
+        <div class="retina-sphere">
+          <div class="retina-texture"></div>
+          <div class="retina-nerve"></div>
+          <div class="optic-disc">
+            <div class="optic-cup"></div>
+          </div>
+          <div class="macula"></div>
+          <svg class="blood-vessels" viewBox="0 0 600 600">
+            <path d="M100,300 Q250,200 300,300 T500,300" fill="none" stroke="#8b0000" stroke-width="2" stroke-opacity="0.7"/>
+            <path d="M100,280 Q250,400 300,280 T500,280" fill="none" stroke="#8b0000" stroke-width="1.5" stroke-opacity="0.6"/>
+            <path d="M300,100 Q200,250 300,300 T300,500" fill="none" stroke="#8b0000" stroke-width="1.8" stroke-opacity="0.7"/>
+          </svg>
+        </div>
+        <div id="light-mask"></div>
+        <div id="light-reflection"></div>
+        <div id="vitrectome" class="instrument"></div>
+        <div id="end-grasper" class="instrument"></div>
+        <div id="laser-probe" class="instrument"></div>
+      </div>
+    </div>
+    
+    <!-- CONTENEDOR DEL OCT (50% del tamaño original, extendido en altura) -->
+    <div id="oct-container">
+      <svg class="oct-scan" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
+        <!-- Fondo negro -->
+        <rect width="800" height="500" fill="black"/>
+        <!-- Capa de vítreo -->
+        <path d="M0,120 C100,110 200,105 300,110 C400,115 500,110 600,105 C700,100 800,110 800,120" stroke="rgba(0,0,255,0.1)" stroke-width="2" fill="none"/>
+        <!-- MLI - Membrana Limitante Interna -->
+        <g id="mli-group">
+          <path id="mli-layer" d="M0,140 C100,130 200,125 300,135 C400,145 500,140 600,130 C700,120 800,140 800,150" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
+        </g>
+        <!-- CFNR -->
+        <path d="M0,160 C100,150 200,145 300,155 C400,165 500,160 600,150 C700,140 800,160 800,170" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,160 C100,150 200,145 300,155 C400,165 500,160 600,150 C700,140 800,160 800,170" stroke="none" fill="rgba(200,220,255,0.3)"/>
+        <!-- CCG -->
+        <path d="M0,180 C100,170 200,165 300,175 C400,185 500,180 600,170 C700,160 800,180 800,190" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,160 C100,150 200,145 300,155 C400,165 500,160 600,150 C700,140 800,160 800,170 L800,190 C700,180 600,190 500,200 C400,205 300,195 200,185 C100,170 0,180 0,180 Z" stroke="none" fill="rgba(150,180,255,0.2)"/>
+        <!-- CPI -->
+        <path d="M0,200 C100,190 200,185 300,195 C400,205 500,200 600,190 C700,180 800,200 800,210" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,180 C100,170 200,165 300,175 C400,185 500,180 600,170 C700,160 800,180 800,190 L800,210 C700,200 600,210 500,220 C400,225 300,215 200,205 C100,190 0,200 0,200 Z" stroke="none" fill="rgba(120,150,220,0.2)"/>
+        <!-- CNI -->
+        <path d="M0,230 C100,220 200,215 300,225 C400,235 500,230 600,220 C700,210 800,230 800,240" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,200 C100,190 200,185 300,195 C400,205 500,200 600,190 C700,180 800,200 800,210 L800,240 C700,230 600,240 500,250 C400,255 300,245 200,235 C100,220 0,230 0,230 Z" stroke="none" fill="rgba(100,130,200,0.25)"/>
+        <!-- CPE -->
+        <path d="M0,250 C100,240 200,235 300,245 C400,255 500,250 600,240 C700,230 800,250 800,260" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,230 C100,220 200,215 300,225 C400,235 500,230 600,220 C700,210 800,230 800,240 L800,260 C700,250 600,260 500,270 C400,275 300,265 200,255 C100,240 0,250 0,250 Z" stroke="none" fill="rgba(120,140,180,0.2)"/>
+        <!-- CNE -->
+        <path d="M0,280 C100,270 200,265 300,275 C400,285 500,280 600,270 C700,260 800,280 800,290" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,250 C100,240 200,235 300,245 C400,255 500,250 600,240 C700,230 800,250 800,260 L800,290 C700,280 600,290 500,300 C400,305 300,295 200,285 C100,270 0,280 0,280 Z" stroke="none" fill="rgba(150,150,150,0.3)"/>
+        <!-- MLE -->
+        <path d="M0,290 C100,280 200,275 300,285 C400,295 500,290 600,280 C700,270 800,290 800,300" stroke="rgba(255,255,255,0.9)" stroke-width="1" fill="none"/>
+        <!-- SI (Segmentos Internos) -->
+        <path d="M0,310 C100,300 200,295 300,305 C400,315 500,310 600,300 C700,290 800,310 800,320" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,290 C100,280 200,275 300,285 C400,295 500,290 600,280 C700,270 800,290 800,300 L800,320 C700,310 600,320 500,330 C400,335 300,325 200,315 C100,300 0,310 0,310 Z" stroke="none" fill="rgba(200,180,120,0.3)"/>
+        <!-- SE (Segmentos Externos) -->
+        <path d="M0,330 C100,320 200,315 300,325 C400,335 500,330 600,320 C700,310 800,330 800,340" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
+        <path d="M0,310 C100,300 200,295 300,305 C400,315 500,310 600,300 C700,290 800,310 800,320 L800,340 C700,330 600,340 500,350 C400,355 300,345 200,335 C100,320 0,330 0,330 Z" stroke="none" fill="rgba(220,180,100,0.35)"/>
+        <!-- Unión IS/OS -->
+        <path d="M0,322 C100,312 200,307 300,317 C400,327 500,322 600,312 C700,302 800,322 800,332" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
+        <!-- EPR -->
+        <path d="M0,350 C100,340 200,335 300,345 C400,355 500,350 600,340 C700,330 800,350 800,360" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
+        <path d="M0,330 C100,320 200,315 300,325 C400,335 500,330 600,320 C700,310 800,330 800,340 L800,360 C700,350 600,360 500,370 C400,375 300,365 200,355 C100,340 0,350 0,350 Z" stroke="none" fill="rgba(100,80,60,0.5)"/>
+        <!-- M.Bruch -->
+        <path d="M0,360 C100,350 200,345 300,355 C400,365 500,360 600,350 C700,340 800,360 800,370" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
+        <!-- Coroides -->
+        <path d="M0,400 C100,390 200,385 300,395 C400,405 500,400 600,390 C700,380 800,400 800,410" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>
+        <path d="M0,360 C100,350 200,345 300,355 C400,365 500,360 600,350 C700,340 800,360 800,370 L800,410 C700,400 600,410 500,420 C400,425 300,415 200,405 C100,390 0,400 0,400 Z" stroke="none" fill="rgba(80,50,40,0.4)"/>
+        <!-- Fóvea -->
+        <path d="M350,140 C380,170 420,170 450,140" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
+        <path d="M350,160 C380,190 420,190 450,160" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
+        <path d="M350,180 C380,210 420,210 450,180" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
+        <path d="M350,200 C380,230 420,230 450,200" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
+        <path d="M350,220 C380,250 420,250 450,220" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
+      </svg>
+      <!-- Etiquetas dentro del OCT -->
+      <div id="label-mli"    class="oct-label">MLI</div>
+      <div id="label-cfnr"   class="oct-label">CFNR</div>
+      <div id="label-ccg"    class="oct-label">CCG</div>
+      <div id="label-cpi"    class="oct-label">CPI</div>
+      <div id="label-cni"    class="oct-label">CNI</div>
+      <div id="label-cpe"    class="oct-label">CPE</div>
+      <div id="label-cne"    class="oct-label">CNE</div>
+      <div id="label-mle"    class="oct-label">MLE</div>
+      <div id="label-isos"   class="oct-label">IS/OS</div>
+      <div id="label-epr"    class="oct-label">EPR</div>
+      <div id="label-mbruch" class="oct-label">M.Bruch</div>
+      <div id="label-coro"   class="oct-label">Coro</div>
+      <div id="label-fov"    class="oct-label">Fóv</div>
+    </div>
   </div>
-
+  
   <!-- ALERTAS -->
   <div class="alert-modal" id="alert-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(20,0,0,0.9); padding:20px; border-radius:8px; z-index:10000;">
     <div class="alert-title" id="alert-title" style="color:#f44; font-size:18px; margin-bottom:10px;">Alerta</div>
     <div class="alert-message" id="alert-message" style="margin-bottom:15px;"></div>
     <button class="alert-btn" onclick="closeAlert()" style="padding:8px 15px; background:#800; color:white; border:none; border-radius:4px; cursor:pointer;">Aceptar</button>
   </div>
-
+  
   <!-- ================== SCRIPTS ================== -->
   <script>
-    /* VARIABLES GLOBALES PARA JOYSTICKS Y Z */
+    /* Función para remover la línea MLI del OCT con efecto peel */
+    function peelMLI_OCT() {
+      var mliGroup = document.getElementById('mli-group');
+      var labelMLI = document.getElementById('label-mli');
+      if(mliGroup) {
+        mliGroup.classList.add('peel-remove');
+        setTimeout(function(){ mliGroup.remove(); }, 1000);
+      }
+      if(labelMLI) {
+        labelMLI.classList.add('peel-remove');
+        setTimeout(function(){ labelMLI.remove(); }, 1000);
+      }
+    }
+    
+    /* VARIABLES GLOBALES */
     let lightJoystickX = 50, lightJoystickY = 50;
     let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
     let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
-
-    /* Variables de estado y parámetros */
     let activeInstrument = null;
     let iop = 16; // mmHg
     let vitreousRemoved = 0;
     let retinaStatus = 'Estable';
-
-    /* Función de alerta */
+    let peelAccumulated = 0;
+    const peelStep = 30;
+    let tearPoints = [];
+    
+    /* FUNCIONES DE ALERTA */
     function showAlert(title, message) {
       document.getElementById('alert-title').innerText = title;
       document.getElementById('alert-message').innerText = message;
@@ -532,8 +629,8 @@
     function closeAlert() {
       document.getElementById('alert-modal').style.display = 'none';
     }
-
-    /* Función toggle para los botones de instrumentos */
+    
+    /* Función toggle para instrumentos */
     function toggleInstrument(btnId, instrumentId) {
       const btn = document.getElementById(btnId);
       const instr = document.getElementById(instrumentId);
@@ -562,14 +659,12 @@
     document.getElementById('btn-laser').addEventListener('click', function(){
       toggleInstrument('btn-laser', 'laser-probe');
     });
-    // El botón de inyección ejecuta directamente la función de inyección
     document.getElementById('btn-injection').addEventListener('click', function(){
       performInjection();
     });
-
-    /* NUEVO BOTÓN: "PRECIONAR" */
+    
+    /* Botón PRECIONAR */
     document.getElementById('btn-precionar').addEventListener('click', () => {
-      // Se utiliza la posición actual de la figura del instrumento activo
       if(activeInstrument === 'laser-probe'){
          const instrument = document.getElementById('laser-probe');
          const retinaRect = document.getElementById('retina').getBoundingClientRect();
@@ -587,14 +682,11 @@
          const syntheticEvent = { clientX: retinaRect.left + x, clientY: retinaRect.top + y };
          vitrectomyFunction(syntheticEvent);
       } else if(activeInstrument === 'end-grasper'){
-         // Para el peeling, se simula que se inicia y se fuerza el corte con la "pinza" en su posición actual
          const membrane = document.getElementById('membrane');
          const peelCanvas = document.getElementById('peelCanvas');
          const pinza = document.getElementById('pinza');
          if(membrane && peelCanvas && pinza) {
             const memRect = membrane.getBoundingClientRect();
-            // Se toma la posición actual de la pinza (sin reiniciarla al centro)
-            // Se forzará el corte simulando que el trayecto llega al borde derecho del overlay
             const centerX = memRect.width/2;
             const centerY = memRect.height/2;
             const radius = memRect.width/2;
@@ -607,8 +699,8 @@
          }
       }
     });
-
-    /* Actualización de Vitals */
+    
+    /* Actualización de parámetros (vitals) */
     function updateVitals() {
       iop += (Math.random() - 0.5) * 0.2;
       if(activeInstrument === 'vitrectome') iop -= 0.1;
@@ -618,8 +710,8 @@
       document.getElementById('retina-status').innerText = retinaStatus;
     }
     setInterval(updateVitals, 1000);
-
-    /* Actualización de posición del instrumento vitrectome (usado también para peeling y láser) */
+    
+    /* Actualización de posición de instrumentos */
     function updateVitrectomoPosition(normX, normY) {
       const retinaRect = document.getElementById('retina').getBoundingClientRect();
       const maxOffset = retinaRect.width / 2;
@@ -635,7 +727,6 @@
       vitrectomoJoystickX = normX;
       updateMiniLeftLine(normX, normY);
     }
-    /* Actualización del efecto de luz del endoiluminador (joystick se mantiene) */
     function updateEndoLightEffect(normX, normY) {
       document.documentElement.style.setProperty('--light-x', normX + '%');
       document.documentElement.style.setProperty('--light-y', normY + '%');
@@ -650,7 +741,6 @@
       lightJoystickX = normX;
       updateMiniRightLine(normX, normY);
     }
-    /* Funciones para actualizar los palitos blancos en el mini mapa */
     function updateMiniLeftLine(normX, normY) {
       const defaultTipX = 350;
       const defaultTipY = 300;
@@ -683,7 +773,6 @@
       miniRight.setAttribute('y2', tipY);
       miniRightInner.setAttribute('y2', tipY);
     }
-    /* Inicialización de Joysticks */
     function initJoystick(joystickElement, updateCallback) {
       const handle = joystickElement.querySelector('.joystick-handle');
       const rect = joystickElement.getBoundingClientRect();
@@ -734,10 +823,7 @@
     document.getElementById('endo-z-slider').addEventListener('input', function(){
       updateEndoLightEffect(lightJoystickX, lightJoystickY);
     });
-
-    /* FUNCIONALIDADES ADICIONALES (integrando práctica6) */
-    // Se eliminan las funciones de clic en la retina para que la acción se ejecute solo vía el botón
-    // Función para la fotocoagulación láser
+    
     function laserFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
@@ -751,11 +837,8 @@
       burnMark.style.left = (e.clientX - rect.left - 3) + 'px';
       burnMark.style.top = (e.clientY - rect.top - 3) + 'px';
       retina.appendChild(burnMark);
-      setTimeout(() => {
-        laserSpot.remove();
-      }, 2500);
+      setTimeout(() => { laserSpot.remove(); }, 2500);
     }
-    // Función para simular la vitrectomía
     function vitrectomyFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
@@ -773,7 +856,6 @@
       vitreousRemoved = Math.min(100, vitreousRemoved + 0.8);
       document.getElementById('vitreous-progress').innerText = `${vitreousRemoved.toFixed(0)}%`;
     }
-    // Función para realizar la inyección (según práctica6)
     function performInjection() {
       showAlert("FASE 4: Inyección", "Inyectando solución salina equilibrada...");
       const retina = document.getElementById('retina');
@@ -798,15 +880,12 @@
         showAlert("Procedimiento Completado", "Vitrectomía posterior finalizada con éxito");
       }, 5000);
     }
-    /* FUNCIONALIDAD DE PEELING (se activa con el botón “Peeling”) */
-    let isPeelingInitialized = false;
-    let tearPoints = [];
-    let peelAccumulated = 0;
-    const peelStep = 30;
+    
+    /* FUNCIONALIDAD DE PEELING: crea overlay en retina y sincroniza con el OCT */
     function initPeeling() {
       if(document.getElementById('membrane')) return;
       const retina = document.getElementById('retina');
-      // Se crea el overlay de la membrana con tamaño 50%
+      // Crear overlay circular en la retina
       const membrane = document.createElement('div');
       membrane.id = 'membrane';
       membrane.style.position = 'absolute';
@@ -819,6 +898,7 @@
       membrane.style.transform = 'translate(-50%, -50%)';
       membrane.style.cursor = 'grab';
       retina.appendChild(membrane);
+      // Agregar canvas SVG para simular el peeling
       const peelCanvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       peelCanvas.setAttribute('id', 'peelCanvas');
       peelCanvas.setAttribute('style', 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:auto;');
@@ -881,7 +961,6 @@
           updateTearPath([], tearPath);
         }
       });
-      isPeelingInitialized = true;
     }
     function getSVGPoint(event, svg) {
       let pt = svg.createSVGPoint();
@@ -914,10 +993,15 @@
         tearPoints = [];
         if(peelAccumulated >= 100) {
           showAlert("Peeling Completado", "La membrana ha sido removida. Proceda al siguiente paso.");
+          // Remover overlay en retina
+          membrane.remove();
+          // En el OCT, remover la línea MLI con efecto peel
+          peelMLI_OCT();
         }
       } else {
         membrane.remove();
         showAlert("Peeling Completado", "La membrana ha sido removida. Proceda al siguiente paso.");
+        peelMLI_OCT();
       }
       peelAccumulated = 0;
       pinza.style.cursor = 'grab';
