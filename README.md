@@ -222,7 +222,104 @@
       border-radius: 2px;
       box-shadow: 0 0 10px rgba(255,0,0,0.8);
     }
+
+    /* ================== NUEVOS ESTILOS PARA PEELING (de practica6) ================== */
+    #peeling-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      z-index: 20;
+    }
+
+    #retina-canvas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      box-shadow: 0 0 60px rgba(0, 100, 255, 0.3);
+      cursor: crosshair;
+      z-index: 21;
+    }
     
+    #peeling-hud {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 15px;
+      border-radius: 10px;
+      border-top: 3px solid #0099ff;
+      max-width: 600px;
+      text-align: center;
+      z-index: 22;
+    }
+    
+    #traction-meter {
+      margin-top: 10px;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    
+    #traction-level {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00ff00, #ffcc00, #ff0000);
+      transition: width 0.1s;
+    }
+    
+    .complication {
+      position: absolute;
+      background: rgba(200, 0, 0, 0.7);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 23;
+    }
+    
+    #peeling-instrument-selector {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border-radius: 10px;
+      color: white;
+      z-index: 24;
+    }
+    
+    .peeling-instrument-btn {
+      background: #333;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    
+    .peeling-instrument-btn.active {
+      background: #0099ff;
+      box-shadow: 0 0 10px rgba(0, 153, 255, 0.7);
+    }
+    
+    .membrane-flap {
+      position: absolute;
+      background: rgba(150, 200, 255, 0.3);
+      border: 1px solid rgba(180, 220, 255, 0.6);
+      border-radius: 50%;
+      transform-origin: center;
+      pointer-events: none;
+      z-index: 25;
+    }
+
     /* ================== INTERFAZ DE USUARIO ================== */
     /* Panel de instrumentos */
     .instrument-panel {
@@ -529,74 +626,6 @@
       }
     }
     
-    /* Membrana para peeling */
-    #membrane {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 50%;
-      height: 50%;
-      background: radial-gradient(circle at center, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 60%, transparent 100%);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      cursor: grab;
-      z-index: 11;
-      transition: opacity 0.3s;
-      box-shadow: inset 0 0 20px rgba(255,255,255,0.2);
-    }
-    
-    .membrane-tear {
-      position: absolute;
-      background: rgba(255,255,255,0.1);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 12;
-      transform-origin: center;
-      animation: tear-expand 0.5s forwards;
-      box-shadow: inset 0 0 10px rgba(255,255,255,0.3);
-    }
-    
-    @keyframes tear-expand {
-      0% { transform: scale(0); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
-    }
-    
-    .peeling-grasper {
-      position: absolute;
-      width: 15px;
-      height: 15px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 50%;
-      box-shadow: 0 0 8px rgba(255,255,255,0.7);
-      z-index: 13;
-      pointer-events: none;
-      transition: transform 0.1s;
-    }
-    
-    .peeling-edge {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 14;
-      background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
-      animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); opacity: 0.8; }
-      50% { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.8; }
-    }
-    
-    /* Peeling effect */
-    .peel-remove {
-      transition: transform 1s ease, opacity 1s ease;
-      transform: translateY(-20px);
-      opacity: 0;
-    }
-    
     /* ================== RESPONSIVE ADJUSTMENTS ================== */
     @media (max-width: 768px) {
       .retina-container {
@@ -861,8 +890,30 @@
         <div id="laser-probe" class="instrument"></div>
       </div>
     </div>
+
+    <!-- ================== NUEVO SISTEMA DE PEELING ================== -->
+    <div id="peeling-container">
+      <canvas id="retina-canvas"></canvas>
+      
+      <div id="peeling-instrument-selector">
+        <h3 style="margin-top: 0; color: #0099ff;">Instrumentos</h3>
+        <button id="forceps-btn" class="peeling-instrument-btn active">Pinzas de Peeling</button>
+        <button id="hook-btn" class="peeling-instrument-btn">Gancho Roto</button>
+        <button id="scissors-btn" class="peeling-instrument-btn">Tijeras Vitreorretinianas</button>
+      </div>
+      
+      <div id="peeling-hud">
+        <h3 style="margin-top: 0; color: #0099ff;">Peeling de Membrana Epirretiniana</h3>
+        <p id="procedure-status">Inicie el procedimiento seleccionando el borde de la membrana con las pinzas</p>
+        <div id="traction-meter">
+          <div id="traction-level"></div>
+        </div>
+        <small id="traction-warning" style="color: #ff6666; display: none;">¡ADVERTENCIA: Tracción excesiva! Riesgo de desgarro retiniano</small>
+      </div>
+    </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script>
     /* ================== VARIABLES GLOBALES ================== */
     let lightJoystickX = 50, lightJoystickY = 50;
@@ -874,22 +925,63 @@
     let vitreousRemoved = 0; // %
     let flowRate = 25; // ml/min
     let retinaStatus = 'Estable';
-    let peelProgress = 0;
-    const peelStep = 2;
-    let isPeeling = false;
-    let membrane, peelCanvas, pinza, grasper, peelEdge;
-    let lastPeelTime = 0;
-    const peelDelay = 300; // ms entre desgarros
+
+    /* ================== VARIABLES PARA EL SISTEMA DE PEELING ================== */
+    let peelingState = {
+      step: 'ready', // ready, grasping, peeling, complete
+      instrument: 'forceps',
+      traction: 0,
+      complication: false,
+      membraneDetached: false,
+      flapCreated: false,
+      flapPosition: { x: 0, y: 0 }
+    };
+    
+    let peelingInstruments = {
+      forceps: {
+        position: { x: 0, y: 0 },
+        size: 20,
+        angle: 0,
+        grasping: false,
+        gripPosition: null
+      },
+      hook: {
+        position: { x: 0, y: 0 },
+        size: 15
+      },
+      scissors: {
+        position: { x: 0, y: 0 },
+        size: 25
+      }
+    };
+    
+    let retinaModel = {
+      center: { x: 0, y: 0 },
+      radius: 0,
+      points: []
+    };
+    
+    let membraneModel = {
+      points: [],
+      thickness: 1.5,
+      elasticity: 0.85,
+      adhesion: 0.7,
+      detachedPoints: 0,
+      flapPoints: []
+    };
 
     /* ================== GESTIÓN DE INSTRUMENTOS ================== */
     function toggleInstrument(btnId, instrumentId) {
       const btn = document.getElementById(btnId);
-      const instr = document.getElementById(instrumentId);
       
       if(btn.classList.contains('active')) {
         btn.classList.remove('active');
-        if(instr) instr.style.display = 'none';
-        if(btnId === 'btn-peeling') endPeeling();
+        if(instrumentId === 'peeling') {
+          endPeeling();
+        } else {
+          document.getElementById(instrumentId).style.display = 'none';
+        }
+        activeInstrument = null;
       } else {
         // Desactivar todos los instrumentos primero
         document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
@@ -897,16 +989,19 @@
         
         // Activar el seleccionado
         btn.classList.add('active');
-        if(instr) instr.style.display = 'block';
         activeInstrument = instrumentId;
         
-        if(btnId === 'btn-peeling') initPeeling();
+        if(instrumentId === 'peeling') {
+          initPeeling();
+        } else {
+          document.getElementById(instrumentId).style.display = 'block';
+        }
       }
     }
 
     // Event listeners para instrumentos
     document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectome'));
-    document.getElementById('btn-peeling').addEventListener('click', () => toggleInstrument('btn-peeling', 'end-grasper'));
+    document.getElementById('btn-peeling').addEventListener('click', () => toggleInstrument('btn-peeling', 'peeling'));
     document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser-probe'));
     document.getElementById('btn-injection').addEventListener('click', performInjection);
 
@@ -931,12 +1026,6 @@
         laserFunction(syntheticEvent);
       } else if(activeInstrument === 'vitrectome') {
         vitrectomyFunction(syntheticEvent);
-      } else if(activeInstrument === 'end-grasper' && isPeeling) {
-        const now = Date.now();
-        if(now - lastPeelTime > peelDelay) {
-          createTearEffect(x, y);
-          lastPeelTime = now;
-        }
       }
     });
 
@@ -1022,225 +1111,748 @@
       perfusion += 1;
     }
 
-    /* ================== FUNCIONALIDAD DE PEELING ================== */
+    /* ================== NUEVO SISTEMA DE PEELING ================== */
     function initPeeling() {
-      if(document.getElementById('membrane')) return;
+      const peelingContainer = document.getElementById('peeling-container');
+      const retinaCanvas = document.getElementById('retina-canvas');
+      const retinaRect = document.getElementById('retina').getBoundingClientRect();
       
-      const retina = document.getElementById('retina');
-      isPeeling = true;
-      peelProgress = 0;
+      // Configurar canvas
+      retinaCanvas.width = retinaRect.width;
+      retinaCanvas.height = retinaRect.height;
+      retinaModel.center = { x: retinaCanvas.width/2, y: retinaCanvas.height/2 };
+      retinaModel.radius = retinaRect.width * 0.4;
       
-      // Crear overlay de membrana
-      membrane = document.createElement('div');
-      membrane.id = 'membrane';
-      retina.appendChild(membrane);
+      // Mostrar contenedor de peeling
+      peelingContainer.style.display = 'block';
       
-      // Crear canvas SVG para el peeling
-      peelCanvas = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      peelCanvas.id = 'peelCanvas';
-      peelCanvas.setAttribute('style', 'position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;');
-      membrane.appendChild(peelCanvas);
-      
-      // Crear máscara
-      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
-      const mask = document.createElementNS("http://www.w3.org/2000/svg", "mask");
-      mask.id = "peelMask";
-      
-      const fullCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      fullCircle.setAttribute("cx", "50%");
-      fullCircle.setAttribute("cy", "50%");
-      fullCircle.setAttribute("r", "50%");
-      fullCircle.setAttribute("fill", "white");
-      mask.appendChild(fullCircle);
-      
-      defs.appendChild(mask);
-      peelCanvas.appendChild(defs);
-      membrane.style.webkitMaskImage = "url(#peelMask)";
-      membrane.style.maskImage = "url(#peelMask)";
-      
-      // Crear pinza
-      pinza = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-      pinza.id = 'pinza';
-      pinza.setAttribute('cx', '50%');
-      pinza.setAttribute('cy', '50%');
-      pinza.setAttribute('r', '7');
-      pinza.setAttribute('fill', 'rgba(255,255,255,0.5)');
-      peelCanvas.appendChild(pinza);
-      
-      // Crear grasper visual
-      grasper = document.createElement('div');
-      grasper.className = 'peeling-grasper';
-      grasper.style.display = 'none';
-      retina.appendChild(grasper);
-      
-      // Crear borde de peeling
-      peelEdge = document.createElement('div');
-      peelEdge.className = 'peeling-edge';
-      peelEdge.style.display = 'none';
-      retina.appendChild(peelEdge);
-      
-      // Configurar eventos táctiles
-      membrane.addEventListener('touchstart', startPeeling, { passive: false });
-      membrane.addEventListener('touchmove', movePeeling, { passive: false });
-      membrane.addEventListener('touchend', endPeeling);
-      
-      // Eventos de ratón para compatibilidad
-      membrane.addEventListener('mousedown', startPeeling);
-      membrane.addEventListener('mousemove', movePeeling);
-      membrane.addEventListener('mouseup', endPeeling);
-      membrane.addEventListener('mouseleave', endPeeling);
-    }
-
-    function startPeeling(e) {
-      e.preventDefault();
-      if(!isPeeling) return;
-      
-      const retina = document.getElementById('retina');
-      const rect = retina.getBoundingClientRect();
-      
-      let clientX, clientY;
-      if(e.touches) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-      
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      
-      // Mostrar grasper y borde de peeling
-      grasper.style.display = 'block';
-      grasper.style.left = (x - 7) + 'px';
-      grasper.style.top = (y - 7) + 'px';
-      
-      peelEdge.style.display = 'block';
-      peelEdge.style.left = (x - 15) + 'px';
-      peelEdge.style.top = (y - 15) + 'px';
-      
-      // Crear primer desgarro
-      createTearEffect(x, y);
-      
-      membrane.style.cursor = 'grabbing';
-    }
-
-    function movePeeling(e) {
-      if(!isPeeling) return;
-      e.preventDefault();
-      
-      const retina = document.getElementById('retina');
-      const rect = retina.getBoundingClientRect();
-      
-      let clientX, clientY;
-      if(e.touches) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-      
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-      
-      // Mover grasper y borde de peeling
-      grasper.style.left = (x - 7) + 'px';
-      grasper.style.top = (y - 7) + 'px';
-      grasper.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
-      
-      peelEdge.style.left = (x - 15) + 'px';
-      peelEdge.style.top = (y - 15) + 'px';
-      
-      // Mover pinza SVG
-      pinza.setAttribute('cx', x);
-      pinza.setAttribute('cy', y);
-      
-      // Comprobar si llegó al borde
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const radius = rect.width / 2;
-      const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-      
-      if(distance >= radius * 0.9) {
-        completePeeling();
-      }
-    }
-
-    function createTearEffect(x, y) {
-      if(peelProgress >= 100) return;
-      
-      const tearSize = 10 + Math.random() * 10;
-      const tear = document.createElement('div');
-      tear.className = 'membrane-tear';
-      tear.style.left = (x - tearSize/2) + 'px';
-      tear.style.top = (y - tearSize/2) + 'px';
-      tear.style.width = tearSize + 'px';
-      tear.style.height = tearSize + 'px';
-      membrane.appendChild(tear);
-      
-      // Agregar el desgarro a la máscara
-      const mask = document.getElementById('peelMask');
-      if(mask) {
-        const hole = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        hole.setAttribute("cx", x);
-        hole.setAttribute("cy", y);
-        hole.setAttribute("r", tearSize/2);
-        hole.setAttribute("fill", "black");
-        mask.appendChild(hole);
-      }
-      
-      // Actualizar progreso del peeling
-      peelProgress = Math.min(100, peelProgress + peelStep + Math.random() * 3);
-      
-      // Afectar parámetros fisiológicos
-      iop += (Math.random() - 0.5) * 0.5;
-      perfusion -= 0.1;
-      
-      // Actualizar visualización del progreso
-      updateVitals();
-      
-      if(peelProgress >= 100) {
-        completePeeling();
-      }
+      // Inicializar modelos
+      createRetinaModel();
+      createMembraneModel();
+      setupPeelingEventListeners();
+      updatePeelingHUD();
+      animatePeeling();
     }
 
     function endPeeling() {
-      if(!isPeeling) return;
+      const peelingContainer = document.getElementById('peeling-container');
+      peelingContainer.style.display = 'none';
       
-      const membrane = document.getElementById('membrane');
-      if(membrane) membrane.style.cursor = 'grab';
+      // Limpiar complicaciones
+      document.querySelectorAll('.complication').forEach(el => el.remove());
+      document.querySelectorAll('.membrane-flap').forEach(el => el.remove());
       
-      // Ocultar grasper y borde de peeling
-      if(grasper) grasper.style.display = 'none';
-      if(peelEdge) peelEdge.style.display = 'none';
-    }
-
-    function completePeeling() {
-      if(!isPeeling) return;
+      // Restablecer estado
+      peelingState = {
+        step: 'ready',
+        instrument: 'forceps',
+        traction: 0,
+        complication: false,
+        membraneDetached: false,
+        flapCreated: false,
+        flapPosition: { x: 0, y: 0 }
+      };
       
+      // Actualizar OCT
       peelMLI_OCT();
-      
-      // Ocultar grasper y borde de peeling
-      if(grasper) grasper.style.display = 'none';
-      if(peelEdge) peelEdge.style.display = 'none';
-      
-      const membrane = document.getElementById('membrane');
-      if(membrane) {
-        membrane.style.opacity = '0';
-        setTimeout(() => {
-          if(membrane.parentNode) membrane.parentNode.removeChild(membrane);
-        }, 300);
-      }
-      
-      isPeeling = false;
-      document.getElementById('btn-peeling').classList.remove('active');
       
       // Restaurar parámetros después del peeling
       setTimeout(() => {
         perfusion += 2;
         iop -= 1;
       }, 1000);
+    }
+
+    function createRetinaModel() {
+      retinaModel.points = [];
+      for(let angle = 0; angle < Math.PI * 2; angle += 0.02) {
+        const radiusVariation = Math.sin(angle * 10) * 5 + Math.cos(angle * 3) * 8;
+        retinaModel.points.push({
+          x: retinaModel.center.x + (retinaModel.radius + radiusVariation) * Math.cos(angle),
+          y: retinaModel.center.y + (retinaModel.radius + radiusVariation) * Math.sin(angle),
+          originalX: retinaModel.center.x + (retinaModel.radius + radiusVariation) * Math.cos(angle),
+          originalY: retinaModel.center.y + (retinaModel.radius + radiusVariation) * Math.sin(angle)
+        });
+      }
+    }
+    
+    function createMembraneModel() {
+      membraneModel.points = [];
+      membraneModel.flapPoints = [];
+      const baseRadius = retinaModel.radius * 0.7;
+      
+      for(let angle = 0; angle < Math.PI * 2; angle += 0.01) {
+        const radiusVariation = Math.sin(angle * 15) * 3 + Math.cos(angle * 7) * 5;
+        const radius = baseRadius + radiusVariation;
+        
+        membraneModel.points.push({
+          x: retinaModel.center.x + radius * Math.cos(angle),
+          y: retinaModel.center.y + radius * Math.sin(angle),
+          originalX: retinaModel.center.x + radius * Math.cos(angle),
+          originalY: retinaModel.center.y + radius * Math.sin(angle),
+          detached: false,
+          adhesion: 0.5 + Math.random() * 0.5,
+          thickness: 0.8 + Math.random() * 0.4,
+          flap: false
+        });
+      }
+    }
+    
+    function drawPeelingScene() {
+      const canvas = document.getElementById('retina-canvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Dibujar retina
+      drawRetinaModel(ctx);
+      
+      // Dibujar membrana
+      drawMembraneModel(ctx);
+      
+      // Dibujar instrumentos
+      drawPeelingInstruments(ctx);
+      
+      // Efectos de complicaciones
+      if(peelingState.complication) {
+        drawComplications(ctx);
+      }
+    }
+    
+    function drawRetinaModel(ctx) {
+      // Dibujar fondo transparente para ver la retina original
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = 'rgba(0,0,0,0)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.globalAlpha = 1.0;
+    }
+    
+    function drawMembraneModel(ctx) {
+      // Membrana intacta
+      ctx.beginPath();
+      let startedPath = false;
+      
+      membraneModel.points.forEach((point, index) => {
+        if(!point.detached && !point.flap) {
+          if(!startedPath) {
+            ctx.moveTo(point.x, point.y);
+            startedPath = true;
+          } else {
+            ctx.lineTo(point.x, point.y);
+          }
+        }
+      });
+      
+      ctx.closePath();
+      ctx.fillStyle = peelingState.step === 'ready' ? 'rgba(200, 140, 140, 0.4)' : 'rgba(100, 160, 220, 0.3)';
+      ctx.strokeStyle = peelingState.step === 'ready' ? 'rgba(220, 160, 160, 0.8)' : 'rgba(150, 200, 255, 0.8)';
+      ctx.lineWidth = 1.2;
+      ctx.fill();
+      ctx.stroke();
+      
+      // Estrías y pliegues
+      ctx.beginPath();
+      for(let i = 0; i < membraneModel.points.length; i += 15) {
+        const point = membraneModel.points[i];
+        if(!point.detached && !point.flap) {
+          const nextIdx = (i + 20) % membraneModel.points.length;
+          const nextPoint = membraneModel.points[nextIdx];
+          
+          if(!nextPoint.detached && !nextPoint.flap) {
+            ctx.moveTo(point.x, point.y);
+            ctx.lineTo(
+              point.x + (nextPoint.x - point.x) * 0.4,
+              point.y + (nextPoint.y - point.y) * 0.4
+            );
+            
+            if(Math.random() > 0.7) {
+              ctx.moveTo(point.x, point.y);
+              ctx.lineTo(
+                point.x + (Math.random() - 0.5) * 5,
+                point.y + (Math.random() - 0.5) * 5
+              );
+            }
+          }
+        }
+      }
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+      
+      // Bordes despegados
+      membraneModel.points.forEach((point, index) => {
+        if(point.detached || point.flap) {
+          const prevIdx = (index - 1 + membraneModel.points.length) % membraneModel.points.length;
+          const nextIdx = (index + 1) % membraneModel.points.length;
+          const prevPoint = membraneModel.points[prevIdx];
+          const nextPoint = membraneModel.points[nextIdx];
+          
+          if((!prevPoint.detached && !prevPoint.flap) || (!nextPoint.detached && !nextPoint.flap)) {
+            ctx.beginPath();
+            ctx.moveTo(point.x, point.y);
+            
+            if(!prevPoint.detached && !prevPoint.flap) {
+              ctx.lineTo(prevPoint.x, prevPoint.y);
+            } else {
+              ctx.lineTo(point.x - 5, point.y - 5);
+            }
+            
+            if(!nextPoint.detached && !nextPoint.flap) {
+              ctx.lineTo(nextPoint.x, nextPoint.y);
+            } else {
+              ctx.lineTo(point.x + 5, point.y + 5);
+            }
+            
+            ctx.closePath();
+            ctx.fillStyle = point.flap ? 'rgba(180, 220, 255, 0.6)' : 'rgba(150, 200, 255, 0.5)';
+            ctx.fill();
+            
+            if(point.flap) {
+              ctx.beginPath();
+              ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
+              ctx.fillStyle = 'rgba(220, 240, 255, 0.8)';
+              ctx.fill();
+            }
+          }
+        }
+      });
+      
+      // Dibujar la solapa de membrana si existe
+      if(peelingState.flapCreated) {
+        ctx.beginPath();
+        let flapStarted = false;
+        
+        membraneModel.points.forEach(point => {
+          if(point.flap) {
+            if(!flapStarted) {
+              ctx.moveTo(point.x, point.y);
+              flapStarted = true;
+            } else {
+              ctx.lineTo(point.x, point.y);
+            }
+          }
+        });
+        
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(180, 220, 255, 0.4)';
+        ctx.strokeStyle = 'rgba(200, 230, 255, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.fill();
+        ctx.stroke();
+        
+        // Efecto de pliegues en la solapa
+        ctx.beginPath();
+        membraneModel.points.forEach(point => {
+          if(point.flap && Math.random() > 0.7) {
+            ctx.moveTo(point.x, point.y);
+            ctx.lineTo(
+              point.x + (Math.random() - 0.5) * 15,
+              point.y + (Math.random() - 0.5) * 15
+            );
+          }
+        });
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+    
+    function drawPeelingInstruments(ctx) {
+      // Pinzas de peeling
+      if(peelingState.instrument === 'forceps') {
+        ctx.save();
+        ctx.translate(peelingInstruments.forceps.position.x, peelingInstruments.forceps.position.y);
+        ctx.rotate(peelingInstruments.forceps.angle);
+        
+        // Cuerpo
+        ctx.beginPath();
+        ctx.moveTo(0, -5);
+        ctx.lineTo(-15, -15);
+        ctx.lineTo(-20, -10);
+        
+        // Punta (varía según si está agarrando)
+        if(peelingInstruments.forceps.grasping) {
+          ctx.lineTo(-5, 25);
+          ctx.lineTo(5, 25);
+        } else {
+          ctx.lineTo(-5, 20);
+          ctx.lineTo(5, 20);
+        }
+        
+        ctx.lineTo(20, -10);
+        ctx.lineTo(15, -15);
+        ctx.closePath();
+        
+        ctx.fillStyle = peelingInstruments.forceps.grasping ? 'rgba(255, 255, 150, 0.9)' : 'rgba(220, 220, 220, 0.9)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Efecto de agarre
+        if(peelingInstruments.forceps.grasping) {
+          ctx.beginPath();
+          ctx.arc(0, 25, 3, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 180, 0.9)';
+          ctx.fill();
+        }
+        
+        ctx.restore();
+      }
+      
+      // Gancho romo
+      if(peelingState.instrument === 'hook') {
+        ctx.beginPath();
+        ctx.moveTo(peelingInstruments.hook.position.x - 3, peelingInstruments.hook.position.y - 20);
+        ctx.lineTo(peelingInstruments.hook.position.x + 3, peelingInstruments.hook.position.y - 20);
+        ctx.lineTo(peelingInstruments.hook.position.x + 2, peelingInstruments.hook.position.y + 25);
+        ctx.lineTo(peelingInstruments.hook.position.x - 2, peelingInstruments.hook.position.y + 25);
+        ctx.closePath();
+        
+        // Punta roma
+        ctx.moveTo(peelingInstruments.hook.position.x, peelingInstruments.hook.position.y + 25);
+        ctx.arc(peelingInstruments.hook.position.x, peelingInstruments.hook.position.y + 35, 10, Math.PI, 0, true);
+        
+        ctx.fillStyle = 'rgba(200, 200, 200, 0.9)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+    
+    function drawComplications(ctx) {
+      // Sangrado
+      for(let i = 0; i < 3; i++) {
+        ctx.beginPath();
+        const bleedX = retinaModel.center.x + (Math.random() - 0.5) * 100;
+        const bleedY = retinaModel.center.y + (Math.random() - 0.5) * 100;
+        const bleedSize = 10 + Math.random() * 40;
+        
+        ctx.arc(bleedX, bleedY, bleedSize, 0, Math.PI * 2);
+        
+        const bleedGradient = ctx.createRadialGradient(
+          bleedX, bleedY, 0,
+          bleedX, bleedY, bleedSize
+        );
+        bleedGradient.addColorStop(0, 'rgba(180, 0, 0, 0.8)');
+        bleedGradient.addColorStop(1, 'rgba(120, 0, 0, 0.2)');
+        
+        ctx.fillStyle = bleedGradient;
+        ctx.fill();
+        
+        // Pequeños coágulos
+        if(Math.random() > 0.5) {
+          ctx.beginPath();
+          ctx.arc(
+            bleedX + (Math.random() - 0.5) * bleedSize * 0.7,
+            bleedY + (Math.random() - 0.5) * bleedSize * 0.7,
+            2 + Math.random() * 4,
+            0,
+            Math.PI * 2
+          );
+          ctx.fillStyle = 'rgba(100, 0, 0, 0.9)';
+          ctx.fill();
+        }
+      }
+    }
+    
+    function updatePeeling() {
+      if(peelingState.instrument === 'forceps' && peelingInstruments.forceps.grasping) {
+        let totalForce = 0;
+        let affectedPoints = 0;
+        
+        // Crear solapa si no existe y hay suficiente tracción
+        if(!peelingState.flapCreated && peelingState.traction > 30 && Math.random() < 0.05) {
+          createFlap();
+        }
+        
+        membraneModel.points.forEach((point, index) => {
+          // Calcular distancia al instrumento
+          const dx = point.x - peelingInstruments.forceps.position.x;
+          const dy = point.y - peelingInstruments.forceps.position.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if(distance < 30 && !point.detached && !point.flap) {
+            // Calcular dirección de tracción (tangencial a la retina)
+            const angleToCenter = Math.atan2(
+              retinaModel.center.y - point.y,
+              retinaModel.center.x - point.x
+            );
+            const tangentAngle = angleToCenter + Math.PI/2;
+            
+            // Calcular fuerza basada en distancia, adherencia y si hay solapa
+            const pullForce = (1 - distance/30) * (1 - point.adhesion) * (peelingState.flapCreated ? 1.5 : 1) * 2;
+            totalForce += pullForce;
+            affectedPoints++;
+            
+            // Aplicar movimiento tangencial con variación aleatoria
+            const angleVariation = (Math.random() - 0.5) * 0.2;
+            point.x += Math.cos(tangentAngle + angleVariation) * pullForce * 3;
+            point.y += Math.sin(tangentAngle + angleVariation) * pullForce * 3;
+            
+            // Verificar si se despegó
+            const originalDistance = Math.sqrt(
+              Math.pow(point.x - point.originalX, 2) + 
+              Math.pow(point.y - point.originalY, 2)
+            );
+            
+            if(originalDistance > 15 + (point.adhesion * 20)) {
+              if(peelingState.flapCreated) {
+                point.flap = true;
+                membraneModel.flapPoints.push(point);
+              } else {
+                point.detached = true;
+                membraneModel.detachedPoints++;
+              }
+              
+              // Efecto de desprendimiento
+              gsap.to(point, {
+                x: point.x + (Math.random() - 0.5) * 10,
+                y: point.y + (Math.random() - 0.5) * 10,
+                duration: 0.3
+              });
+            }
+            
+            // Propagación a puntos adyacentes con efecto de onda
+            const prevIndex = (index - 1 + membraneModel.points.length) % membraneModel.points.length;
+            const nextIndex = (index + 1) % membraneModel.points.length;
+            
+            [prevIndex, nextIndex].forEach((adjIndex, i) => {
+              const adjPoint = membraneModel.points[adjIndex];
+              if(!adjPoint.detached && !adjPoint.flap) {
+                const distanceFactor = 1 - (i * 0.3);
+                adjPoint.x += Math.cos(tangentAngle) * pullForce * 0.5 * distanceFactor;
+                adjPoint.y += Math.sin(tangentAngle) * pullForce * 0.5 * distanceFactor;
+              }
+            });
+          }
+          
+          // Elasticidad: intentar volver a posición original si no está agarrado
+          if(!point.detached && !point.flap && distance > 35) {
+            const returnSpeed = 0.05 * point.adhesion;
+            point.x += (point.originalX - point.x) * returnSpeed;
+            point.y += (point.originalY - point.y) * returnSpeed;
+          }
+          
+          // Mover puntos de la solapa con el instrumento
+          if(point.flap && distance < 50) {
+            const followFactor = 0.1 + (1 - distance/50) * 0.4;
+            point.x += (peelingInstruments.forceps.position.x - point.x) * followFactor;
+            point.y += (peelingInstruments.forceps.position.y - point.y) * followFactor;
+          }
+        });
+        
+        // Actualizar fuerza de tracción
+        if(affectedPoints > 0) {
+          peelingState.traction = (totalForce / affectedPoints) * 100;
+          
+          // Complicación por tracción excesiva con probabilidad variable
+          if(peelingState.traction > 70) {
+            const complicationChance = 0.02 + (peelingState.traction - 70) * 0.01;
+            if(Math.random() < complicationChance) {
+              causePeelingComplication();
+            }
+          }
+        } else {
+          peelingState.traction = 0;
+        }
+        
+        // Verificar si la membrana está completamente despegada
+        if((membraneModel.detachedPoints + membraneModel.flapPoints.length) > membraneModel.points.length * 0.9) {
+          peelingState.step = 'complete';
+          updatePeelingHUD("¡Membrana removida exitosamente!");
+        }
+      }
+    }
+    
+    function createFlap() {
+      peelingState.flapCreated = true;
+      peelingState.flapPosition = { 
+        x: peelingInstruments.forceps.position.x, 
+        y: peelingInstruments.forceps.position.y 
+      };
+      
+      // Crear elemento visual para la solapa
+      const flap = document.createElement('div');
+      flap.className = 'membrane-flap';
+      flap.style.width = '100px';
+      flap.style.height = '100px';
+      flap.style.left = `${peelingState.flapPosition.x - 50}px`;
+      flap.style.top = `${peelingState.flapPosition.y - 50}px`;
+      document.getElementById('peeling-container').appendChild(flap);
+      
+      // Marcar puntos cercanos como parte de la solapa
+      membraneModel.points.forEach(point => {
+        const dx = point.x - peelingState.flapPosition.x;
+        const dy = point.y - peelingState.flapPosition.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if(distance < 60 && !point.detached) {
+          point.flap = true;
+          membraneModel.flapPoints.push(point);
+          
+          // Efecto visual inicial
+          gsap.to(point, {
+            x: point.x + (Math.random() - 0.5) * 15,
+            y: point.y + (Math.random() - 0.5) * 15,
+            duration: 0.5
+          });
+        }
+      });
+      
+      updatePeelingHUD("Solapa de membrana creada. Continúe el peeling con cuidado.");
+    }
+    
+    function causePeelingComplication() {
+      peelingState.complication = true;
+      
+      // Crear efecto de sangrado
+      for(let i = 0; i < 8; i++) {
+        const blood = document.createElement('div');
+        blood.className = 'complication';
+        const size = 10 + Math.random() * 40;
+        blood.style.width = `${size}px`;
+        blood.style.height = `${size}px`;
+        blood.style.left = `${peelingInstruments.forceps.position.x + (Math.random() - 0.5) * 120}px`;
+        blood.style.top = `${peelingInstruments.forceps.position.y + (Math.random() - 0.5) * 120}px`;
+        blood.style.opacity = '0.8';
+        document.getElementById('peeling-container').appendChild(blood);
+        
+        // Animación de sangrado con GSAP
+        gsap.to(blood, {
+          width: `${size * 1.5}px`,
+          height: `${size * 1.5}px`,
+          left: `${parseFloat(blood.style.left) + (Math.random() - 0.5) * 30}px`,
+          top: `${parseFloat(blood.style.top) + (Math.random() - 0.5) * 30}px`,
+          opacity: 0,
+          duration: 3 + Math.random() * 3,
+          onComplete: () => blood.remove()
+        });
+      }
+      
+      // Añadir puntos de desgarro en la retina
+      for(let i = 0; i < 5; i++) {
+        const idx = Math.floor(Math.random() * retinaModel.points.length);
+        const point = retinaModel.points[idx];
+        
+        gsap.to(point, {
+          x: point.x + (Math.random() - 0.5) * 30,
+          y: point.y + (Math.random() - 0.5) * 30,
+          duration: 0.5
+        });
+      }
+      
+      // Afectar parámetros vitales
+      iop += 5;
+      perfusion -= 15;
+      
+      updatePeelingHUD("¡COMPLICACIÓN! Desgarro retiniano detectado");
+    }
+    
+    function updatePeelingHUD(message) {
+      const statusEl = document.getElementById('procedure-status');
+      const tractionEl = document.getElementById('traction-level');
+      const warningEl = document.getElementById('traction-warning');
+      
+      tractionEl.style.width = `${peelingState.traction}%`;
+      
+      if(peelingState.traction > 70) {
+        warningEl.style.display = 'block';
+        tractionEl.style.background = 'linear-gradient(90deg, #ff0000, #ff0000)';
+      } else {
+        warningEl.style.display = 'none';
+        tractionEl.style.background = 'linear-gradient(90deg, #00ff00, #ffcc00, #ff0000)';
+      }
+      
+      switch(peelingState.step) {
+        case 'ready':
+          statusEl.textContent = message || "Identifique el borde de la membrana con las pinzas";
+          break;
+        case 'grasping':
+          statusEl.textContent = message || "Agarre establecido. Aplique tracción TANGENCIAL suave";
+          break;
+        case 'peeling':
+          const progress = Math.round((membraneModel.detachedPoints + membraneModel.flapPoints.length)/membraneModel.points.length*100);
+          statusEl.textContent = message || `Peeling en progreso (${progress}% completado)`;
+          break;
+        case 'complete':
+          statusEl.textContent = message || "¡Procedimiento completado con éxito!";
+          break;
+      }
+      
+      if(peelingState.complication) {
+        statusEl.innerHTML = "<span style='color:#ff0000'>¡COMPLICACIÓN! Desgarro retiniano - Suspenda la tracción</span>";
+      }
+      
+      if(peelingState.flapCreated) {
+        statusEl.innerHTML += "<br><span style='color:#66ccff'>Solapa de membrana identificada</span>";
+      }
+    }
+    
+    function setupPeelingEventListeners() {
+      // Selector de instrumentos
+      document.getElementById('forceps-btn').addEventListener('click', () => {
+        peelingState.instrument = 'forceps';
+        document.getElementById('forceps-btn').classList.add('active');
+        document.getElementById('hook-btn').classList.remove('active');
+        document.getElementById('scissors-btn').classList.remove('active');
+        updatePeelingHUD();
+      });
+      
+      document.getElementById('hook-btn').addEventListener('click', () => {
+        peelingState.instrument = 'hook';
+        document.getElementById('forceps-btn').classList.remove('active');
+        document.getElementById('hook-btn').classList.add('active');
+        document.getElementById('scissors-btn').classList.remove('active');
+        updatePeelingHUD("Usando gancho romo para liberar adherencias");
+      });
+      
+      document.getElementById('scissors-btn').addEventListener('click', () => {
+        peelingState.instrument = 'scissors';
+        document.getElementById('forceps-btn').classList.remove('active');
+        document.getElementById('hook-btn').classList.remove('active');
+        document.getElementById('scissors-btn').classList.add('active');
+        updatePeelingHUD("Tijeras vitreorretinianas seleccionadas");
+      });
+      
+      // Control de instrumentos con mouse/touch
+      const canvas = document.getElementById('retina-canvas');
+      canvas.addEventListener('mousedown', handlePeelingStart);
+      canvas.addEventListener('touchstart', handlePeelingStart);
+      
+      canvas.addEventListener('mousemove', handlePeelingMove);
+      canvas.addEventListener('touchmove', handlePeelingMove);
+      
+      canvas.addEventListener('mouseup', handlePeelingEnd);
+      canvas.addEventListener('touchend', handlePeelingEnd);
+    }
+    
+    function handlePeelingStart(e) {
+      e.preventDefault();
+      const pos = getPeelingPosition(e);
+      
+      if(peelingState.instrument === 'forceps') {
+        peelingInstruments.forceps.position = pos;
+        peelingInstruments.forceps.grasping = true;
+        peelingInstruments.forceps.gripPosition = pos;
+        
+        // Calcular ángulo hacia el centro
+        const dx = retinaModel.center.x - pos.x;
+        const dy = retinaModel.center.y - pos.y;
+        peelingInstruments.forceps.angle = Math.atan2(dy, dx) - Math.PI/2;
+        
+        if(peelingState.step === 'ready') {
+          peelingState.step = 'grasping';
+          updatePeelingHUD();
+        }
+      } else if(peelingState.instrument === 'hook') {
+        peelingInstruments.hook.position = pos;
+      } else if(peelingState.instrument === 'scissors') {
+        peelingInstruments.scissors.position = pos;
+      }
+    }
+    
+    function handlePeelingMove(e) {
+      if((peelingState.instrument === 'forceps' && !peelingInstruments.forceps.grasping) || 
+         peelingState.step === 'complete') return;
+         
+      e.preventDefault();
+      const pos = getPeelingPosition(e);
+      
+      if(peelingState.instrument === 'forceps') {
+        peelingInstruments.forceps.position = pos;
+        
+        // Calcular ángulo hacia el centro
+        const dx = retinaModel.center.x - pos.x;
+        const dy = retinaModel.center.y - pos.y;
+        peelingInstruments.forceps.angle = Math.atan2(dy, dx) - Math.PI/2;
+        
+        if(peelingState.step === 'grasping') {
+          peelingState.step = 'peeling';
+        }
+        
+        updatePeeling();
+      } else if(peelingState.instrument === 'hook') {
+        peelingInstruments.hook.position = pos;
+        
+        // Lógica del gancho para liberar adherencias
+        membraneModel.points.forEach(point => {
+          if(!point.detached && !point.flap) {
+            const dx = point.x - pos.x;
+            const dy = point.y - pos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if(distance < 25) {
+              // Reducir adherencia donde se aplica el gancho
+              point.adhesion = Math.max(0.1, point.adhesion - 0.05);
+              
+              // Empujar ligeramente el punto con variación
+              const angle = Math.atan2(dy, dx);
+              const variation = (Math.random() - 0.5) * 0.2;
+              point.x += Math.cos(angle + variation) * 1.2;
+              point.y += Math.sin(angle + variation) * 1.2;
+            }
+          }
+        });
+      } else if(peelingState.instrument === 'scissors') {
+        peelingInstruments.scissors.position = pos;
+        
+        // Lógica de tijeras para cortar la membrana
+        if(peelingState.flapCreated) {
+          membraneModel.flapPoints.forEach(point => {
+            const dx = point.x - pos.x;
+            const dy = point.y - pos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if(distance < 20) {
+              point.detached = true;
+              point.flap = false;
+              membraneModel.detachedPoints++;
+              
+              // Efecto de corte
+              gsap.to(point, {
+                x: point.x + (Math.random() - 0.5) * 30,
+                y: point.y + (Math.random() - 0.5) * 30,
+                duration: 0.3
+              });
+            }
+          });
+        }
+      }
+    }
+    
+    function handlePeelingEnd() {
+      if(peelingState.instrument === 'forceps') {
+        peelingInstruments.forceps.grasping = false;
+        peelingState.traction = 0;
+      }
+      
+      updatePeelingHUD();
+    }
+    
+    function getPeelingPosition(e) {
+      const canvas = document.getElementById('retina-canvas');
+      const rect = canvas.getBoundingClientRect();
+      let clientX, clientY;
+      
+      if(e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+      }
+      
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+    
+    function animatePeeling() {
+      drawPeelingScene();
+      updatePeelingHUD();
+      requestAnimationFrame(animatePeeling);
     }
 
     function peelMLI_OCT() {
@@ -1343,23 +1955,15 @@
         const instr = document.getElementById(activeInstrument);
         if(instr) {
           instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${currentDepth}px)`;
-          
-          // Actualizar posición del grasper si está activo
-          if(activeInstrument === 'end-grasper' && grasper) {
-            const instRect = instr.getBoundingClientRect();
-            const retinaRect = document.getElementById('retina').getBoundingClientRect();
-            const x = instRect.left + instRect.width/2 - retinaRect.left;
-            const y = instRect.top + instRect.height/2 - retinaRect.top;
-            
-            grasper.style.left = (x - 7) + 'px';
-            grasper.style.top = (y - 7) + 'px';
-            
-            if(peelEdge && peelEdge.style.display === 'block') {
-              peelEdge.style.left = (x - 15) + 'px';
-              peelEdge.style.top = (y - 15) + 'px';
-            }
-          }
         }
+      }
+      
+      // Actualizar posición del peeling si está activo
+      if(activeInstrument === 'peeling' && peelingInstruments[peelingState.instrument]) {
+        peelingInstruments[peelingState.instrument].position = {
+          x: retinaRect.left + retinaRect.width/2 + offsetX,
+          y: retinaRect.top + retinaRect.height/2 + offsetY
+        };
       }
     }
 
