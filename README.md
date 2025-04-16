@@ -4,706 +4,2008 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Simulador Quirúrgico Retiniano Avanzado</title>
+  <link rel="stylesheet" href="si.css">
+  <link rel="stylesheet" href="alerts.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <style>
-    /* ================== ESTILOS BASE ================== */
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-    
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      overflow: hidden;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      color: white;
-      touch-action: manipulation;
-    }
-    
-    #container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      perspective: 1200px;
-    }
-    
-    /* ================== RETINA CENTRAL ================== */
-    #eye-chamber {
+    /* Estilos adicionales para los instrumentos 3D */
+    .instrument-tip {
       position: absolute;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      touch-action: none;
-    }
-    
-    .retina-container {
-      position: relative;
-      width: 80vmin;
-      height: 80vmin;
-      max-width: 600px;
-      max-height: 600px;
-      transform-style: preserve-3d;
-      perspective: 1200px;
-      border-radius: 50%;
-      overflow: hidden;
-      transition: transform 0.3s ease;
-    }
-    
-    .retina-sphere {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: radial-gradient(circle at center, #400000 0%, #300000 40%, #200000 70%, #100000 90%);
-      transform: rotateX(20deg) translateZ(50px);
-      box-shadow: inset 0 0 150px rgba(200,0,0,0.3),
-                  inset 0 0 50px rgba(255,0,0,0.2),
-                  0 0 100px rgba(0,0,0,0.9);
-    }
-    
-    .retina-texture {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at 50% 50%, rgba(255,200,200,0.3) 0%, rgba(255,150,150,0.2) 80%),
-                  url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,100,100,0.2)" stroke-width="1"/></svg>');
-      background-size: 100%, 20px 20px;
-      opacity: 0.9;
-      border-radius: 50%;
-      mix-blend-mode: multiply;
-    }
-    
-    .macula {
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      background: radial-gradient(circle at center, rgba(255,220,180,0.5) 0%, rgba(255,200,150,0.3) 70%, transparent 100%);
-      border-radius: 50%;
-      top: 50%;
+      bottom: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%) translateZ(0);
+      z-index: 1;
+    }
+    
+    .instrument-jaws {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 2;
     }
     
-    .blood-vessels {
+    .instrument-jaw {
+      position: absolute;
+      bottom: 0;
+      z-index: 1;
+    }
+    
+    .instrument-light-reflection {
       position: absolute;
       width: 100%;
       height: 100%;
+      background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.3) 0%,
+        rgba(255,255,255,0.1) 50%,
+        transparent 100%
+      );
+      border-radius: inherit;
+      pointer-events: none;
       z-index: 3;
-      pointer-events: none;
     }
-    
-    .retina-nerve {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><path d="M0,0 Q50,50 100,0 T200,0" stroke="rgba(255,255,255,0.05)" stroke-width="2" fill="none"/></svg>') center/cover;
-      pointer-events: none;
-      opacity: 0.5;
-      z-index: 4;
+    /* ================== SISTEMA DE ALERTAS PROFESIONAL ================== */
+#alert-system {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    width: 90%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.alert-container {
+    display: none;
+    background: rgba(20, 20, 30, 0.95);
+    border-left: 5px solid;
+    border-radius: 8px;
+    padding: 15px 20px;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    animation: alertSlideIn 0.3s ease-out forwards;
+    transform-origin: top center;
+    border-left-color: #ff5555;
+}
+
+@keyframes alertSlideIn {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes alertSlideOut {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.alert-container#wall-collision-alert {
+    border-left-color: #ff9933;
+    background: rgba(40, 30, 10, 0.95);
+}
+
+.alert-container#vessel-damage-alert {
+    border-left-color: #ff3333;
+    background: rgba(40, 10, 10, 0.95);
+}
+
+.alert-container#retina-detachment-alert {
+    border-left-color: #ff5555;
+    background: rgba(30, 10, 20, 0.95);
+}
+
+.alert-container#lens-contact-alert {
+    border-left-color: #55aaff;
+    background: rgba(10, 20, 40, 0.95);
+}
+
+.alert-container#high-iop-alert {
+    border-left-color: #ffcc00;
+    background: rgba(40, 30, 10, 0.95);
+}
+
+.alert-container#low-depth-alert {
+    border-left-color: #3b82f6;
+    background: rgba(10, 20, 40, 0.95);
+}
+
+.alert-icon {
+    font-size: 1.8rem;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex-grow: 1;
+}
+
+.alert-content h3 {
+    margin: 0 0 5px 0;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.alert-content p {
+    margin: 0;
+    color: #ddd;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.alert-timer {
+    height: 3px;
+    background: rgba(255,255,255,0.3);
+    margin-top: 8px;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.alert-timer::after {
+    content: '';
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: white;
+}
+
+.alert-dismiss {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 0 0 15px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    flex-shrink: 0;
+}
+
+.alert-dismiss:hover {
+    opacity: 1;
+}
+
+/* Efecto de hemorragia */
+.hemorrhage-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(200, 0, 0, 0.5);
+    z-index: 9998;
+    pointer-events: none;
+    display: none;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+/* Coágulos de sangre */
+.blood-clot {
+    position: absolute;
+    background: radial-gradient(circle, rgba(180,0,0,0.9), rgba(120,0,0,0.7));
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+    box-shadow: 
+        0 0 10px rgba(180,0,0,0.8),
+        inset 0 0 5px rgba(255,255,255,0.3);
+    filter: blur(0.5px);
+    animation: clotPulse 2s infinite alternate;
+}
+
+@keyframes clotPulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) scale(1.05); }
+}
+
+/* Efecto de emergencia para daño vascular */
+.vessel-damage-emergency {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(200, 0, 0, 0.2);
+    z-index: 9999;
+    pointer-events: none;
+    animation: pulseEmergency 1.5s infinite alternate;
+}
+
+@keyframes pulseEmergency {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.4; }
+}
+
+/* Efecto de presión intraocular alta en nervio óptico */
+.high-iop-effect {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8), transparent 70%);
+    border-radius: 50%;
+    z-index: 11;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    animation: iopPulse 2s infinite;
+}
+
+@keyframes iopPulse {
+    0% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+    100% { opacity: 0.3; transform: scale(1); }
+}
+/* ================== ESTILOS BASE MEJORADOS ================== */
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a12;
+    overflow: hidden;
+    font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+    color: #e0e0e0;
+    touch-action: manipulation;
+}
+
+#container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    perspective: 1200px;
+    background: radial-gradient(circle at center, #1a1a2a 0%, #0a0a12 100%);
+}
+
+/* ================== RETINA CENTRAL - MEJORADA CON TEXTURAS REALISTAS ================== */
+#eye-chamber {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    touch-action: none;
+    background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, transparent 70%);
+}
+
+.retina-container {
+    position: relative;
+    width: 80vmin;
+    height: 80vmin;
+    max-width: 600px;
+    max-height: 600px;
+    transform-style: preserve-3d;
+    perspective: 1200px;
+    border-radius: 50%;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+    filter: contrast(1.2) brightness(0.9) saturate(1.1);
+    will-change: transform, filter;
+    box-shadow: 
+      inset 0 0 100px rgba(100, 20, 20, 0.3),
+      0 0 80px rgba(0, 0, 0, 0.8);
+}
+
+.retina-sphere {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, 
+      #500000 0%, 
+      #400000 20%, 
+      #300000 40%,
+      #200000 70%,
+      #100000 100%);
+    transform: rotateX(15deg) translateZ(50px);
+    box-shadow: 
+      inset 0 0 200px rgba(220, 80, 80, 0.3),
+      inset 0 0 80px rgba(255, 120, 120, 0.2),
+      0 0 120px rgba(0, 0, 0, 0.9);
+    overflow: hidden;
+}
+
+.retina-sphere::after {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    left: -50%;
+    top: -50%;
+    background-image: 
+      radial-gradient(circle at 50% 50%, 
+        rgba(255, 180, 180, 0.08) 0.5%, 
+        transparent 1.2%),
+      repeating-linear-gradient(
+        45deg,
+        transparent 0px,
+        transparent 2px,
+        rgba(255, 255, 255, 0.03) 2px,
+        rgba(255, 255, 255, 0.03) 3px
+      ),
+      repeating-linear-gradient(
+        -45deg,
+        transparent 0px,
+        transparent 3px,
+        rgba(150, 50, 50, 0.05) 3px,
+        rgba(150, 50, 50, 0.05) 5px
+      );
+    background-size: 
+      60px 60px,
+      100% 100%,
+      100% 100%;
+    transform: rotate(15deg);
+    animation: textureMove 120s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes textureMove {
+    0% { transform: rotate(15deg) translate(0,0); }
+    100% { transform: rotate(15deg) translate(200px,200px); }
+}
+
+.retina-texture {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(255,200,200,0.2) 0%, rgba(255,150,150,0.15) 80%),
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M${Array.from({length:50},(_,i)=>`${Math.random()*100},${Math.random()*100}`).join(" ")}" stroke="rgba(180,80,80,0.08)" fill="none" stroke-width="0.5"/></svg>');
+    background-size: 100%, 15px 15px;
+    opacity: 0.8;
+    border-radius: 50%;
+    mix-blend-mode: overlay;
+    filter: contrast(1.3);
+    will-change: transform;
+}
+
+.macula {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle at center, 
+      rgba(255,230,200,0.7) 0%, 
+      rgba(255,210,170,0.5) 60%, 
+      transparent 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    box-shadow: 
+      0 0 40px rgba(255, 220, 150, 0.4),
+      inset 0 0 15px rgba(255, 200, 100, 0.5);
+    animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+}
+
+.blood-vessels {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+    filter: drop-shadow(0 0 3px rgba(80, 0, 0, 0.7));
+    will-change: transform;
+}
+
+.blood-vessels-animated {
+    animation: vesselPulse 3s ease-in-out infinite;
+}
+
+@keyframes vesselPulse {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.01); }
+}
+
+.retina-nerve {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><path d="M0,0 Q50,50 100,0 T200,0" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/></svg>') center/cover;
+    pointer-events: none;
+    opacity: 0.6;
+    z-index: 4;
+}
+
+.optic-disc {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle at center, 
+      rgba(220,120,120,0.5) 0%, 
+      rgba(200,100,100,0.4) 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 25%;
+    transform: translate(-50%, -50%);
+    box-shadow: 
+      inset 0 0 20px rgba(220,80,80,0.6), 
+      0 0 25px rgba(220,80,80,0.5);
+    z-index: 5;
+    animation: discPulse 5s ease-in-out infinite;
+}
+
+@keyframes discPulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.03); }
+}
+
+.optic-cup {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background: radial-gradient(circle at center, 
+      rgba(220,80,80,0.6) 0%, 
+      rgba(200,60,60,0.5) 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: inset 0 0 15px rgba(180,50,50,0.7);
+    z-index: 6;
+}
+
+.retina-deformation {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, rgba(255,100,100,0.8), transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 11;
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+}
+
+/* ================== LUZ ENDOILUMINADOR - EFECTOS DINÁMICOS MEJORADOS ================== */
+#light-mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    mask-image: radial-gradient(
+      circle at var(--light-x, 50%) var(--light-y, 50%), 
+      transparent var(--light-size, 80px), 
+      black calc(var(--light-size, 80px) + 80px)
+    );
+    -webkit-mask-image: radial-gradient(
+      circle at var(--light-x, 50%) var(--light-y, 50%), 
+      transparent var(--light-size, 80px), 
+      black calc(var(--light-size, 80px) + 80px)
+    );
+    transition: all 0.15s ease-out;
+    pointer-events: none;
+    z-index: 7;
+    will-change: mask-image, -webkit-mask-image;
+}
+
+#light-reflection {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at var(--light-x, 50%) var(--light-y, 50%), 
+      rgba(255,255,240,0.95) calc(var(--light-size, 80px)*0.1), 
+      rgba(255,220,180,0.6) calc(var(--light-size, 80px)*0.3), 
+      transparent var(--light-size, 80px)
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 8;
+    mix-blend-mode: soft-light;
+    filter: blur(1.5px);
+    will-change: opacity, transform;
+}
+
+.light-scatter {
+    position: absolute;
+    width: 300%;
+    height: 300%;
+    left: -100%;
+    top: -100%;
+    background: radial-gradient(
+      circle at var(--light-x, 50%) var(--light-y, 50%),
+      rgba(255, 230, 200, 0.15) 0%,
+      transparent 80%
+    );
+    pointer-events: none;
+    z-index: 9;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    will-change: background, opacity;
+}
+
+.light-scatter.active {
+    opacity: 0.7;
+}
+
+.specular-highlight {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at var(--light-x, 50%) var(--light-y, 50%),
+      rgba(255, 255, 255, 0.5) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 10;
+    mix-blend-mode: overlay;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.specular-highlight.active {
+    opacity: 0.4;
+}
+
+/* ================== INSTRUMENTOS QUIRÚRGICOS 3D MEJORADOS ================== */
+.instrument {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) translateZ(0);
+    display: none;
+    z-index: 10;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+    transform-style: preserve-3d;
+    perspective: 1000px;
+}
+
+.instrument-body {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: all 0.2s ease;
+}
+
+.instrument-shadow {
+    position: absolute;
+    width: 120%;
+    height: 120%;
+    left: -10%;
+    top: -10%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0,0,0,0.4) 0%,
+      transparent 70%
+    );
+    transform: rotateX(75deg) translateZ(-10px);
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(5px);
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+/* Vitrectomo 3D mejorado */
+#vitrectome {
+    width: 2.5mm;
+    height: 15mm;
+    transform-style: preserve-3d;
+}
+
+#vitrectome .instrument-body {
+    background: linear-gradient(to bottom, 
+      #999 0%, 
+      #ccc 10%, 
+      #eee 20%, 
+      #fff 40%, 
+      #ddd 60%, 
+      #aaa 80%,
+      #888 100%);
+    border: 1px solid #777;
+    border-radius: 1.2mm;
+    box-shadow: 
+      0 0 1.5mm rgba(0,0,0,0.7),
+      0 0 3mm rgba(255,255,255,0.15),
+      inset 0 0 5px rgba(255,255,255,0.3);
+    transform: rotateX(10deg);
+}
+
+#vitrectome::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(1px);
+    width: 3mm;
+    height: 1mm;
+    background: linear-gradient(to right, #aaa, #ddd, #aaa);
+    border-radius: 0.5mm;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+#vitrectome::after {
+    content: '';
+    position: absolute;
+    bottom: -1mm;
+    left: 50%;
+    transform: translateX(-50%) translateZ(-1px);
+    width: 1.8mm;
+    height: 1.8mm;
+    background: radial-gradient(circle, 
+      #fff 0%, 
+      #bbb 50%, 
+      #888 100%);
+    border-radius: 50%;
+    box-shadow: 
+      0 0 0.8mm rgba(0,0,0,0.7),
+      0 0 1.5mm rgba(255,255,255,0.3),
+      inset 0 0 5px rgba(255,255,255,0.4);
+    z-index: 1;
+}
+
+#vitrectome .instrument-tip {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(0);
+    width: 1.2mm;
+    height: 3mm;
+    background: linear-gradient(to bottom, #ccc, #999);
+    border-radius: 0.3mm;
+    box-shadow: 
+      inset 0 -1px 2px rgba(0,0,0,0.5),
+      0 0 5px rgba(255,255,255,0.2);
+}
+
+#vitrectome .instrument-side {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, #888, #aaa, #888);
+    transform: rotateY(90deg) translateZ(1.25mm);
+    border-radius: 1.2mm;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+}
+
+/* Pinzas de Endograsper 3D mejoradas */
+#end-grasper {
+    width: 2mm;
+    height: 13mm;
+    transform-style: preserve-3d;
+}
+
+#end-grasper .instrument-body {
+    background: linear-gradient(to bottom, 
+      #aaa 0%, 
+      #ddd 10%, 
+      #fff 20%, 
+      #fff 40%, 
+      #ddd 60%, 
+      #aaa 80%,
+      #888 100%);
+    border: 1px solid #777;
+    border-radius: 1.2mm;
+    box-shadow: 
+      0 0 1.2mm rgba(0,0,0,0.7),
+      0 0 2.5mm rgba(255,255,255,0.15),
+      inset 0 0 5px rgba(255,255,255,0.3);
+    transform: rotateX(10deg);
+}
+
+#end-grasper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(1px);
+    width: 2.5mm;
+    height: 1mm;
+    background: linear-gradient(to right, #aaa, #ddd, #aaa);
+    border-radius: 0.5mm;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+#end-grasper::after {
+    content: '';
+    position: absolute;
+    bottom: -1.2mm;
+    left: 50%;
+    transform: translateX(-50%) translateZ(-1px);
+    width: 1.4mm;
+    height: 1mm;
+    background: #fff;
+    border-radius: 0.5mm;
+    box-shadow: 
+      0 0 0.8mm rgba(0,0,0,0.7),
+      0 0 1.2mm rgba(255,255,255,0.4),
+      inset 0 0 3px rgba(255,255,255,0.6);
+    z-index: 1;
+}
+
+#end-grasper .instrument-jaws {
+    position: absolute;
+    bottom: -1.2mm;
+    left: 50%;
+    transform: translateX(-50%) rotateX(0deg);
+    width: 1.8mm;
+    height: 2mm;
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease;
+}
+
+#end-grasper.active .instrument-jaws {
+    transform: translateX(-50%) rotateX(-30deg);
+}
+
+#end-grasper.grasping .instrument-jaws {
+    transform: translateX(-50%) rotateX(-60deg);
+}
+
+#end-grasper .instrument-jaw {
+    position: absolute;
+    width: 0.8mm;
+    height: 2mm;
+    background: linear-gradient(to bottom, #ddd, #aaa);
+    border-radius: 0.3mm;
+    box-shadow: 
+      inset 0 -1px 2px rgba(0,0,0,0.5),
+      0 0 3px rgba(255,255,255,0.3);
+}
+
+#end-grasper .instrument-jaw.left {
+    left: 0;
+    transform-origin: right center;
+}
+
+#end-grasper .instrument-jaw.right {
+    right: 0;
+    transform-origin: left center;
+}
+
+/* Sonda de Láser 3D mejorada */
+#laser-probe {
+    width: 0.5mm;
+    height: 12mm;
+    transform-style: preserve-3d;
+}
+
+#laser-probe .instrument-body {
+    background: linear-gradient(to bottom, 
+      #f00, 
+      #f90 20%, 
+      #ff0 30%, 
+      #f90 70%, 
+      #f00);
+    border-radius: 0.3mm;
+    box-shadow: 
+      0 0 1.5mm rgba(255,0,0,0.9),
+      0 0 3mm rgba(255,100,100,0.6),
+      inset 0 0 5px rgba(255,255,255,0.4);
+    transform: rotateX(10deg);
+}
+
+#laser-probe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(1px);
+    width: 1.5mm;
+    height: 1mm;
+    background: linear-gradient(to right, #aaa, #ddd, #aaa);
+    border-radius: 0.5mm;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+#laser-probe .instrument-tip {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(0);
+    width: 0.8mm;
+    height: 1.5mm;
+    background: radial-gradient(circle, #fff, #f99);
+    border-radius: 50%;
+    box-shadow: 
+      0 0 5px rgba(255,100,100,0.8),
+      inset 0 0 3px rgba(255,255,255,0.8);
+}
+
+/* Tijeras Vitreorretinianas */
+#scissors {
+    width: 1mm;
+    height: 14mm;
+    transform-style: preserve-3d;
+}
+
+#scissors .instrument-body {
+    background: linear-gradient(to bottom, 
+      #aaa 0%, 
+      #ddd 30%, 
+      #fff 50%, 
+      #ddd 70%, 
+      #aaa 100%);
+    border: 1px solid #777;
+    border-radius: 0.5mm;
+    box-shadow: 
+      0 0 1.5mm rgba(0,0,0,0.7),
+      0 0 3mm rgba(255,255,255,0.15),
+      inset 0 0 5px rgba(255,255,255,0.3);
+    transform: rotateX(10deg);
+}
+
+#scissors::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(1px);
+    width: 2mm;
+    height: 1mm;
+    background: linear-gradient(to right, #aaa, #ddd, #aaa);
+    border-radius: 0.5mm;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+#scissors .instrument-jaws {
+    position: absolute;
+    bottom: -1mm;
+    left: 50%;
+    transform: translateX(-50%) rotateX(0deg);
+    width: 1.5mm;
+    height: 3mm;
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease;
+}
+
+#scissors.active .instrument-jaws {
+    transform: translateX(-50%) rotateX(-20deg);
+}
+
+#scissors.cutting .instrument-jaws {
+    transform: translateX(-50%) rotateX(-60deg);
+}
+
+#scissors .instrument-blade {
+    position: absolute;
+    width: 0.6mm;
+    height: 3mm;
+    background: linear-gradient(to bottom, #eee, #aaa);
+    border-radius: 0.3mm;
+    box-shadow: 
+      inset 0 -1px 2px rgba(0,0,0,0.5),
+      0 0 3px rgba(255,255,255,0.3);
+}
+
+#scissors .instrument-blade.left {
+    left: 0;
+    transform-origin: right center;
+}
+
+#scissors .instrument-blade.right {
+    right: 0;
+    transform-origin: left center;
+}
+
+/* Sonda de PFC */
+#pfc-probe {
+    width: 0.8mm;
+    height: 13mm;
+    transform-style: preserve-3d;
+}
+
+#pfc-probe .instrument-body {
+    background: linear-gradient(to bottom, 
+      #0af 0%, 
+      #5bf 30%, 
+      #8df 70%, 
+      #0af 100%);
+    border: 1px solid #07a;
+    border-radius: 0.5mm;
+    box-shadow: 
+      0 0 1.5mm rgba(0,100,255,0.7),
+      0 0 3mm rgba(100,200,255,0.4),
+      inset 0 0 5px rgba(255,255,255,0.6);
+    transform: rotateX(10deg);
+}
+
+#pfc-probe::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(1px);
+    width: 2mm;
+    height: 1mm;
+    background: linear-gradient(to right, #aaa, #ddd, #aaa);
+    border-radius: 0.5mm;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    z-index: 2;
+}
+
+#pfc-probe .instrument-tip {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) translateZ(0);
+    width: 1mm;
+    height: 1.5mm;
+    background: radial-gradient(circle, #fff, #5bf);
+    border-radius: 50%;
+    box-shadow: 
+      0 0 5px rgba(0,150,255,0.8),
+      inset 0 0 3px rgba(255,255,255,0.8);
+}
+
+/* Burbujas de PFC */
+.pfc-bubble {
+    position: absolute;
+    background: rgba(100, 255, 255, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    filter: blur(1px);
+    box-shadow: 
+      0 0 10px rgba(100, 255, 255, 0.8),
+      inset 0 0 5px rgba(255, 255, 255, 0.8);
+    transform: translate(-50%, -50%);
+    will-change: transform, opacity;
+}
+
+.instrument-active {
+    animation: instrumentVibrate 0.1s linear infinite;
+}
+
+@keyframes instrumentVibrate {
+    0% { transform: translate(-50%, -50%) rotate(0.5deg) translateZ(0); }
+    50% { transform: translate(-50%, -50%) rotate(-0.5deg) translateZ(0); }
+    100% { transform: translate(-50%, -50%) rotate(0.5deg) translateZ(0); }
+}
+
+/* ================== SISTEMA DE PEELING MEJORADO ================== */
+#peeling-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    z-index: 20;
+}
+
+#retina-canvas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    box-shadow: 
+      0 0 80px rgba(0, 100, 255, 0.4),
+      inset 0 0 120px rgba(0, 50, 150, 0.3);
+    cursor: crosshair;
+    z-index: 21;
+    background: rgba(0,0,0,0.4);
+    will-change: transform;
+}
+
+#peeling-hud {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    border-top: 4px solid #0099ff;
+    max-width: 600px;
+    text-align: center;
+    z-index: 22;
+    backdrop-filter: blur(8px);
+    box-shadow: 
+      0 8px 25px rgba(0,0,0,0.6),
+      inset 0 0 15px rgba(255,255,255,0.15);
+    font-size: 0.95rem;
+}
+
+#traction-meter {
+    margin-top: 15px;
+    height: 12px;
+    background: #222;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+}
+
+#traction-level {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00ff00, #ffcc00, #ff0000);
+    transition: width 0.1s;
+}
+
+#peeling-progress {
+    margin-top: 15px;
+    height: 8px;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 0 5px rgba(0,0,0,0.7);
+}
+
+#peeling-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0099ff, #00ccff);
+    transition: width 0.3s;
+}
+
+#peeling-progress-text {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #00ccff;
+}
+
+.complication {
+    position: absolute;
+    background: rgba(200, 0, 0, 0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    z-index: 23;
+    filter: blur(1.5px);
+    will-change: transform, opacity;
+}
+
+#peeling-instrument-selector {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.85);
+    padding: 15px;
+    border-radius: 12px;
+    color: white;
+    z-index: 24;
+    backdrop-filter: blur(8px);
+    box-shadow: 
+      0 8px 25px rgba(0,0,0,0.6),
+      inset 0 0 15px rgba(255,255,255,0.15);
+}
+
+.peeling-instrument-btn {
+    background: #333;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    margin: 8px 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+    min-width: 100px;
+}
+
+.peeling-instrument-btn.active {
+    background: #0099ff;
+    box-shadow: 
+      0 0 15px rgba(0, 153, 255, 0.8),
+      0 0 30px rgba(0, 100, 255, 0.4);
+}
+
+.membrane-flap {
+    position: absolute;
+    background: rgba(150, 200, 255, 0.35);
+    border: 1px solid rgba(180, 220, 255, 0.7);
+    border-radius: 50%;
+    transform-origin: center;
+    pointer-events: none;
+    z-index: 25;
+    backdrop-filter: blur(3px);
+    box-shadow: 
+      0 0 30px rgba(100, 150, 255, 0.4),
+      inset 0 0 15px rgba(255, 255, 255, 0.3);
+    will-change: transform, opacity;
+}
+
+.cut-effect {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 26;
+    animation: cutFade 1s ease-out forwards;
+    filter: blur(2px);
+}
+
+@keyframes cutFade {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+.cut-mark {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 26;
+    animation: markFade 1s ease-out forwards;
+}
+
+@keyframes markFade {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* ================== VISUALIZACIÓN OCT ================== */
+#oct-container {
+    position: absolute;
+    top: 40px;
+    left: 30px;
+    width: 150px;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 5px;
+    z-index: 2000;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 
+      0 6px 15px rgba(0,0,0,0.5),
+      inset 0 0 15px rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+}
+
+#oct-container svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
+}
+
+#oct-container path {
+    transition: all 0.3s ease;
+}
+
+.oct-scan {
+    animation: octScan 6s linear infinite;
+}
+
+@keyframes octScan {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-100%); }
+}
+
+.peel-remove {
+    animation: peelRemove 1s ease-out forwards;
+}
+
+@keyframes peelRemove {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(20px); }
+}
+
+/* ================== INTERFAZ DE USUARIO PROFESIONAL ================== */
+.instrument-panel {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.85);
+    padding: 15px 10px;
+    border-radius: 12px;
+    z-index: 5000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 
+      0 6px 20px rgba(0,0,0,0.6),
+      inset 0 0 15px rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
+.toggle-btn {
+    background: #1a3a8a;
+    color: white;
+    padding: 12px 18px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+    margin: 8px 5px;
+    min-width: 100px;
+    transition: all 0.2s;
+    font-weight: 500;
+    box-shadow: 
+      0 3px 8px rgba(0,0,0,0.4),
+      inset 0 0 8px rgba(255,255,255,0.15);
+    position: relative;
+    overflow: hidden;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.toggle-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.6);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+.toggle-btn:active::after {
+    animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+      transform: scale(0, 0);
+      opacity: 1;
     }
-    
-    .optic-disc {
-      position: absolute;
-      width: 70px;
-      height: 70px;
-      background-color: rgba(200,100,100,0.3);
-      border-radius: 50%;
-      top: 50%;
-      left: 25%;
-      transform: translate(-50%, -50%);
-      box-shadow: inset 0 0 15px rgba(200,50,50,0.4), 0 0 20px rgba(200,50,50,0.3);
-      z-index: 5;
+    20% {
+      transform: scale(25, 25);
+      opacity: 1;
     }
-    
-    .optic-cup {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      background-color: rgba(200,50,50,0.4);
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: inset 0 0 10px rgba(150,30,30,0.5);
-      z-index: 6;
-    }
-    
-    /* ================== CAMPO DE VISIÓN – Endoiluminador ================== */
-    #light-mask {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.85);
-      mask-image: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), transparent var(--light-size, 80px), black calc(var(--light-size, 80px) + 40px));
-      -webkit-mask-image: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), transparent var(--light-size, 80px), black calc(var(--light-size, 80px) + 40px));
-      transition: all 0.3s ease;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 7;
-    }
-    
-    #light-reflection {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), rgba(255,255,220,0.9) calc(var(--light-size, 80px)*0.2), rgba(255,200,150,0.5) calc(var(--light-size, 80px)*0.4), transparent var(--light-size, 80px));
+    100% {
       opacity: 0;
-      transition: opacity 0.3s ease;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 8;
+      transform: scale(40, 40);
     }
-    
-    /* ================== INSTRUMENTOS QUIRÚRGICOS ================== */
-    #vitrectome, #end-grasper, #laser-probe {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      display: none;
-      z-index: 10;
-    }
-    
-    #vitrectome {
-      width: 20px;
-      height: 120px;
-      background: linear-gradient(to bottom, #aaa, #ddd 20%, #fff 40%, #ddd 60%, #aaa 80%);
-      border: 1px solid #999;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-    
-    #vitrectome::after {
-      content: '';
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 15px;
-      height: 15px;
-      background: radial-gradient(circle, #fff 0%, #ccc 50%, #999 100%);
-      border-radius: 50%;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
-    }
-    
-    #end-grasper {
-      width: 18px;
-      height: 110px;
-      background: linear-gradient(to bottom, #bbb, #eee 20%, #fff 40%, #eee 60%, #bbb 80%);
-      border: 1px solid #999;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.5);
-    }
-    
-    #end-grasper::after {
-      content: '';
-      position: absolute;
-      bottom: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 12px;
-      height: 8px;
-      background: #fff;
-      border-radius: 4px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
-    }
-    
-    #laser-probe {
-      width: 4px;
-      height: 100px;
-      background: linear-gradient(to bottom, #f00, #ff0 30%, #f00 70%);
-      border-radius: 2px;
-      box-shadow: 0 0 10px rgba(255,0,0,0.8);
-    }
+}
 
-    /* ================== NUEVOS ESTILOS PARA PEELING (de practica6) ================== */
-    #peeling-container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
-      z-index: 20;
-    }
+.toggle-btn.active {
+    background: #3b82f6;
+    box-shadow: 
+      0 0 20px #3b82f6,
+      0 0 40px rgba(59, 130, 246, 0.4);
+}
 
-    #retina-canvas {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      box-shadow: 0 0 60px rgba(0, 100, 255, 0.3);
-      cursor: crosshair;
-      z-index: 21;
-    }
-    
-    #peeling-hud {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.7);
-      color: white;
-      padding: 15px;
-      border-radius: 10px;
-      border-top: 3px solid #0099ff;
-      max-width: 600px;
-      text-align: center;
-      z-index: 22;
-    }
-    
-    #traction-meter {
-      margin-top: 10px;
-      height: 10px;
-      background: #333;
-      border-radius: 5px;
-      overflow: hidden;
-    }
-    
-    #traction-level {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #00ff00, #ffcc00, #ff0000);
-      transition: width 0.1s;
-    }
-    
-    .complication {
-      position: absolute;
-      background: rgba(200, 0, 0, 0.7);
-      border-radius: 50%;
-      pointer-events: none;
-      transform: translate(-50%, -50%);
-      z-index: 23;
-    }
-    
-    #peeling-instrument-selector {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 10px;
-      border-radius: 10px;
-      color: white;
-      z-index: 24;
-    }
-    
-    .peeling-instrument-btn {
-      background: #333;
-      border: none;
-      color: white;
-      padding: 8px 12px;
-      margin: 5px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    
-    .peeling-instrument-btn.active {
-      background: #0099ff;
-      box-shadow: 0 0 10px rgba(0, 153, 255, 0.7);
-    }
-    
-    .membrane-flap {
-      position: absolute;
-      background: rgba(150, 200, 255, 0.3);
-      border: 1px solid rgba(180, 220, 255, 0.6);
-      border-radius: 50%;
-      transform-origin: center;
-      pointer-events: none;
-      z-index: 25;
-    }
+.toggle-btn .tooltip {
+    visibility: hidden;
+    width: 140px;
+    background-color: #222;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    right: 125%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.85rem;
+    font-weight: normal;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border: 1px solid #444;
+}
 
-    /* ================== INTERFAZ DE USUARIO ================== */
-    /* Panel de instrumentos */
+.toggle-btn:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Panel de controles mejorado */
+.control-panel {
+    position: absolute;
+    right: 20px;
+    top: 190px;
+    background: rgba(10,10,20,0.95);
+    padding: 20px;
+    border-radius: 50px;
+    z-index: 5000;
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    width: 180px;
+    max-height: 80vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 
+      0 6px 20px rgba(18, 20, 41, 0.6),
+      inset 0 0 15px rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+}
+
+.control-panel h3 {
+    margin: 0 0 15px 0;
+    color: #2990aa;
+    font-size: 1.1rem;
+    text-align: center;
+    border-bottom: 1px solid #444;
+    padding-bottom: 8px;
+}
+
+.vital-sign {
+    display: flex;
+    justify-content: space-between;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.vital-label {
+    color: #aaa;
+    font-size: 0.85em;
+    width: 60%;
+}
+
+.vital-value {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 0.95em;
+    width: 40%;
+    text-align: right;
+    transition: color 0.3s;
+}
+
+.normal { color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.4); }
+.warning { color: #f39c12; text-shadow: 0 0 8px rgba(243, 156, 18, 0.4); }
+.danger { color: #e74c3c; text-shadow: 0 0 8px rgba(231, 76, 60, 0.4); }
+
+.gauge-container {
+    width: 100%;
+    height: 10px;
+    background: #222;
+    border-radius: 5px;
+    margin: 8px 0 15px 0;
+    overflow: hidden;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+}
+
+.gauge-level {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease;
+    box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
+}
+
+#iop-gauge .gauge-level {
+    background: linear-gradient(to right, #2ecc71, #f39c12, #e74c3c);
+}
+
+#perfusion-gauge .gauge-level {
+    background: linear-gradient(to right, #3498db, #9b59b6);
+}
+
+#vitreous-gauge .gauge-level {
+    background: linear-gradient(to right, #1abc9c, #f1c40f);
+}
+
+#pfc-gauge .gauge-level {
+    background: linear-gradient(to right, #0af, #5bf);
+}
+
+/* Joysticks mejorados */
+.joystick-container {
+    position: absolute;
+    bottom: 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    z-index: 3000;
+}
+
+#joystick-light-container {
+    left: 200px;
+}
+
+#joystick-vitrectomo-container {
+    right: 180px;
+}
+
+.joystick {
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
+    position: relative;
+    box-shadow: 
+      0 6px 15px rgba(0,0,0,0.4),
+      inset 0 0 25px rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+    will-change: transform;
+}
+
+.joystick .joystick-handle {
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 50%;
+    position: absolute;
+    transition: transform 0.1s ease;
+    box-shadow: 
+      0 0 15px rgba(255,255,255,0.4),
+      inset 0 0 8px rgba(255,255,255,0.7);
+    will-change: transform;
+}
+
+/* Controles Z mejorados */
+.slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    background: rgba(0,0,0,0.7);
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 
+      0 4px 10px rgba(0,0,0,0.4),
+      inset 0 0 8px rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+}
+
+.slider-container label {
+    font-size: 0.8rem;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #eee;
+    font-weight: 500;
+    text-shadow: 0 0 8px rgba(0,0,0,0.6);
+}
+
+input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 10px;
+    background: #333;
+    border-radius: 5px;
+    margin: 8px 0 12px 0;
+    box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #3b82f6;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 
+      0 0 8px rgba(0,0,0,0.7),
+      0 0 15px rgba(59, 130, 246, 0.7);
+    transition: all 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+    box-shadow: 
+      0 0 12px rgba(0,0,0,0.7),
+      0 0 20px rgba(59, 130, 246, 1);
+}
+
+#btn-precionar {
+    background: linear-gradient(to bottom, #dc2626, #b91c1c);
+    color: white;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    margin-top: 8px;
+    width: 100%;
+    font-weight: bold;
+    box-shadow: 
+      0 4px 12px rgba(0,0,0,0.4),
+      0 0 15px rgba(220, 38, 38, 0.4);
+    transition: all 0.2s;
+    text-shadow: 0 0 8px rgba(0,0,0,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#btn-precionar:active {
+    transform: scale(0.95);
+    box-shadow: 
+      0 2px 6px rgba(0,0,0,0.4),
+      0 0 8px rgba(220, 38, 38, 0.4);
+}
+
+/* Mini mapa mejorado */
+#miniMapContainer {
+    position: absolute;
+    top: 40px;
+    right: 30px;
+    width: 170px;
+    height: 120px;
+    overflow: hidden;
+    border-radius: 5px;
+    z-index: 2000;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 
+      0 6px 15px rgba(0,0,0,0.5),
+      inset 0 0 15px rgba(255,255,255,0.15);
+    backdrop-filter: blur(8px);
+}
+
+#eyeCrossSection {
+    width: 100%;
+    height: 100%;
+    display: block;
+    filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
+}
+
+/* Indicador de profundidad */
+.depth-indicator {
+    position: absolute;
+    bottom: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    padding: 10px 20px;
+    border-radius: 25px;
+    color: white;
+    font-size: 0.85rem;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 15px rgba(0,0,0,0.6);
+    border: 1px solid var(--depth-color, #3b82f6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.depth-indicator::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background: var(--depth-color, #3b82f6);
+    box-shadow: 0 0 8px var(--depth-color, #3b82f6);
+}
+
+/* Efectos visuales mejorados */
+.laser-spot {
+    width: 30px;
+    height: 30px;
+    background: radial-gradient(circle, 
+      rgba(255,80,80,0.95), 
+      rgba(255,0,0,0.8) 70%, 
+      transparent 90%);
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    animation: laser-fade 2.5s ease-out forwards;
+    z-index: 15;
+    filter: blur(1px);
+    will-change: transform, opacity;
+}
+
+@keyframes laser-fade {
+    0% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0.3); }
+}
+
+.laser-burn {
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, 
+      white 0%, 
+      rgba(255,255,255,0.9) 60%, 
+      transparent 80%);
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    z-index: 16;
+    box-shadow: 0 0 15px rgba(255,120,120,0.6);
+}
+
+.vitreous-particle {
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    animation: float-particle 1.5s ease-out forwards;
+    z-index: 12;
+    filter: blur(0.8px);
+    box-shadow: 0 0 8px rgba(255,255,255,0.9);
+    will-change: transform, opacity;
+}
+
+@keyframes float-particle {
+    100% { transform: translate(var(--tx, 0px), var(--ty, 0px)); opacity: 0; }
+}
+
+.injection-bubble {
+    position: absolute;
+    background: rgba(200,230,255,0.9);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 3;
+    filter: blur(1.5px);
+    animation: bubble-float 4s ease-in-out forwards;
+    box-shadow: 
+      0 0 8px rgba(100,150,255,0.7),
+      inset 0 0 5px rgba(255,255,255,0.7);
+    will-change: transform, opacity;
+}
+
+@keyframes bubble-float {
+    100% { 
+      transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px));
+      opacity: 0;
+    }
+}
+
+/* ================== RESPONSIVE ADJUSTMENTS ================== */
+@media (max-width: 768px) {
+    .retina-container {
+      width: 90vmin;
+      height: 90vmin;
+    }
+    
     .instrument-panel {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      padding: 12px 15px;
-      border-radius: 10px;
-      z-index: 5000;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 95%;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      top: 15px;
+      left: 15px;
+      transform: none;
+      flex-direction: row;
+      padding: 10px;
     }
     
     .toggle-btn {
-      background: #1e3a8a;
-      color: white;
       padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      min-width: 90px;
       margin: 5px;
-      min-width: 80px;
-      transition: all 0.2s;
-      font-weight: 500;
+      font-size: 0.8rem;
     }
     
-    .toggle-btn.active {
-      background: #3b82f6;
-      box-shadow: 0 0 15px #3b82f6;
-    }
-    
-    /* Panel de controles */
     .control-panel {
-      position: absolute;
-      right: 20px;
-      top: 150px;
-      background: rgba(10,10,10,0.95);
-      padding: 15px;
-      border-radius: 12px;
-      z-index: 5000;
-      font-size: clamp(0.7rem, 2vw, 0.9rem);
       width: 160px;
-      max-height: 80vh;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      border: 1px solid #333;
-    }
-    
-    .vital-sign {
-      display: flex;
-      justify-content: space-between;
-      margin: 12px 0;
-      flex-wrap: wrap;
-    }
-    
-    .vital-label {
-      color: #ccc;
-      font-size: 0.85em;
-      width: 60%;
-    }
-    
-    .vital-value {
-      font-family: 'Courier New', monospace;
-      font-weight: bold;
-      font-size: 0.95em;
-      width: 40%;
-      text-align: right;
-    }
-    
-    .normal { color: #2ecc71; }
-    .warning { color: #f39c12; }
-    .danger { color: #e74c3c; }
-    
-    .gauge-container {
-      width: 100%;
-      height: 8px;
-      background: #333;
-      border-radius: 4px;
-      margin: 5px 0 12px 0;
-      overflow: hidden;
-    }
-    
-    .gauge-level {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.5s ease;
-    }
-    
-    #iop-gauge .gauge-level {
-      background: linear-gradient(to right, #2ecc71, #f39c12, #e74c3c);
-    }
-    
-    #perfusion-gauge .gauge-level {
-      background: linear-gradient(to right, #3498db, #9b59b6);
-    }
-    
-    #vitreous-gauge .gauge-level {
-      background: linear-gradient(to right, #1abc9c, #f1c40f);
-    }
-    
-    /* Joysticks */
-    .joystick-container {
-      position: absolute;
-      bottom: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      z-index: 3000;
-    }
-    
-    #joystick-light-container {
-      left: 20px;
-    }
-    
-    #joystick-vitrectomo-container {
-      right: 20px;
+      padding: 15px;
+      font-size: 0.75rem;
     }
     
     .joystick {
       width: 90px;
       height: 90px;
-      background: rgba(255,255,255,0.1);
-      border: 2px solid rgba(255,255,255,0.3);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      touch-action: none;
-      position: relative;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     
-    .joystick .joystick-handle {
-      width: 35px;
-      height: 35px;
-      background: rgba(255,255,255,0.6);
-      border-radius: 50%;
-      position: absolute;
-      transition: transform 0.1s ease;
-    }
-    
-    /* Controles Z */
-    .slider-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 100%;
-      background: rgba(0,0,0,0.5);
-      padding: 10px;
-      border-radius: 10px;
-    }
-    
-    .slider-container label {
-      font-size: 0.75rem;
-      margin-bottom: 8px;
-      text-align: center;
-      color: #eee;
-      font-weight: 500;
-    }
-    
-    input[type="range"] {
-      width: 100%;
-      -webkit-appearance: none;
-      height: 8px;
-      background: #333;
-      border-radius: 4px;
-      margin: 5px 0 10px 0;
-    }
-    
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      background: #3b82f6;
-      border-radius: 50%;
-      cursor: pointer;
-      border: 2px solid white;
-    }
-    
-    #btn-precionar {
-      background: #dc2626;
-      color: white;
-      padding: 10px 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      margin-top: 5px;
-      width: 100%;
-      font-weight: bold;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      transition: all 0.2s;
-    }
-    
-    #btn-precionar:active {
-      transform: scale(0.95);
-    }
-    
-    /* Mini mapa */
-    #miniMapContainer {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 150px;
+    #miniMapContainer, #oct-container {
+      width: 140px;
       height: 110px;
-      overflow: hidden;
-      border-radius: 8px;
-      z-index: 2000;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid #333;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
     
-    #eyeCrossSection {
-      width: 100%;
-      height: 100%;
-      display: block;
+    #joystick-light-container {
+      left: 150px;
+      bottom: 20px;
     }
     
-    /* OCT */
-    #oct-container {
-      position: absolute;
-      top: 150px;
-      left: 20px;
-      z-index: 1000;
-      width: 180px;
-      height: 140px;
-      background: rgba(0,0,0,0.7);
-      border-radius: 8px;
-      border: 1px solid #333;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    #joystick-vitrectomo-container {
+      right: 150px;
+      bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .retina-container {
+      width: 95vmin;
+      height: 95vmin;
     }
     
-    #oct-container svg {
-      width: 100%;
-      height: 100%;
+    .instrument-panel {
+      width: 98%;
+      padding: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     
-    /* Efectos visuales */
-    .laser-spot {
-      width: 25px;
-      height: 25px;
-      background: radial-gradient(circle, rgba(255,50,50,0.8), transparent 70%);
-      border-radius: 50%;
-      position: absolute;
-      pointer-events: none;
-      animation: laser-fade 2.5s ease-out forwards;
-      z-index: 15;
+    .toggle-btn {
+      padding: 8px 12px;
+      min-width: 80px;
+      font-size: 0.75rem;
+      margin: 4px;
     }
     
-    @keyframes laser-fade {
-      0% { opacity: 1; transform: scale(1); }
-      100% { opacity: 0; transform: scale(0.3); }
+    .control-panel {
+      width: 150px;
+      padding: 12px;
+      right: 10px;
     }
     
-    .laser-burn {
-      width: 6px;
-      height: 6px;
-      background: radial-gradient(circle, white 0%, rgba(255,255,255,0.6) 60%, transparent 80%);
-      border-radius: 50%;
-      position: absolute;
-      pointer-events: none;
-      z-index: 16;
+    .joystick {
+      width: 80px;
+      height: 80px;
     }
     
-    .vitreous-particle {
-      width: 5px;
-      height: 5px;
-      background: rgba(255,255,255,0.9);
-      border-radius: 50%;
-      position: absolute;
-      pointer-events: none;
-      animation: float-particle 1.5s ease-out forwards;
-      z-index: 12;
+    .joystick-container {
+      bottom: 15px;
     }
     
-    @keyframes float-particle {
-      100% { transform: translate(var(--tx, 0px), var(--ty, 0px)); opacity: 0; }
+    #miniMapContainer, #oct-container {
+      width: 120px;
+      height: 95px;
+    }
+
+    .depth-indicator {
+      bottom: 110px;
+      font-size: 0.75rem;
     }
     
-    .injection-bubble {
-      position: absolute;
-      background: rgba(200,230,255,0.7);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 3;
-      filter: blur(1px);
-      animation: bubble-float 4s ease-in-out forwards;
+    #joystick-light-container {
+      left: 120px;
     }
     
-    @keyframes bubble-float {
-      100% { 
-        transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px));
-        opacity: 0;
-      }
+    #joystick-vitrectomo-container {
+      right: 120px;
     }
-    
-    /* ================== RESPONSIVE ADJUSTMENTS ================== */
-    @media (max-width: 768px) {
-      .retina-container {
-        width: 90vmin;
-        height: 90vmin;
-      }
-      
-      .instrument-panel {
-        top: 10px;
-        padding: 10px;
-      }
-      
-      .toggle-btn {
-        padding: 8px 12px;
-        min-width: 70px;
-        margin: 4px;
-        font-size: 0.8rem;
-      }
-      
-      .control-panel {
-        width: 140px;
-        padding: 12px;
-        font-size: 0.75rem;
-      }
-      
-      .joystick {
-        width: 80px;
-        height: 80px;
-      }
-      
-      #miniMapContainer, #oct-container {
-        width: 130px;
-        height: 100px;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .retina-container {
-        width: 95vmin;
-        height: 95vmin;
-      }
-      
-      .instrument-panel {
-        width: 98%;
-        padding: 8px;
-      }
-      
-      .toggle-btn {
-        padding: 7px 10px;
-        min-width: 65px;
-        font-size: 0.75rem;
-        margin: 3px;
-      }
-      
-      .control-panel {
-        width: 130px;
-        padding: 10px;
-        right: 10px;
-      }
-      
-      .joystick {
-        width: 75px;
-        height: 75px;
-      }
-      
-      .joystick-container {
-        bottom: 15px;
-      }
-      
-      #miniMapContainer, #oct-container {
-        width: 110px;
-        height: 85px;
-      }
-    }
-  </style>
+}
+
+/* ================== SISTEMA DE ALERTAS PROFESIONAL ================== */
+#alert-system {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    width: 90%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.alert-container {
+    display: none;
+    background: rgba(20, 20, 30, 0.95);
+    border-left: 5px solid;
+    border-radius: 8px;
+    padding: 15px 20px;
+    align-items: center;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    animation: alertSlideIn 0.3s ease-out forwards;
+    transform-origin: top center;
+    border-left-color: #ff5555;
+}
+
+@keyframes alertSlideIn {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.alert-container#wall-collision-alert {
+    border-left-color: #ff9933;
+}
+
+.alert-container#vessel-damage-alert {
+    border-left-color: #ff3333;
+    background: rgba(40, 10, 10, 0.95);
+}
+
+.alert-container#retina-detachment-alert {
+    border-left-color: #ff5555;
+    background: rgba(30, 10, 20, 0.95);
+}
+
+.alert-container#lens-contact-alert {
+    border-left-color: #55aaff;
+}
+
+.alert-container#high-iop-alert {
+    border-left-color: #ffcc00;
+}
+
+.alert-icon {
+    font-size: 1.8rem;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex-grow: 1;
+}
+
+.alert-content h3 {
+    margin: 0 0 5px 0;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.alert-content p {
+    margin: 0;
+    color: #ddd;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.alert-dismiss {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0 0 0 15px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.alert-dismiss:hover {
+    opacity: 1;
+}
+
+/* Efecto de emergencia para daño vascular */
+.vessel-damage-emergency {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(200, 0, 0, 0.2);
+    z-index: 9999;
+    pointer-events: none;
+    animation: pulseEmergency 1.5s infinite alternate;
+}
+
+@keyframes pulseEmergency {
+    0% { opacity: 0.2; }
+    100% { opacity: 0.4; }
+}
+
+/* Efecto de presión intraocular alta en nervio óptico */
+.high-iop-effect {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8), transparent 70%);
+    border-radius: 50%;
+    z-index: 11;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    animation: iopPulse 2s infinite;
+}
+
+@keyframes iopPulse {
+    0% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+    100% { opacity: 0.3; transform: scale(1); }
+}
+/* Estilo para las marcas permanentes de láser */
+.laser-burn-permanent {
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle, 
+      white 0%, 
+      rgba(255,255,255,0.9) 60%, 
+      transparent 80%);
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+    z-index: 16;
+    box-shadow: 0 0 15px rgba(255,120,120,0.6);
+    animation: burnPulse 3s infinite alternate;
+}
+
+@keyframes burnPulse {
+    0% { opacity: 0.8; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0.8; transform: scale(1); }
+}
+
+/* Efecto de succión del vitrectomo */
+.vitreous-suction {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: radial-gradient(circle, 
+      rgba(255,255,255,0.8) 0%, 
+      rgba(200,200,255,0.6) 50%, 
+      transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 17;
+    animation: suctionEffect 0.5s ease-out forwards;
+    filter: blur(2px);
+}
+
+@keyframes suctionEffect {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(0.5); opacity: 0; }
+}  </style>
 </head>
 <body>
   <div id="container">
+    <!-- SISTEMA DE ALERTAS PROFESIONAL -->
+    <div id="alert-system">
+      <div class="alert-container" id="wall-collision-alert">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <h3>COLISIÓN CON ESTRUCTURA OCULAR</h3>
+          <p>¡Advertencia! El instrumento ha contactado con la pared ocular. Retire inmediatamente y reevalúe la posición.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="vessel-damage-alert">
+        <div class="alert-icon">🩸</div>
+        <div class="alert-content">
+          <h3>HEMORRAGIA RETINIANA</h3>
+          <p>¡Daño vascular detectado! Aplicar presión suave con PFC y considerar coagulación con láser.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="retina-detachment-alert">
+        <div class="alert-icon">❗</div>
+        <div class="alert-content">
+          <h3>DESPRENDIMIENTO DE RETINA</h3>
+          <p>¡Emergencia! Se ha detectado desprendimiento retiniano. Suspender procedimiento e inyectar PFC inmediatamente.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="lens-contact-alert">
+        <div class="alert-icon">🔍</div>
+        <div class="alert-content">
+          <h3>CONTACTO CON CRISTALINO</h3>
+          <p>¡Precaución! El instrumento ha contactado con el cristalino. Riesgo de catarata traumática. Retire con cuidado.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="high-iop-alert">
+        <div class="alert-icon">📈</div>
+        <div class="alert-content">
+          <h3>PRESIÓN INTRAOCULAR ELEVADA</h3>
+          <p>PIO > 25 mmHg. Riesgo de daño al nervio óptico. Reducir flujo de irrigación y considerar paracentesis.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="low-depth-alert">
+        <div class="alert-icon">⬇️</div>
+        <div class="alert-content">
+          <h3>PROFUNDIDAD INSUFICIENTE</h3>
+          <p>El instrumento está demasiado superficial. Aumente la profundidad para evitar daños en estructuras anteriores.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+    </div>
+
     <!-- MINI MAPA -->
     <div id="miniMapContainer">
       <svg id="eyeCrossSection" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
@@ -730,11 +2032,11 @@
           </filter>
         </defs>
         <rect width="800" height="600" fill="url(#bgGradient)" />
-        <ellipse cx="400" cy="150" rx="100" ry="65" fill="url(#lensGradient)" filter="url(#dropShadow)" />
+        <ellipse id="lens-minimap" cx="400" cy="150" rx="100" ry="65" fill="url(#lensGradient)" filter="url(#dropShadow)" />
         <ellipse cx="400" cy="150" rx="95" ry="60" fill="none" stroke="#B3E5FC" stroke-width="2" />
-        <circle cx="400" cy="150" r="55" fill="none" stroke="url(#irisGradient)" stroke-width="15" />
+        <circle id="iris-minimap" cx="400" cy="150" r="55" fill="none" stroke="url(#irisGradient)" stroke-width="15" />
         <circle cx="400" cy="150" r="30" fill="#000000" />
-        <circle cx="400" cy="300" r="250" fill="none" stroke="#E0E0E0" stroke-width="4" />
+        <circle id="retina-wall" cx="400" cy="300" r="250" fill="none" stroke="#E0E0E0" stroke-width="4" />
         <circle cx="400" cy="300" r="240" fill="#400000" opacity="0.8" />
         <circle id="miniCenter" cx="400" cy="300" r="8" fill="#00f7ff" />
         <line id="probeLight" x1="225" y1="100" x2="350" y2="300" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" />
@@ -750,6 +2052,8 @@
       <button class="toggle-btn" id="btn-peeling">Peeling</button>
       <button class="toggle-btn" id="btn-laser">Láser</button>
       <button class="toggle-btn" id="btn-injection">Inyección</button>
+      <button class="toggle-btn" id="btn-scissors">Tijeras</button>
+      <button class="toggle-btn" id="btn-pfc">PFC</button>
     </div>
 
     <!-- PANEL DE PARÁMETROS -->
@@ -787,65 +2091,14 @@
         <span class="vital-label">Flujo de Irrigación:</span>
         <span class="vital-value normal" id="flow-value">25 ml/min</span>
       </div>
+
+      <div class="vital-sign">
+        <span class="vital-label">Nivel de PFC:</span>
+        <span class="vital-value" id="pfc-value">0%</span>
+      </div>
     </div>
 
-    <!-- VISUALIZACIÓN OCT -->
-    <div id="oct-container">
-      <svg class="oct-scan" viewBox="0 0 800 500" preserveAspectRatio="xMidYMid meet">
-        <!-- Fondo negro -->
-        <rect width="800" height="500" fill="black"/>
-        <!-- Capa de vítreo -->
-        <path d="M0,120 C100,110 200,105 300,110 C400,115 500,110 600,105 C700,100 800,110 800,120" stroke="rgba(0,0,255,0.1)" stroke-width="2" fill="none"/>
-        <!-- MLI - Membrana Limitante Interna -->
-        <g id="mli-group">
-          <path id="mli-layer" d="M0,140 C100,130 200,125 300,135 C400,145 500,140 600,130 C700,120 800,140 800,150" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
-        </g>
-        <!-- CFNR -->
-        <path d="M0,160 C100,150 200,145 300,155 C400,165 500,160 600,150 C700,140 800,160 800,170" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,160 C100,150 200,145 300,155 C400,165 500,160 600,150 C700,140 800,160 800,170" stroke="none" fill="rgba(200,220,255,0.3)"/>
-        <!-- CCG -->
-        <path d="M0,180 C100,170 200,165 300,175 C400,185 500,180 600,170 C700,160 800,180 800,190" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,160 C100,150 200,145 300,155 C400,165 500,160 600,150 C700,140 800,160 800,170 L800,190 C700,180 600,190 500,200 C400,205 300,195 200,185 C100,170 0,180 0,180 Z" stroke="none" fill="rgba(150,180,255,0.2)"/>
-        <!-- CPI -->
-        <path d="M0,200 C100,190 200,185 300,195 C400,205 500,200 600,190 C700,180 800,200 800,210" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,180 C100,170 200,165 300,175 C400,185 500,180 600,170 C700,160 800,180 800,190 L800,210 C700,200 600,210 500,220 C400,225 300,215 200,205 C100,190 0,200 0,200 Z" stroke="none" fill="rgba(120,150,220,0.2)"/>
-        <!-- CNI -->
-        <path d="M0,230 C100,220 200,215 300,225 C400,235 500,230 600,220 C700,210 800,230 800,240" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,200 C100,190 200,185 300,195 C400,205 500,200 600,190 C700,180 800,200 800,210 L800,240 C700,230 600,240 500,250 C400,255 300,245 200,235 C100,220 0,230 0,230 Z" stroke="none" fill="rgba(100,130,200,0.25)"/>
-        <!-- CPE -->
-        <path d="M0,250 C100,240 200,235 300,245 C400,255 500,250 600,240 C700,230 800,250 800,260" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,230 C100,220 200,215 300,225 C400,235 500,230 600,220 C700,210 800,230 800,240 L800,260 C700,250 600,260 500,270 C400,275 300,265 200,255 C100,240 0,250 0,250 Z" stroke="none" fill="rgba(120,140,180,0.2)"/>
-        <!-- CNE -->
-        <path d="M0,280 C100,270 200,265 300,275 C400,285 500,280 600,270 C700,260 800,280 800,290" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,250 C100,240 200,235 300,245 C400,255 500,250 600,240 C700,230 800,250 800,260 L800,290 C700,280 600,290 500,300 C400,305 300,295 200,285 C100,270 0,280 0,280 Z" stroke="none" fill="rgba(150,150,150,0.3)"/>
-        <!-- MLE -->
-        <path d="M0,290 C100,280 200,275 300,285 C400,295 500,290 600,280 C700,270 800,290 800,300" stroke="rgba(255,255,255,0.9)" stroke-width="1" fill="none"/>
-        <!-- SI (Segmentos Internos) -->
-        <path d="M0,310 C100,300 200,295 300,305 C400,315 500,310 600,300 C700,290 800,310 800,320" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,290 C100,280 200,275 300,285 C400,295 500,290 600,280 C700,270 800,290 800,300 L800,320 C700,310 600,320 500,330 C400,335 300,325 200,315 C100,300 0,310 0,310 Z" stroke="none" fill="rgba(200,180,120,0.3)"/>
-        <!-- SE (Segmentos Externos) -->
-        <path d="M0,330 C100,320 200,315 300,325 C400,335 500,330 600,320 C700,310 800,330 800,340" stroke="rgba(255,255,255,0.8)" stroke-width="1" fill="none"/>
-        <path d="M0,310 C100,300 200,295 300,305 C400,315 500,310 600,300 C700,290 800,310 800,320 L800,340 C700,330 600,340 500,350 C400,355 300,345 200,335 C100,320 0,330 0,330 Z" stroke="none" fill="rgba(220,180,100,0.35)"/>
-        <!-- Unión IS/OS -->
-        <path d="M0,322 C100,312 200,307 300,317 C400,327 500,322 600,312 C700,302 800,322 800,332" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
-        <!-- EPR -->
-        <path d="M0,350 C100,340 200,335 300,345 C400,355 500,350 600,340 C700,330 800,350 800,360" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
-        <path d="M0,330 C100,320 200,315 300,325 C400,335 500,330 600,320 C700,310 800,330 800,340 L800,360 C700,350 600,360 500,370 C400,375 300,365 200,355 C100,340 0,350 0,350 Z" stroke="none" fill="rgba(100,80,60,0.5)"/>
-        <!-- M.Bruch -->
-        <path d="M0,360 C100,350 200,345 300,355 C400,365 500,360 600,350 C700,340 800,360 800,370" stroke="rgba(255,255,255,0.9)" stroke-width="2" fill="none"/>
-        <!-- Coroides -->
-        <path d="M0,400 C100,390 200,385 300,395 C400,405 500,400 600,390 C700,380 800,400 800,410" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>
-        <path d="M0,360 C100,350 200,345 300,355 C400,365 500,360 600,350 C700,340 800,360 800,370 L800,410 C700,400 600,410 500,420 C400,425 300,415 200,405 C100,390 0,400 0,400 Z" stroke="none" fill="rgba(80,50,40,0.4)"/>
-        <!-- Fóvea -->
-        <path d="M350,140 C380,170 420,170 450,140" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
-        <path d="M350,160 C380,190 420,190 450,160" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
-        <path d="M350,180 C380,210 420,210 450,180" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
-        <path d="M350,200 C380,230 420,230 450,200" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
-        <path d="M350,220 C380,250 420,250 450,220" stroke="rgba(255,255,255,0.6)" stroke-width="1" fill="none"/>
-      </svg>
-    </div>
-
-    <!-- JOYSTICKS -->
+    <!-- JOYSTICKS MEJORADOS -->
     <div id="joystick-light-container" class="joystick-container">
       <div id="joystick-light" class="joystick">
         <div class="joystick-handle"></div>
@@ -885,13 +2138,70 @@
         </div>
         <div id="light-mask"></div>
         <div id="light-reflection"></div>
-        <div id="vitrectome" class="instrument"></div>
-        <div id="end-grasper" class="instrument"></div>
-        <div id="laser-probe" class="instrument"></div>
+        <div id="light-scatter" class="light-scatter"></div>
+        <div id="specular-highlight" class="specular-highlight"></div>
+        
+        <!-- Vitrectomo 3D mejorado -->
+        <div id="vitrectome" class="instrument">
+          <div class="instrument-body">
+            <div class="instrument-light-reflection"></div>
+            <div class="instrument-tip"></div>
+            <div class="instrument-side"></div>
+          </div>
+          <div class="instrument-shadow"></div>
+        </div>
+        
+        <!-- Pinzas de Endograsper 3D mejoradas -->
+        <div id="end-grasper" class="instrument">
+          <div class="instrument-body">
+            <div class="instrument-light-reflection"></div>
+            <div class="instrument-jaws">
+              <div class="instrument-jaw left"></div>
+              <div class="instrument-jaw right"></div>
+            </div>
+          </div>
+          <div class="instrument-shadow"></div>
+        </div>
+        
+        <!-- Sonda de Láser 3D mejorada -->
+        <div id="laser-probe" class="instrument">
+          <div class="instrument-body">
+            <div class="instrument-light-reflection"></div>
+            <div class="instrument-tip"></div>
+          </div>
+          <div class="instrument-shadow"></div>
+        </div>
+
+        <!-- Tijeras Vitreorretinianas -->
+        <div id="scissors" class="instrument">
+          <div class="instrument-body">
+            <div class="instrument-light-reflection"></div>
+            <div class="instrument-jaws">
+              <div class="instrument-blade left"></div>
+              <div class="instrument-blade right"></div>
+            </div>
+          </div>
+          <div class="instrument-shadow"></div>
+        </div>
+
+        <!-- Sonda de PFC -->
+        <div id="pfc-probe" class="instrument">
+          <div class="instrument-body">
+            <div class="instrument-light-reflection"></div>
+            <div class="instrument-tip"></div>
+          </div>
+          <div class="instrument-shadow"></div>
+        </div>
+
+        <!-- Burbujas de PFC -->
+        <div id="pfc-bubbles"></div>
+        
+        <!-- Coágulos de sangre -->
+        <div id="blood-clots"></div>
       </div>
     </div>
 
-    <!-- ================== NUEVO SISTEMA DE PEELING ================== -->
+    <!-- SISTEMA DE PEELING -->
     <div id="peeling-container">
       <canvas id="retina-canvas"></canvas>
       
@@ -909,1189 +2219,959 @@
           <div id="traction-level"></div>
         </div>
         <small id="traction-warning" style="color: #ff6666; display: none;">¡ADVERTENCIA: Tracción excesiva! Riesgo de desgarro retiniano</small>
+        <div id="peeling-progress">
+          <div id="peeling-progress-bar"></div>
+          <span id="peeling-progress-text">0% completado</span>
+        </div>
       </div>
     </div>
+
+    <!-- VISUALIZACIÓN OCT -->
+    <div id="oct-container">
+      <svg viewBox="0 0 300 400" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="octGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#000000" stop-opacity="0" />
+            <stop offset="100%" stop-color="#000000" stop-opacity="0.8" />
+          </linearGradient>
+        </defs>
+        <rect width="300" height="400" fill="url(#octGradient)" />
+        <g id="oct-scan-group">
+          <path id="oct-retina" d="M0,200 Q75,180 150,200 T300,200" stroke="#00aaff" stroke-width="2" fill="none" />
+          <path id="oct-membrane" d="M0,190 Q75,170 150,190 T300,190" stroke="#ff9900" stroke-width="1.5" fill="none" />
+        </g>
+        <g id="mli-group">
+          <path d="M0,250 L300,250" stroke="#ff0000" stroke-width="1" stroke-dasharray="5,3" />
+          <text x="10" y="265" fill="#ff0000" font-size="12">MLI</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- INDICADOR DE PROFUNDIDAD -->
+    <div class="depth-indicator" id="depth-indicator">
+      Profundidad: Media
+    </div>
+    
+    <!-- EFECTO DE HEMORRAGIA -->
+    <div id="hemorrhage-effect" class="hemorrhage-overlay"></div>
   </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script>
-    /* ================== VARIABLES GLOBALES ================== */
-    let lightJoystickX = 50, lightJoystickY = 50;
-    let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
-    let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
-    let activeInstrument = null;
-    let iop = 16; // mmHg
-    let perfusion = 95; // %
-    let vitreousRemoved = 0; // %
-    let flowRate = 25; // ml/min
-    let retinaStatus = 'Estable';
+   /* ================== VARIABLES GLOBALES ================== */
+let lightJoystickX = 50, lightJoystickY = 50;
+let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
+let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
+let activeInstrument = null;
+let iop = 16; // mmHg
+let perfusion = 95; // %
+let vitreousRemoved = 0; // %
+let flowRate = 25; // ml/min
+let retinaStatus = 'Estable';
+let pfcLevel = 0; // %
+let instrumentVelocity = { x: 0, y: 0 };
+let lastInstrumentPosition = { x: 0, y: 0 };
+let currentTime = Date.now();
+let lastUpdateTime = currentTime;
+let alertTimeout = null;
+let vesselDamageActive = false;
+let hemorrhageActive = false;
+let bloodClots = [];
+let laserBurns = []; // Array para almacenar las marcas permanentes del láser
 
-    /* ================== VARIABLES PARA EL SISTEMA DE PEELING ================== */
-    let peelingState = {
-      step: 'ready', // ready, grasping, peeling, complete
-      instrument: 'forceps',
-      traction: 0,
-      complication: false,
-      membraneDetached: false,
-      flapCreated: false,
-      flapPosition: { x: 0, y: 0 }
-    };
-    
-    let peelingInstruments = {
-      forceps: {
-        position: { x: 0, y: 0 },
-        size: 20,
-        angle: 0,
-        grasping: false,
-        gripPosition: null
-      },
-      hook: {
-        position: { x: 0, y: 0 },
-        size: 15
-      },
-      scissors: {
-        position: { x: 0, y: 0 },
-        size: 25
-      }
-    };
-    
-    let retinaModel = {
-      center: { x: 0, y: 0 },
-      radius: 0,
-      points: []
-    };
-    
-    let membraneModel = {
-      points: [],
-      thickness: 1.5,
-      elasticity: 0.85,
-      adhesion: 0.7,
-      detachedPoints: 0,
-      flapPoints: []
-    };
+/* ================== INICIALIZACIÓN ================== */
+document.addEventListener('DOMContentLoaded', function() {
+  initJoysticks();
+  setupEventListeners();
+  setupAlertDismissButtons();
+  updateVitals();
+  updateEndoLightEffect(50, 50);
+  
+  // Actualizar posición de instrumentos
+  requestAnimationFrame(updateInstrumentPositions);
+});
 
-    /* ================== GESTIÓN DE INSTRUMENTOS ================== */
-    function toggleInstrument(btnId, instrumentId) {
-      const btn = document.getElementById(btnId);
-      
-      if(btn.classList.contains('active')) {
-        btn.classList.remove('active');
-        if(instrumentId === 'peeling') {
-          endPeeling();
-        } else {
-          document.getElementById(instrumentId).style.display = 'none';
+/* ================== SISTEMA DE ALERTAS MEJORADO ================== */
+function setupAlertDismissButtons() {
+  document.querySelectorAll('.alert-dismiss').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const alert = this.parentElement;
+      gsap.to(alert, {
+        opacity: 0,
+        y: -20,
+        duration: 0.3,
+        ease: "power1.out",
+        onComplete: () => {
+          alert.style.display = 'none';
+          alert.style.opacity = '1';
+          alert.style.transform = 'translateY(0)';
         }
-        activeInstrument = null;
-      } else {
-        // Desactivar todos los instrumentos primero
-        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.instrument').forEach(i => i.style.display = 'none');
-        
-        // Activar el seleccionado
-        btn.classList.add('active');
-        activeInstrument = instrumentId;
-        
-        if(instrumentId === 'peeling') {
-          initPeeling();
-        } else {
-          document.getElementById(instrumentId).style.display = 'block';
-        }
-      }
-    }
-
-    // Event listeners para instrumentos
-    document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectome'));
-    document.getElementById('btn-peeling').addEventListener('click', () => toggleInstrument('btn-peeling', 'peeling'));
-    document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser-probe'));
-    document.getElementById('btn-injection').addEventListener('click', performInjection);
-
-    /* ================== BOTÓN DE ACCIÓN PRINCIPAL ================== */
-    document.getElementById('btn-precionar').addEventListener('click', () => {
-      if(!activeInstrument) return;
-      
-      const instrument = document.getElementById(activeInstrument);
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const instRect = instrument.getBoundingClientRect();
-      
-      const x = instRect.left + instRect.width/2 - retinaRect.left;
-      const y = instRect.top + instRect.height/2 - retinaRect.top;
-      
-      const syntheticEvent = { 
-        clientX: retinaRect.left + x, 
-        clientY: retinaRect.top + y,
-        preventDefault: () => {}
-      };
-      
-      if(activeInstrument === 'laser-probe') {
-        laserFunction(syntheticEvent);
-      } else if(activeInstrument === 'vitrectome') {
-        vitrectomyFunction(syntheticEvent);
-      }
+      });
     });
+  });
+}
 
-    /* ================== FUNCIONES DE INSTRUMENTOS ================== */
-    function laserFunction(e) {
-      const retina = document.getElementById('retina');
-      const rect = retina.getBoundingClientRect();
-      
-      // Crear efecto de láser
-      const laserSpot = document.createElement('div');
-      laserSpot.className = 'laser-spot';
-      laserSpot.style.left = (e.clientX - rect.left - 12) + 'px';
-      laserSpot.style.top = (e.clientY - rect.top - 12) + 'px';
-      retina.appendChild(laserSpot);
-      
-      // Crear marca de quemadura
-      const burnMark = document.createElement('div');
-      burnMark.className = 'laser-burn';
-      burnMark.style.left = (e.clientX - rect.left - 3) + 'px';
-      burnMark.style.top = (e.clientY - rect.top - 3) + 'px';
-      retina.appendChild(burnMark);
-      
-      // Afectar parámetros
-      iop += 0.5;
-      perfusion -= 0.2;
-      
-      // Eliminar después de la animación
-      setTimeout(() => {
-        laserSpot.remove();
-        burnMark.remove();
-      }, 2500);
+function showAlert(alertId, duration = 5000) {
+  const alert = document.getElementById(alertId);
+  if (!alert) return;
+  
+  // Cancelar timeout anterior si existe
+  if (alertTimeout) {
+    clearTimeout(alertTimeout);
+  }
+  
+  // Mostrar alerta con animación
+  alert.style.display = 'flex';
+  gsap.fromTo(alert, 
+    { opacity: 0, y: -20 }, 
+    { opacity: 1, y: 0, duration: 0.3, ease: "power1.out" }
+  );
+  
+  // Configurar temporizador visual
+  const timer = alert.querySelector('.alert-timer');
+  if (timer) {
+    timer.style.width = '100%';
+    timer.style.transition = `width ${duration/1000}s linear`;
+    setTimeout(() => {
+      timer.style.width = '0%';
+    }, 10);
+  }
+  
+  // Configurar para ocultar después de la duración
+  if (duration > 0) {
+    alertTimeout = setTimeout(() => {
+      gsap.to(alert, {
+        opacity: 0,
+        y: -20,
+        duration: 0.3,
+        ease: "power1.out",
+        onComplete: () => {
+          alert.style.display = 'none';
+          alert.style.opacity = '1';
+          alert.style.transform = 'translateY(0)';
+        }
+      });
+    }, duration);
+  }
+}
+
+function checkWallCollision() {
+  const miniMapRect = document.getElementById('miniMapContainer').getBoundingClientRect();
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  
+  // Verificar colisión para el instrumento activo
+  if (activeInstrument) {
+    const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
+    const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
+    const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
+    
+    // Coordenadas relativas al mini mapa
+    const relX = (instrumentCenterX - retinaRect.left) / retinaRect.width * miniMapRect.width;
+    const relY = (instrumentCenterY - retinaRect.top) / retinaRect.height * miniMapRect.height;
+    
+    // Verificar contacto con retina en mini mapa
+    const retinaWall = document.getElementById('retina-wall');
+    const retinaX = 400 * (miniMapRect.width / 800);
+    const retinaY = 300 * (miniMapRect.height / 600);
+    const retinaRadius = 250 * (miniMapRect.width / 800);
+    
+    const distance = Math.sqrt(Math.pow(relX - retinaX, 2) + Math.pow(relY - retinaY, 2));
+    
+    if (distance > retinaRadius * 0.9) {
+      showAlert('wall-collision-alert');
+      return true;
     }
+    
+    // Verificar contacto con iris (cristalino) en mini mapa
+    const iris = document.getElementById('iris-minimap');
+    const irisX = 400 * (miniMapRect.width / 800);
+    const irisY = 150 * (miniMapRect.height / 600);
+    const irisDistance = Math.sqrt(Math.pow(relX - irisX, 2) + Math.pow(relY - irisY, 2));
+    
+    if (irisDistance < 30 && currentDepth > -100) {
+      showAlert('lens-contact-alert');
+      return true;
+    }
+  }
+  
+  // Verificar colisión para el endoiluminador
+  const lightPosX = retinaRect.left + retinaRect.width * lightJoystickX / 100;
+  const lightPosY = retinaRect.top + retinaRect.height * lightJoystickY / 100;
+  
+  // Coordenadas relativas al mini mapa
+  const lightRelX = (lightPosX - retinaRect.left) / retinaRect.width * miniMapRect.width;
+  const lightRelY = (lightPosY - retinaRect.top) / retinaRect.height * miniMapRect.height;
+  
+  // Verificar contacto con retina para el endoiluminador
+  const retinaX = 400 * (miniMapRect.width / 800);
+  const retinaY = 300 * (miniMapRect.height / 600);
+  const retinaRadius = 250 * (miniMapRect.width / 800);
+  
+  const lightDistance = Math.sqrt(Math.pow(lightRelX - retinaX, 2) + Math.pow(lightRelY - retinaY, 2));
+  
+  if (lightDistance > retinaRadius * 0.9) {
+    showAlert('wall-collision-alert');
+    return true;
+  }
+  
+  // Verificar contacto con iris (cristalino) para el endoiluminador
+  const iris = document.getElementById('iris-minimap');
+  const irisX = 400 * (miniMapRect.width / 800);
+  const irisY = 150 * (miniMapRect.height / 600);
+  const lightIrisDistance = Math.sqrt(Math.pow(lightRelX - irisX, 2) + Math.pow(lightRelY - irisY, 2));
+  
+  if (lightIrisDistance < 30) {
+    showAlert('lens-contact-alert');
+    return true;
+  }
+  
+  return false;
+}
 
-    function vitrectomyFunction(e) {
-      const retina = document.getElementById('retina');
-      const rect = retina.getBoundingClientRect();
+function checkVesselDamage() {
+  // Solo activar hemorragia si está en profundidad máxima (valor más negativo)
+  if (currentDepth > -200 || hemorrhageActive) return false;
+  
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
+  
+  const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
+  const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
+  
+  // Verificar colisión con vasos sanguíneos (simplificado)
+  const bloodVessels = document.querySelector('.blood-vessels');
+  const bloodVesselsRect = bloodVessels.getBoundingClientRect();
+  
+  // Coordenadas relativas al contenedor de retina
+  const relX = instrumentCenterX - bloodVesselsRect.left;
+  const relY = instrumentCenterY - bloodVesselsRect.top;
+  
+  // Verificar proximidad a vasos (simulación)
+  const proximityThreshold = 30;
+  const vesselProximity = Math.abs(relX - bloodVesselsRect.width/2) < proximityThreshold && 
+                         Math.abs(relY - bloodVesselsRect.height/2) < proximityThreshold;
+  
+  if (vesselProximity && !vesselDamageActive) {
+    vesselDamageActive = true;
+    hemorrhageActive = true;
+    showAlert('vessel-damage-alert', 0); // Mostrar hasta que el usuario la cierre
+    
+    // Efecto visual de hemorragia
+    document.getElementById('hemorrhage-effect').style.display = 'block';
+    gsap.to('#hemorrhage-effect', { opacity: 0.7, duration: 1 });
+    
+    // Crear coágulos de sangre
+    createBloodClots(5, {x: instrumentCenterX, y: instrumentCenterY});
+    
+    // Afectar parámetros
+    perfusion -= 15;
+    iop += 5;
+    
+    return true;
+  }
+  return false;
+}
+
+function createBloodClots(count, position = null) {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const bloodClotsContainer = document.getElementById('blood-clots');
+  
+  for (let i = 0; i < count; i++) {
+    const clot = document.createElement('div');
+    clot.className = 'blood-clot';
+    
+    // Posición aleatoria cerca de la posición del instrumento o del corte
+    let x, y;
+    if (position) {
+      x = position.x - retinaRect.left + (Math.random() * 40 - 20);
+      y = position.y - retinaRect.top + (Math.random() * 40 - 20);
+    } else {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * retinaRect.width * 0.4;
+      x = retinaRect.width/2 + Math.cos(angle) * distance;
+      y = retinaRect.height/2 + Math.sin(angle) * distance;
+    }
+    
+    clot.style.left = `${x}px`;
+    clot.style.top = `${y}px`;
+    clot.style.width = `${10 + Math.random() * 20}px`;
+    clot.style.height = `${10 + Math.random() * 20}px`;
+    
+    bloodClotsContainer.appendChild(clot);
+    bloodClots.push({
+      element: clot,
+      x: x,
+      y: y,
+      size: parseFloat(clot.style.width)
+    });
+  }
+}
+
+function removeBloodClot(index) {
+  if (index >= 0 && index < bloodClots.length) {
+    const clot = bloodClots[index];
+    if (clot.element.parentNode) {
+      gsap.to(clot.element, {
+        opacity: 0,
+        scale: 0.5,
+        duration: 0.5,
+        onComplete: () => {
+          if (clot.element.parentNode) {
+            clot.element.parentNode.removeChild(clot.element);
+          }
+        }
+      });
+    }
+    bloodClots.splice(index, 1);
+    
+    // Si no quedan coágulos, limpiar hemorragia
+    if (bloodClots.length === 0) {
+      hemorrhageActive = false;
+      vesselDamageActive = false;
+      gsap.to('#hemorrhage-effect', { 
+        opacity: 0, 
+        duration: 1, 
+        onComplete: () => {
+          document.getElementById('hemorrhage-effect').style.display = 'none';
+        }
+      });
+    }
+  }
+}
+
+function removeNearbyBloodClots(instrument, offsetX, offsetY) {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const instrumentRect = instrument.getBoundingClientRect();
+  
+  const instrumentCenterX = retinaRect.left + retinaRect.width/2 + offsetX;
+  const instrumentCenterY = retinaRect.top + retinaRect.height/2 + offsetY;
+  
+  // Verificar colisión con cada coágulo de sangre
+  bloodClots.forEach((clot, index) => {
+    const dx = instrumentCenterX - (retinaRect.left + clot.x);
+    const dy = instrumentCenterY - (retinaRect.top + clot.y);
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance < clot.size + instrumentRect.width/2) {
+      // Eliminar coágulo
+      removeBloodClot(index);
       
-      // Crear partículas de vítreo
-      for (let i = 0; i < 8; i++) {
+      // Efecto visual de eliminación
+      const particleCount = 5 + Math.floor(Math.random() * 5);
+      for (let i = 0; i < particleCount; i++) {
         const particle = document.createElement('div');
         particle.className = 'vitreous-particle';
-        particle.style.left = (e.clientX - rect.left + (Math.random()*20 - 10)) + 'px';
-        particle.style.top = (e.clientY - rect.top + (Math.random()*20 - 10)) + 'px';
+        particle.style.left = `${clot.x + (Math.random()*20 - 10)}px`;
+        particle.style.top = `${clot.y + (Math.random()*20 - 10)}px`;
         particle.style.setProperty('--tx', Math.random()*40 - 20);
         particle.style.setProperty('--ty', Math.random()*40 - 20);
-        retina.appendChild(particle);
+        document.getElementById('retina').appendChild(particle);
         
         setTimeout(() => particle.remove(), 1500);
       }
-      
-      // Actualizar progreso y parámetros
-      vitreousRemoved = Math.min(100, vitreousRemoved + 0.8);
-      iop -= 0.3;
-      flowRate += 0.1;
     }
+  });
+}
 
-    function performInjection() {
-      const retina = document.getElementById('retina');
-      retina.style.background = `
-        radial-gradient(circle at 35% 45%, rgba(100,150,255,0.2) 0%, rgba(50,100,255,0.3) 70%, rgba(20,50,255,0.2) 100%),
-        repeating-linear-gradient(45deg, rgba(100,150,255,0.1) 0px, rgba(100,150,255,0.1) 1px, transparent 1px, transparent 10px)`;
+function checkRetinaDetachment() {
+  // Simular desprendimiento basado en presión
+  if (iop > 28) {
+    showAlert('retina-detachment-alert');
+    return true;
+  }
+  return false;
+}
+
+function checkHighIOP() {
+  if (iop > 25) {
+    showAlert('high-iop-alert', 0); // Mostrar hasta que la presión baje
+    
+    // Efecto visual en nervio óptico
+    document.querySelector('.retina-nerve').style.backgroundColor = 'rgba(255,255,255,0.8)';
+    document.querySelector('.optic-disc').style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.5)';
+    
+    return true;
+  } else {
+    // Restaurar apariencia normal si la presión baja
+    document.querySelector('.retina-nerve').style.backgroundColor = '';
+    document.querySelector('.optic-disc').style.boxShadow = 'inset 0 0 20px rgba(220,80,80,0.6), 0 0 25px rgba(220,80,80,0.5)';
+    document.getElementById('high-iop-alert').style.display = 'none';
+    return false;
+  }
+}
+
+function checkLowDepth() {
+  if (currentDepth > -80) {
+    showAlert('low-depth-alert');
+    return true;
+  }
+  return false;
+}
+
+/* ================== CONTROL DE JOYSTICKS MEJORADO ================== */
+function initJoysticks() {
+  const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
+  initJoystick(joystickVitrectomo, (x, y) => {
+    vitrectomoJoystickX = x;
+    vitrectomoJoystickY = y;
+    updateInstrumentPosition(x, y);
+    updateMiniLeftLine(x, y);
+  });
+  
+  const joystickLight = document.getElementById('joystick-light');
+  initJoystick(joystickLight, (x, y) => {
+    lightJoystickX = x;
+    lightJoystickY = y;
+    updateEndoLightEffect(x, y);
+    updateMiniRightLine(x, y);
+    checkWallCollision(); // Verificar colisión para el endoiluminador
+  });
+}
+
+function initJoystick(joystickElement, updateCallback) {
+  const handle = joystickElement.querySelector('.joystick-handle');
+  const rect = joystickElement.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  const maxDistance = rect.width / 2;
+  let isTouching = false;
+  
+  function handleStart(e) {
+    e.preventDefault();
+    isTouching = true;
+    handleMove(e);
+  }
+  
+  function handleMove(e) {
+    if (!isTouching) return;
+    
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    
+    if(!clientX || !clientY) return;
+    
+    const bounds = joystickElement.getBoundingClientRect();
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
+    
+    let deltaX = x - centerX;
+    let deltaY = y - centerY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    if (distance > maxDistance) {
+      const angle = Math.atan2(deltaY, deltaX);
+      deltaX = Math.cos(angle) * maxDistance;
+      deltaY = Math.sin(angle) * maxDistance;
+    }
+    
+    handle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    
+    const normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
+    const normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
+    
+    updateCallback(normalizedX, normalizedY);
+  }
+  
+  function handleEnd() {
+    isTouching = false;
+    handle.style.transform = `translate(0px, 0px)`;
+    updateCallback(50, 50);
+  }
+  
+  // Eventos táctiles
+  joystickElement.addEventListener('touchstart', handleStart, { passive: false });
+  joystickElement.addEventListener('touchmove', handleMove, { passive: false });
+  joystickElement.addEventListener('touchend', handleEnd);
+  
+  // Eventos de ratón para compatibilidad
+  joystickElement.addEventListener('mousedown', handleStart);
+  document.addEventListener('mousemove', handleMove);
+  document.addEventListener('mouseup', handleEnd);
+}
+
+/* ================== ACTUALIZACIÓN DE POSICIONES ================== */
+function updateInstrumentPositions() {
+  updateInstrumentPosition(vitrectomoJoystickX, vitrectomoJoystickY);
+  requestAnimationFrame(updateInstrumentPositions);
+}
+
+function updateInstrumentPosition(normX, normY) {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const maxOffset = retinaRect.width / 2;
+  const offsetX = (normX - 50) / 50 * maxOffset * 0.9;
+  const offsetY = (normY - 50) / 50 * maxOffset * 0.9;
+  
+  if(activeInstrument) {
+    const instr = document.getElementById(activeInstrument);
+    if(instr) {
+      instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${currentDepth}px)`;
       
-      // Crear burbujas de inyección
-      for (let i = 0; i < 20; i++) {
-        setTimeout(() => {
-          const bubble = document.createElement('div');
-          bubble.className = 'injection-bubble';
-          bubble.style.left = `${50 + Math.random()*20}%`;
-          bubble.style.top = `${50 + Math.random()*20}%`;
-          bubble.style.width = `${5 + Math.random()*15}px`;
-          bubble.style.height = bubble.style.width;
-          bubble.style.setProperty('--tx', Math.random()*100 - 50);
-          bubble.style.setProperty('--ty', Math.random()*100 - 50);
-          retina.appendChild(bubble);
-          
-          setTimeout(() => bubble.remove(), 4000);
-        }, i*200);
+      // Actualizar sombra según posición de la luz
+      const shadow = instr.querySelector('.instrument-shadow');
+      if(shadow) {
+        const lightX = parseInt(document.documentElement.style.getPropertyValue('--light-x'));
+        const lightY = parseInt(document.documentElement.style.getPropertyValue('--light-y'));
+        
+        const shadowOffsetX = (lightX - 50) / 10;
+        const shadowOffsetY = (lightY - 50) / 10;
+        const shadowBlur = 10 - Math.abs(lightX - normX) / 10;
+        
+        shadow.style.transform = `translate(${shadowOffsetX}px, ${shadowOffsetY}px) rotateX(75deg) translateZ(-10px)`;
+        shadow.style.filter = `blur(${Math.max(3, shadowBlur)}px)`;
       }
       
-      // Ajustar parámetros
-      iop += 2;
-      flowRate = 30;
-      perfusion += 1;
+      // Verificar colisiones
+      checkWallCollision();
+      
+      // Verificar hemorragia si está en profundidad máxima
+      if (currentDepth <= -200) {
+        checkVesselDamage();
+      }
+      
+      // Actualizar indicador de profundidad
+      updateDepthIndicator();
     }
+  }
+}
 
-    /* ================== NUEVO SISTEMA DE PEELING ================== */
-    function initPeeling() {
-      const peelingContainer = document.getElementById('peeling-container');
-      const retinaCanvas = document.getElementById('retina-canvas');
+function updateDepthIndicator() {
+  const depthIndicator = document.getElementById('depth-indicator');
+  
+  if (currentDepth > -80) {
+    depthIndicator.textContent = "Profundidad: Superficial";
+    depthIndicator.style.setProperty('--depth-color', '#3b82f6');
+  } else if (currentDepth > -150) {
+    depthIndicator.textContent = "Profundidad: Media";
+    depthIndicator.style.setProperty('--depth-color', '#10b981');
+  } else {
+    depthIndicator.textContent = "Profundidad: Profunda";
+    depthIndicator.style.setProperty('--depth-color', '#ef4444');
+  }
+}
+
+function updateEndoLightEffect(normX, normY) {
+  document.documentElement.style.setProperty('--light-x', normX + '%');
+  document.documentElement.style.setProperty('--light-y', normY + '%');
+  
+  const zVal = parseInt(document.getElementById('endo-z-slider').value);
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const newLightSize = 20 + (retinaRect.width - 20) * (zVal / 200);
+  
+  document.documentElement.style.setProperty('--light-size', newLightSize + 'px');
+  document.getElementById('light-reflection').style.opacity = 0.7;
+  
+  // Activar efectos de dispersión de luz
+  if (zVal > 100) {
+    document.getElementById('light-scatter').classList.add('active');
+    document.getElementById('specular-highlight').classList.add('active');
+  } else {
+    document.getElementById('light-scatter').classList.remove('active');
+    document.getElementById('specular-highlight').classList.remove('active');
+  }
+  
+  // Actualizar reflejos en los instrumentos
+  document.querySelectorAll('.instrument-light-reflection').forEach(reflection => {
+    const instrument = reflection.closest('.instrument');
+    if(instrument) {
+      const instrRect = instrument.getBoundingClientRect();
+      const instrCenterX = instrRect.left + instrRect.width/2;
+      const instrCenterY = instrRect.top + instrRect.height/2;
+      
       const retinaRect = document.getElementById('retina').getBoundingClientRect();
+      const retinaCenterX = retinaRect.left + retinaRect.width/2;
+      const retinaCenterY = retinaRect.top + retinaRect.height/2;
       
-      // Configurar canvas
-      retinaCanvas.width = retinaRect.width;
-      retinaCanvas.height = retinaRect.height;
-      retinaModel.center = { x: retinaCanvas.width/2, y: retinaCanvas.height/2 };
-      retinaModel.radius = retinaRect.width * 0.4;
+      const lightPosX = retinaRect.left + retinaRect.width * normX / 100;
+      const lightPosY = retinaRect.top + retinaRect.height * normY / 100;
       
-      // Mostrar contenedor de peeling
-      peelingContainer.style.display = 'block';
+      const angle = Math.atan2(lightPosY - instrCenterY, lightPosX - instrCenterX);
+      const distance = Math.sqrt(
+        Math.pow(lightPosX - instrCenterX, 2) + 
+        Math.pow(lightPosY - instrCenterY, 2)
+      );
       
-      // Inicializar modelos
-      createRetinaModel();
-      createMembraneModel();
-      setupPeelingEventListeners();
-      updatePeelingHUD();
-      animatePeeling();
+      const intensity = Math.min(1, 100 / distance);
+      
+      reflection.style.background = `linear-gradient(
+        ${angle}rad,
+        rgba(255,255,255,${0.2 * intensity}) 0%,
+        rgba(255,255,255,${0.1 * intensity}) 50%,
+        transparent 100%
+      )`;
     }
+  });
+}
 
-    function endPeeling() {
-      const peelingContainer = document.getElementById('peeling-container');
-      peelingContainer.style.display = 'none';
-      
-      // Limpiar complicaciones
-      document.querySelectorAll('.complication').forEach(el => el.remove());
-      document.querySelectorAll('.membrane-flap').forEach(el => el.remove());
-      
-      // Restablecer estado
-      peelingState = {
-        step: 'ready',
-        instrument: 'forceps',
-        traction: 0,
-        complication: false,
-        membraneDetached: false,
-        flapCreated: false,
-        flapPosition: { x: 0, y: 0 }
-      };
-      
-      // Actualizar OCT
-      peelMLI_OCT();
-      
-      // Restaurar parámetros después del peeling
-      setTimeout(() => {
-        perfusion += 2;
-        iop -= 1;
-      }, 1000);
-    }
+function updateMiniLeftLine(normX, normY) {
+  const defaultTipX = 350;
+  const defaultTipY = 300;
+  const scaleX = 2.5;
+  const scaleY = 1.8;
+  const offsetX = (normX - 50) * scaleX;
+  const offsetY = (normY - 50) * scaleY;
+  let tipX = defaultTipX + offsetX;
+  let tipY = defaultTipY + offsetY;
+  
+  const miniLeft = document.getElementById('probeLight');
+  const miniLeftInner = document.getElementById('probeLightInner');
+  if(miniLeft && miniLeftInner) {
+    miniLeft.setAttribute('x2', tipX);
+    miniLeftInner.setAttribute('x2', tipX);
+    miniLeft.setAttribute('y2', tipY);
+    miniLeftInner.setAttribute('y2', tipY);
+  }
+}
 
-    function createRetinaModel() {
-      retinaModel.points = [];
-      for(let angle = 0; angle < Math.PI * 2; angle += 0.02) {
-        const radiusVariation = Math.sin(angle * 10) * 5 + Math.cos(angle * 3) * 8;
-        retinaModel.points.push({
-          x: retinaModel.center.x + (retinaModel.radius + radiusVariation) * Math.cos(angle),
-          y: retinaModel.center.y + (retinaModel.radius + radiusVariation) * Math.sin(angle),
-          originalX: retinaModel.center.x + (retinaModel.radius + radiusVariation) * Math.cos(angle),
-          originalY: retinaModel.center.y + (retinaModel.radius + radiusVariation) * Math.sin(angle)
-        });
+function updateMiniRightLine(normX, normY) {
+  const defaultTipX = 450;
+  const defaultTipY = 300;
+  const scaleX = 2.5;
+  const scaleY = 1.8;
+  const offsetX = (normX - 50) * scaleX;
+  const offsetY = (normY - 50) * scaleY;
+  let tipX = defaultTipX + offsetX;
+  let tipY = defaultTipY + offsetY;
+  
+  const miniRight = document.getElementById('probeForceps');
+  const miniRightInner = document.getElementById('probeForcepsInner');
+  if(miniRight && miniRightInner) {
+    miniRight.setAttribute('x2', tipX);
+    miniRightInner.setAttribute('x2', tipX);
+    miniRight.setAttribute('y2', tipY);
+    miniRightInner.setAttribute('y2', tipY);
+  }
+}
+
+/* ================== GESTIÓN DE INSTRUMENTOS ================== */
+function setupEventListeners() {
+  // Event listeners para instrumentos
+  document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectome'));
+  document.getElementById('btn-peeling').addEventListener('click', () => toggleInstrument('btn-peeling', 'end-grasper'));
+  document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser-probe'));
+  document.getElementById('btn-injection').addEventListener('click', performInjection);
+  document.getElementById('btn-scissors').addEventListener('click', () => toggleInstrument('btn-scissors', 'scissors'));
+  document.getElementById('btn-pfc').addEventListener('click', () => toggleInstrument('btn-pfc', 'pfc-probe'));
+  
+  // Botón de acción principal
+  document.getElementById('btn-precionar').addEventListener('click', handleMainAction);
+  
+  // Sliders
+  document.getElementById('vitrectomo-z-slider').addEventListener('input', function() {
+    currentDepth = parseInt(this.value);
+    updateInstrumentPosition(vitrectomoJoystickX, vitrectomoJoystickY);
+  });
+  
+  document.getElementById('endo-z-slider').addEventListener('input', function() {
+    updateEndoLightEffect(lightJoystickX, lightJoystickY);
+  });
+}
+
+function toggleInstrument(btnId, instrumentId) {
+  const btn = document.getElementById(btnId);
+  
+  if(btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    document.getElementById(instrumentId).style.display = 'none';
+    activeInstrument = null;
+  } else {
+    // Desactivar todos los instrumentos primero
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.instrument').forEach(i => i.style.display = 'none');
+    
+    // Activar el seleccionado
+    btn.classList.add('active');
+    activeInstrument = instrumentId;
+    document.getElementById(instrumentId).style.display = 'block';
+    
+    // Añadir clase active si corresponde
+    if(instrumentId === 'end-grasper') {
+      document.getElementById('end-grasper').classList.add('active');
+    } else if (instrumentId === 'scissors') {
+      document.getElementById('scissors').classList.add('active');
+    }
+  }
+}
+
+function handleMainAction() {
+  if(!activeInstrument) return;
+  
+  const instrument = document.getElementById(activeInstrument);
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const instRect = instrument.getBoundingClientRect();
+  
+  const x = instRect.left + instRect.width/2 - retinaRect.left;
+  const y = instRect.top + instRect.height/2 - retinaRect.top;
+  
+  const syntheticEvent = { 
+    clientX: retinaRect.left + x, 
+    clientY: retinaRect.top + y,
+    preventDefault: () => {}
+  };
+  
+  switch(activeInstrument) {
+    case 'laser-probe':
+      laserFunction(syntheticEvent);
+      break;
+    case 'vitrectome':
+      vitrectomyFunction(syntheticEvent);
+      // Eliminar coágulos cercanos
+      removeNearbyBloodClots(instrument, x, y);
+      break;
+    case 'end-grasper':
+      toggleGrasping();
+      break;
+    case 'scissors':
+      cuttingFunction(syntheticEvent);
+      // Crear coágulo solo si está en profundidad profunda
+      if (currentDepth <= -150) {
+        createBloodClots(1, {x: retinaRect.left + x, y: retinaRect.top + y});
       }
-    }
+      break;
+    case 'pfc-probe':
+      injectPFC();
+      break;
+  }
+  
+  // Verificar daño vascular solo si está en profundidad máxima y es un instrumento que puede causarlo
+  if (currentDepth <= -200 && (activeInstrument === 'vitrectome' || activeInstrument === 'scissors')) {
+    checkVesselDamage();
+  }
+}
+
+function toggleGrasping() {
+  const endGrasper = document.getElementById('end-grasper');
+  if(endGrasper.classList.contains('grasping')) {
+    endGrasper.classList.remove('grasping');
+  } else {
+    endGrasper.classList.add('grasping');
+  }
+}
+
+/* ================== FUNCIONES DE INSTRUMENTOS ================== */
+function laserFunction(e) {
+  const retina = document.getElementById('retina');
+  const rect = retina.getBoundingClientRect();
+  
+  // Crear efecto de láser
+  const laserSpot = document.createElement('div');
+  laserSpot.className = 'laser-spot';
+  laserSpot.style.left = (e.clientX - rect.left - 12) + 'px';
+  laserSpot.style.top = (e.clientY - rect.top - 12) + 'px';
+  retina.appendChild(laserSpot);
+  
+  // Crear marca de quemadura permanente
+  const burnMark = document.createElement('div');
+  burnMark.className = 'laser-burn-permanent';
+  burnMark.style.left = (e.clientX - rect.left - 3) + 'px';
+  burnMark.style.top = (e.clientY - rect.top - 3) + 'px';
+  retina.appendChild(burnMark);
+  
+  // Guardar la marca permanente en el array
+  laserBurns.push({
+    element: burnMark,
+    x: e.clientX - rect.left - 3,
+    y: e.clientY - rect.top - 3
+  });
+  
+  // Afectar parámetros
+  iop += 0.5;
+  perfusion -= 0.2;
+  
+  // Eliminar solo el efecto temporal
+  setTimeout(() => {
+    laserSpot.remove();
+  }, 2500);
+}
+
+function vitrectomyFunction(e) {
+  const retina = document.getElementById('retina');
+  const rect = retina.getBoundingClientRect();
+  
+  // Crear partículas de vítreo
+  for (let i = 0; i < 8; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'vitreous-particle';
+    particle.style.left = (e.clientX - rect.left + (Math.random()*20 - 10)) + 'px';
+    particle.style.top = (e.clientY - rect.top + (Math.random()*20 - 10)) + 'px';
+    particle.style.setProperty('--tx', Math.random()*40 - 20);
+    particle.style.setProperty('--ty', Math.random()*40 - 20);
+    retina.appendChild(particle);
     
-    function createMembraneModel() {
-      membraneModel.points = [];
-      membraneModel.flapPoints = [];
-      const baseRadius = retinaModel.radius * 0.7;
+    setTimeout(() => particle.remove(), 1500);
+  }
+  
+  // Actualizar progreso y parámetros
+  vitreousRemoved = Math.min(100, vitreousRemoved + 0.8);
+  iop -= 0.3;
+  flowRate += 0.1;
+}
+
+function cuttingFunction(e) {
+  const retina = document.getElementById('retina');
+  const rect = retina.getBoundingClientRect();
+  
+  // Animación de corte
+  const scissors = document.getElementById('scissors');
+  scissors.classList.add('cutting');
+  setTimeout(() => scissors.classList.remove('cutting'), 300);
+  
+  // Efecto visual de corte
+  const cutEffect = document.createElement('div');
+  cutEffect.className = 'cut-effect';
+  cutEffect.style.left = (e.clientX - rect.left - 15) + 'px';
+  cutEffect.style.top = (e.clientY - rect.top - 15) + 'px';
+  retina.appendChild(cutEffect);
+  
+  setTimeout(() => cutEffect.remove(), 1000);
+  
+  // Actualizar parámetros
+  iop += 0.2;
+}
+
+function injectPFC() {
+  if (pfcLevel >= 100) return;
+  
+  const retina = document.getElementById('retina');
+  const pfcBubbles = document.getElementById('pfc-bubbles');
+  
+  // Crear burbujas de PFC
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      const bubble = document.createElement('div');
+      bubble.className = 'pfc-bubble';
+      bubble.style.left = `${50 + Math.random() * 20}%`;
+      bubble.style.top = `${50 + Math.random() * 20}%`;
+      bubble.style.width = `${10 + Math.random() * 20}px`;
+      bubble.style.height = bubble.style.width;
+      pfcBubbles.appendChild(bubble);
       
-      for(let angle = 0; angle < Math.PI * 2; angle += 0.01) {
-        const radiusVariation = Math.sin(angle * 15) * 3 + Math.cos(angle * 7) * 5;
-        const radius = baseRadius + radiusVariation;
-        
-        membraneModel.points.push({
-          x: retinaModel.center.x + radius * Math.cos(angle),
-          y: retinaModel.center.y + radius * Math.sin(angle),
-          originalX: retinaModel.center.x + radius * Math.cos(angle),
-          originalY: retinaModel.center.y + radius * Math.sin(angle),
-          detached: false,
-          adhesion: 0.5 + Math.random() * 0.5,
-          thickness: 0.8 + Math.random() * 0.4,
-          flap: false
-        });
-      }
-    }
-    
-    function drawPeelingScene() {
-      const canvas = document.getElementById('retina-canvas');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Dibujar retina
-      drawRetinaModel(ctx);
-      
-      // Dibujar membrana
-      drawMembraneModel(ctx);
-      
-      // Dibujar instrumentos
-      drawPeelingInstruments(ctx);
-      
-      // Efectos de complicaciones
-      if(peelingState.complication) {
-        drawComplications(ctx);
-      }
-    }
-    
-    function drawRetinaModel(ctx) {
-      // Dibujar fondo transparente para ver la retina original
-      ctx.globalAlpha = 0.5;
-      ctx.fillStyle = 'rgba(0,0,0,0)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalAlpha = 1.0;
-    }
-    
-    function drawMembraneModel(ctx) {
-      // Membrana intacta
-      ctx.beginPath();
-      let startedPath = false;
-      
-      membraneModel.points.forEach((point, index) => {
-        if(!point.detached && !point.flap) {
-          if(!startedPath) {
-            ctx.moveTo(point.x, point.y);
-            startedPath = true;
-          } else {
-            ctx.lineTo(point.x, point.y);
-          }
-        }
+      gsap.to(bubble, {
+        y: `-=${30 + Math.random() * 50}`,
+        x: `+=${Math.random() * 40 - 20}`,
+        opacity: 0.8,
+        duration: 2,
+        onComplete: () => bubble.remove()
       });
-      
-      ctx.closePath();
-      ctx.fillStyle = peelingState.step === 'ready' ? 'rgba(200, 140, 140, 0.4)' : 'rgba(100, 160, 220, 0.3)';
-      ctx.strokeStyle = peelingState.step === 'ready' ? 'rgba(220, 160, 160, 0.8)' : 'rgba(150, 200, 255, 0.8)';
-      ctx.lineWidth = 1.2;
-      ctx.fill();
-      ctx.stroke();
-      
-      // Estrías y pliegues
-      ctx.beginPath();
-      for(let i = 0; i < membraneModel.points.length; i += 15) {
-        const point = membraneModel.points[i];
-        if(!point.detached && !point.flap) {
-          const nextIdx = (i + 20) % membraneModel.points.length;
-          const nextPoint = membraneModel.points[nextIdx];
-          
-          if(!nextPoint.detached && !nextPoint.flap) {
-            ctx.moveTo(point.x, point.y);
-            ctx.lineTo(
-              point.x + (nextPoint.x - point.x) * 0.4,
-              point.y + (nextPoint.y - point.y) * 0.4
-            );
-            
-            if(Math.random() > 0.7) {
-              ctx.moveTo(point.x, point.y);
-              ctx.lineTo(
-                point.x + (Math.random() - 0.5) * 5,
-                point.y + (Math.random() - 0.5) * 5
-              );
-            }
-          }
-        }
-      }
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 0.7;
-      ctx.stroke();
-      
-      // Bordes despegados
-      membraneModel.points.forEach((point, index) => {
-        if(point.detached || point.flap) {
-          const prevIdx = (index - 1 + membraneModel.points.length) % membraneModel.points.length;
-          const nextIdx = (index + 1) % membraneModel.points.length;
-          const prevPoint = membraneModel.points[prevIdx];
-          const nextPoint = membraneModel.points[nextIdx];
-          
-          if((!prevPoint.detached && !prevPoint.flap) || (!nextPoint.detached && !nextPoint.flap)) {
-            ctx.beginPath();
-            ctx.moveTo(point.x, point.y);
-            
-            if(!prevPoint.detached && !prevPoint.flap) {
-              ctx.lineTo(prevPoint.x, prevPoint.y);
-            } else {
-              ctx.lineTo(point.x - 5, point.y - 5);
-            }
-            
-            if(!nextPoint.detached && !nextPoint.flap) {
-              ctx.lineTo(nextPoint.x, nextPoint.y);
-            } else {
-              ctx.lineTo(point.x + 5, point.y + 5);
-            }
-            
-            ctx.closePath();
-            ctx.fillStyle = point.flap ? 'rgba(180, 220, 255, 0.6)' : 'rgba(150, 200, 255, 0.5)';
-            ctx.fill();
-            
-            if(point.flap) {
-              ctx.beginPath();
-              ctx.arc(point.x, point.y, 3, 0, Math.PI * 2);
-              ctx.fillStyle = 'rgba(220, 240, 255, 0.8)';
-              ctx.fill();
-            }
-          }
-        }
-      });
-      
-      // Dibujar la solapa de membrana si existe
-      if(peelingState.flapCreated) {
-        ctx.beginPath();
-        let flapStarted = false;
-        
-        membraneModel.points.forEach(point => {
-          if(point.flap) {
-            if(!flapStarted) {
-              ctx.moveTo(point.x, point.y);
-              flapStarted = true;
-            } else {
-              ctx.lineTo(point.x, point.y);
-            }
-          }
-        });
-        
-        ctx.closePath();
-        ctx.fillStyle = 'rgba(180, 220, 255, 0.4)';
-        ctx.strokeStyle = 'rgba(200, 230, 255, 0.8)';
-        ctx.lineWidth = 1;
-        ctx.fill();
-        ctx.stroke();
-        
-        // Efecto de pliegues en la solapa
-        ctx.beginPath();
-        membraneModel.points.forEach(point => {
-          if(point.flap && Math.random() > 0.7) {
-            ctx.moveTo(point.x, point.y);
-            ctx.lineTo(
-              point.x + (Math.random() - 0.5) * 15,
-              point.y + (Math.random() - 0.5) * 15
-            );
-          }
-        });
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-    }
-    
-    function drawPeelingInstruments(ctx) {
-      // Pinzas de peeling
-      if(peelingState.instrument === 'forceps') {
-        ctx.save();
-        ctx.translate(peelingInstruments.forceps.position.x, peelingInstruments.forceps.position.y);
-        ctx.rotate(peelingInstruments.forceps.angle);
-        
-        // Cuerpo
-        ctx.beginPath();
-        ctx.moveTo(0, -5);
-        ctx.lineTo(-15, -15);
-        ctx.lineTo(-20, -10);
-        
-        // Punta (varía según si está agarrando)
-        if(peelingInstruments.forceps.grasping) {
-          ctx.lineTo(-5, 25);
-          ctx.lineTo(5, 25);
-        } else {
-          ctx.lineTo(-5, 20);
-          ctx.lineTo(5, 20);
-        }
-        
-        ctx.lineTo(20, -10);
-        ctx.lineTo(15, -15);
-        ctx.closePath();
-        
-        ctx.fillStyle = peelingInstruments.forceps.grasping ? 'rgba(255, 255, 150, 0.9)' : 'rgba(220, 220, 220, 0.9)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        
-        // Efecto de agarre
-        if(peelingInstruments.forceps.grasping) {
-          ctx.beginPath();
-          ctx.arc(0, 25, 3, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(255, 255, 180, 0.9)';
-          ctx.fill();
-        }
-        
-        ctx.restore();
-      }
-      
-      // Gancho romo
-      if(peelingState.instrument === 'hook') {
-        ctx.beginPath();
-        ctx.moveTo(peelingInstruments.hook.position.x - 3, peelingInstruments.hook.position.y - 20);
-        ctx.lineTo(peelingInstruments.hook.position.x + 3, peelingInstruments.hook.position.y - 20);
-        ctx.lineTo(peelingInstruments.hook.position.x + 2, peelingInstruments.hook.position.y + 25);
-        ctx.lineTo(peelingInstruments.hook.position.x - 2, peelingInstruments.hook.position.y + 25);
-        ctx.closePath();
-        
-        // Punta roma
-        ctx.moveTo(peelingInstruments.hook.position.x, peelingInstruments.hook.position.y + 25);
-        ctx.arc(peelingInstruments.hook.position.x, peelingInstruments.hook.position.y + 35, 10, Math.PI, 0, true);
-        
-        ctx.fillStyle = 'rgba(200, 200, 200, 0.9)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-    
-    function drawComplications(ctx) {
-      // Sangrado
-      for(let i = 0; i < 3; i++) {
-        ctx.beginPath();
-        const bleedX = retinaModel.center.x + (Math.random() - 0.5) * 100;
-        const bleedY = retinaModel.center.y + (Math.random() - 0.5) * 100;
-        const bleedSize = 10 + Math.random() * 40;
-        
-        ctx.arc(bleedX, bleedY, bleedSize, 0, Math.PI * 2);
-        
-        const bleedGradient = ctx.createRadialGradient(
-          bleedX, bleedY, 0,
-          bleedX, bleedY, bleedSize
-        );
-        bleedGradient.addColorStop(0, 'rgba(180, 0, 0, 0.8)');
-        bleedGradient.addColorStop(1, 'rgba(120, 0, 0, 0.2)');
-        
-        ctx.fillStyle = bleedGradient;
-        ctx.fill();
-        
-        // Pequeños coágulos
-        if(Math.random() > 0.5) {
-          ctx.beginPath();
-          ctx.arc(
-            bleedX + (Math.random() - 0.5) * bleedSize * 0.7,
-            bleedY + (Math.random() - 0.5) * bleedSize * 0.7,
-            2 + Math.random() * 4,
-            0,
-            Math.PI * 2
-          );
-          ctx.fillStyle = 'rgba(100, 0, 0, 0.9)';
-          ctx.fill();
-        }
-      }
-    }
-    
-    function updatePeeling() {
-      if(peelingState.instrument === 'forceps' && peelingInstruments.forceps.grasping) {
-        let totalForce = 0;
-        let affectedPoints = 0;
-        
-        // Crear solapa si no existe y hay suficiente tracción
-        if(!peelingState.flapCreated && peelingState.traction > 30 && Math.random() < 0.05) {
-          createFlap();
-        }
-        
-        membraneModel.points.forEach((point, index) => {
-          // Calcular distancia al instrumento
-          const dx = point.x - peelingInstruments.forceps.position.x;
-          const dy = point.y - peelingInstruments.forceps.position.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          
-          if(distance < 30 && !point.detached && !point.flap) {
-            // Calcular dirección de tracción (tangencial a la retina)
-            const angleToCenter = Math.atan2(
-              retinaModel.center.y - point.y,
-              retinaModel.center.x - point.x
-            );
-            const tangentAngle = angleToCenter + Math.PI/2;
-            
-            // Calcular fuerza basada en distancia, adherencia y si hay solapa
-            const pullForce = (1 - distance/30) * (1 - point.adhesion) * (peelingState.flapCreated ? 1.5 : 1) * 2;
-            totalForce += pullForce;
-            affectedPoints++;
-            
-            // Aplicar movimiento tangencial con variación aleatoria
-            const angleVariation = (Math.random() - 0.5) * 0.2;
-            point.x += Math.cos(tangentAngle + angleVariation) * pullForce * 3;
-            point.y += Math.sin(tangentAngle + angleVariation) * pullForce * 3;
-            
-            // Verificar si se despegó
-            const originalDistance = Math.sqrt(
-              Math.pow(point.x - point.originalX, 2) + 
-              Math.pow(point.y - point.originalY, 2)
-            );
-            
-            if(originalDistance > 15 + (point.adhesion * 20)) {
-              if(peelingState.flapCreated) {
-                point.flap = true;
-                membraneModel.flapPoints.push(point);
-              } else {
-                point.detached = true;
-                membraneModel.detachedPoints++;
-              }
-              
-              // Efecto de desprendimiento
-              gsap.to(point, {
-                x: point.x + (Math.random() - 0.5) * 10,
-                y: point.y + (Math.random() - 0.5) * 10,
-                duration: 0.3
-              });
-            }
-            
-            // Propagación a puntos adyacentes con efecto de onda
-            const prevIndex = (index - 1 + membraneModel.points.length) % membraneModel.points.length;
-            const nextIndex = (index + 1) % membraneModel.points.length;
-            
-            [prevIndex, nextIndex].forEach((adjIndex, i) => {
-              const adjPoint = membraneModel.points[adjIndex];
-              if(!adjPoint.detached && !adjPoint.flap) {
-                const distanceFactor = 1 - (i * 0.3);
-                adjPoint.x += Math.cos(tangentAngle) * pullForce * 0.5 * distanceFactor;
-                adjPoint.y += Math.sin(tangentAngle) * pullForce * 0.5 * distanceFactor;
-              }
-            });
-          }
-          
-          // Elasticidad: intentar volver a posición original si no está agarrado
-          if(!point.detached && !point.flap && distance > 35) {
-            const returnSpeed = 0.05 * point.adhesion;
-            point.x += (point.originalX - point.x) * returnSpeed;
-            point.y += (point.originalY - point.y) * returnSpeed;
-          }
-          
-          // Mover puntos de la solapa con el instrumento
-          if(point.flap && distance < 50) {
-            const followFactor = 0.1 + (1 - distance/50) * 0.4;
-            point.x += (peelingInstruments.forceps.position.x - point.x) * followFactor;
-            point.y += (peelingInstruments.forceps.position.y - point.y) * followFactor;
-          }
-        });
-        
-        // Actualizar fuerza de tracción
-        if(affectedPoints > 0) {
-          peelingState.traction = (totalForce / affectedPoints) * 100;
-          
-          // Complicación por tracción excesiva con probabilidad variable
-          if(peelingState.traction > 70) {
-            const complicationChance = 0.02 + (peelingState.traction - 70) * 0.01;
-            if(Math.random() < complicationChance) {
-              causePeelingComplication();
-            }
-          }
-        } else {
-          peelingState.traction = 0;
-        }
-        
-        // Verificar si la membrana está completamente despegada
-        if((membraneModel.detachedPoints + membraneModel.flapPoints.length) > membraneModel.points.length * 0.9) {
-          peelingState.step = 'complete';
-          updatePeelingHUD("¡Membrana removida exitosamente!");
-        }
-      }
-    }
-    
-    function createFlap() {
-      peelingState.flapCreated = true;
-      peelingState.flapPosition = { 
-        x: peelingInstruments.forceps.position.x, 
-        y: peelingInstruments.forceps.position.y 
-      };
-      
-      // Crear elemento visual para la solapa
-      const flap = document.createElement('div');
-      flap.className = 'membrane-flap';
-      flap.style.width = '100px';
-      flap.style.height = '100px';
-      flap.style.left = `${peelingState.flapPosition.x - 50}px`;
-      flap.style.top = `${peelingState.flapPosition.y - 50}px`;
-      document.getElementById('peeling-container').appendChild(flap);
-      
-      // Marcar puntos cercanos como parte de la solapa
-      membraneModel.points.forEach(point => {
-        const dx = point.x - peelingState.flapPosition.x;
-        const dy = point.y - peelingState.flapPosition.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if(distance < 60 && !point.detached) {
-          point.flap = true;
-          membraneModel.flapPoints.push(point);
-          
-          // Efecto visual inicial
-          gsap.to(point, {
-            x: point.x + (Math.random() - 0.5) * 15,
-            y: point.y + (Math.random() - 0.5) * 15,
-            duration: 0.5
-          });
-        }
-      });
-      
-      updatePeelingHUD("Solapa de membrana creada. Continúe el peeling con cuidado.");
-    }
-    
-    function causePeelingComplication() {
-      peelingState.complication = true;
-      
-      // Crear efecto de sangrado
-      for(let i = 0; i < 8; i++) {
-        const blood = document.createElement('div');
-        blood.className = 'complication';
-        const size = 10 + Math.random() * 40;
-        blood.style.width = `${size}px`;
-        blood.style.height = `${size}px`;
-        blood.style.left = `${peelingInstruments.forceps.position.x + (Math.random() - 0.5) * 120}px`;
-        blood.style.top = `${peelingInstruments.forceps.position.y + (Math.random() - 0.5) * 120}px`;
-        blood.style.opacity = '0.8';
-        document.getElementById('peeling-container').appendChild(blood);
-        
-        // Animación de sangrado con GSAP
-        gsap.to(blood, {
-          width: `${size * 1.5}px`,
-          height: `${size * 1.5}px`,
-          left: `${parseFloat(blood.style.left) + (Math.random() - 0.5) * 30}px`,
-          top: `${parseFloat(blood.style.top) + (Math.random() - 0.5) * 30}px`,
-          opacity: 0,
-          duration: 3 + Math.random() * 3,
-          onComplete: () => blood.remove()
-        });
-      }
-      
-      // Añadir puntos de desgarro en la retina
-      for(let i = 0; i < 5; i++) {
-        const idx = Math.floor(Math.random() * retinaModel.points.length);
-        const point = retinaModel.points[idx];
-        
-        gsap.to(point, {
-          x: point.x + (Math.random() - 0.5) * 30,
-          y: point.y + (Math.random() - 0.5) * 30,
-          duration: 0.5
-        });
-      }
-      
-      // Afectar parámetros vitales
-      iop += 5;
-      perfusion -= 15;
-      
-      updatePeelingHUD("¡COMPLICACIÓN! Desgarro retiniano detectado");
-    }
-    
-    function updatePeelingHUD(message) {
-      const statusEl = document.getElementById('procedure-status');
-      const tractionEl = document.getElementById('traction-level');
-      const warningEl = document.getElementById('traction-warning');
-      
-      tractionEl.style.width = `${peelingState.traction}%`;
-      
-      if(peelingState.traction > 70) {
-        warningEl.style.display = 'block';
-        tractionEl.style.background = 'linear-gradient(90deg, #ff0000, #ff0000)';
-      } else {
-        warningEl.style.display = 'none';
-        tractionEl.style.background = 'linear-gradient(90deg, #00ff00, #ffcc00, #ff0000)';
-      }
-      
-      switch(peelingState.step) {
-        case 'ready':
-          statusEl.textContent = message || "Identifique el borde de la membrana con las pinzas";
-          break;
-        case 'grasping':
-          statusEl.textContent = message || "Agarre establecido. Aplique tracción TANGENCIAL suave";
-          break;
-        case 'peeling':
-          const progress = Math.round((membraneModel.detachedPoints + membraneModel.flapPoints.length)/membraneModel.points.length*100);
-          statusEl.textContent = message || `Peeling en progreso (${progress}% completado)`;
-          break;
-        case 'complete':
-          statusEl.textContent = message || "¡Procedimiento completado con éxito!";
-          break;
-      }
-      
-      if(peelingState.complication) {
-        statusEl.innerHTML = "<span style='color:#ff0000'>¡COMPLICACIÓN! Desgarro retiniano - Suspenda la tracción</span>";
-      }
-      
-      if(peelingState.flapCreated) {
-        statusEl.innerHTML += "<br><span style='color:#66ccff'>Solapa de membrana identificada</span>";
-      }
-    }
-    
-    function setupPeelingEventListeners() {
-      // Selector de instrumentos
-      document.getElementById('forceps-btn').addEventListener('click', () => {
-        peelingState.instrument = 'forceps';
-        document.getElementById('forceps-btn').classList.add('active');
-        document.getElementById('hook-btn').classList.remove('active');
-        document.getElementById('scissors-btn').classList.remove('active');
-        updatePeelingHUD();
-      });
-      
-      document.getElementById('hook-btn').addEventListener('click', () => {
-        peelingState.instrument = 'hook';
-        document.getElementById('forceps-btn').classList.remove('active');
-        document.getElementById('hook-btn').classList.add('active');
-        document.getElementById('scissors-btn').classList.remove('active');
-        updatePeelingHUD("Usando gancho romo para liberar adherencias");
-      });
-      
-      document.getElementById('scissors-btn').addEventListener('click', () => {
-        peelingState.instrument = 'scissors';
-        document.getElementById('forceps-btn').classList.remove('active');
-        document.getElementById('hook-btn').classList.remove('active');
-        document.getElementById('scissors-btn').classList.add('active');
-        updatePeelingHUD("Tijeras vitreorretinianas seleccionadas");
-      });
-      
-      // Control de instrumentos con mouse/touch
-      const canvas = document.getElementById('retina-canvas');
-      canvas.addEventListener('mousedown', handlePeelingStart);
-      canvas.addEventListener('touchstart', handlePeelingStart);
-      
-      canvas.addEventListener('mousemove', handlePeelingMove);
-      canvas.addEventListener('touchmove', handlePeelingMove);
-      
-      canvas.addEventListener('mouseup', handlePeelingEnd);
-      canvas.addEventListener('touchend', handlePeelingEnd);
-    }
-    
-    function handlePeelingStart(e) {
-      e.preventDefault();
-      const pos = getPeelingPosition(e);
-      
-      if(peelingState.instrument === 'forceps') {
-        peelingInstruments.forceps.position = pos;
-        peelingInstruments.forceps.grasping = true;
-        peelingInstruments.forceps.gripPosition = pos;
-        
-        // Calcular ángulo hacia el centro
-        const dx = retinaModel.center.x - pos.x;
-        const dy = retinaModel.center.y - pos.y;
-        peelingInstruments.forceps.angle = Math.atan2(dy, dx) - Math.PI/2;
-        
-        if(peelingState.step === 'ready') {
-          peelingState.step = 'grasping';
-          updatePeelingHUD();
-        }
-      } else if(peelingState.instrument === 'hook') {
-        peelingInstruments.hook.position = pos;
-      } else if(peelingState.instrument === 'scissors') {
-        peelingInstruments.scissors.position = pos;
-      }
-    }
-    
-    function handlePeelingMove(e) {
-      if((peelingState.instrument === 'forceps' && !peelingInstruments.forceps.grasping) || 
-         peelingState.step === 'complete') return;
-         
-      e.preventDefault();
-      const pos = getPeelingPosition(e);
-      
-      if(peelingState.instrument === 'forceps') {
-        peelingInstruments.forceps.position = pos;
-        
-        // Calcular ángulo hacia el centro
-        const dx = retinaModel.center.x - pos.x;
-        const dy = retinaModel.center.y - pos.y;
-        peelingInstruments.forceps.angle = Math.atan2(dy, dx) - Math.PI/2;
-        
-        if(peelingState.step === 'grasping') {
-          peelingState.step = 'peeling';
-        }
-        
-        updatePeeling();
-      } else if(peelingState.instrument === 'hook') {
-        peelingInstruments.hook.position = pos;
-        
-        // Lógica del gancho para liberar adherencias
-        membraneModel.points.forEach(point => {
-          if(!point.detached && !point.flap) {
-            const dx = point.x - pos.x;
-            const dy = point.y - pos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if(distance < 25) {
-              // Reducir adherencia donde se aplica el gancho
-              point.adhesion = Math.max(0.1, point.adhesion - 0.05);
-              
-              // Empujar ligeramente el punto con variación
-              const angle = Math.atan2(dy, dx);
-              const variation = (Math.random() - 0.5) * 0.2;
-              point.x += Math.cos(angle + variation) * 1.2;
-              point.y += Math.sin(angle + variation) * 1.2;
-            }
-          }
-        });
-      } else if(peelingState.instrument === 'scissors') {
-        peelingInstruments.scissors.position = pos;
-        
-        // Lógica de tijeras para cortar la membrana
-        if(peelingState.flapCreated) {
-          membraneModel.flapPoints.forEach(point => {
-            const dx = point.x - pos.x;
-            const dy = point.y - pos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if(distance < 20) {
-              point.detached = true;
-              point.flap = false;
-              membraneModel.detachedPoints++;
-              
-              // Efecto de corte
-              gsap.to(point, {
-                x: point.x + (Math.random() - 0.5) * 30,
-                y: point.y + (Math.random() - 0.5) * 30,
-                duration: 0.3
-              });
-            }
-          });
-        }
-      }
-    }
-    
-    function handlePeelingEnd() {
-      if(peelingState.instrument === 'forceps') {
-        peelingInstruments.forceps.grasping = false;
-        peelingState.traction = 0;
-      }
-      
-      updatePeelingHUD();
-    }
-    
-    function getPeelingPosition(e) {
-      const canvas = document.getElementById('retina-canvas');
-      const rect = canvas.getBoundingClientRect();
-      let clientX, clientY;
-      
-      if(e.touches) {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-      } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-      }
-      
-      return {
-        x: clientX - rect.left,
-        y: clientY - rect.top
-      };
-    }
-    
-    function animatePeeling() {
-      drawPeelingScene();
-      updatePeelingHUD();
-      requestAnimationFrame(animatePeeling);
-    }
+    }, i * 200);
+  }
+  
+  // Actualizar nivel de PFC
+  pfcLevel = Math.min(100, pfcLevel + 10);
+  document.getElementById('pfc-value').textContent = `${pfcLevel}%`;
+  
+  // Afectar parámetros
+  iop += 3;
+  perfusion += 2;
+  
+  // Cambiar aspecto de la retina
+  retina.style.background = `
+    radial-gradient(circle at 35% 45%, rgba(100,255,100,0.1) 0%, rgba(50,200,50,0.2) 70%, transparent 100%),
+    ${retina.style.background}`;
+}
 
-    function peelMLI_OCT() {
-      const mliGroup = document.getElementById('mli-group');
-      if(mliGroup) {
-        mliGroup.classList.add('peel-remove');
-        setTimeout(() => {
-          if(mliGroup.parentNode) mliGroup.parentNode.removeChild(mliGroup);
-        }, 1000);
-      }
-    }
+function performInjection() {
+  const retina = document.getElementById('retina');
+  retina.style.background = `
+    radial-gradient(circle at 35% 45%, rgba(100,150,255,0.2) 0%, rgba(50,100,255,0.3) 70%, rgba(20,50,255,0.2) 100%),
+    repeating-linear-gradient(45deg, rgba(100,150,255,0.1) 0px, rgba(100,150,255,0.1) 1px, transparent 1px, transparent 10px)`;
+  
+  // Crear burbujas de inyección
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      const bubble = document.createElement('div');
+      bubble.className = 'injection-bubble';
+      bubble.style.left = `${50 + Math.random()*20}%`;
+      bubble.style.top = `${50 + Math.random()*20}%`;
+      bubble.style.width = `${5 + Math.random()*15}px`;
+      bubble.style.height = bubble.style.width;
+      bubble.style.setProperty('--tx', Math.random()*100 - 50);
+      bubble.style.setProperty('--ty', Math.random()*100 - 50);
+      retina.appendChild(bubble);
+      
+      setTimeout(() => bubble.remove(), 4000);
+    }, i*200);
+  }
+  
+  // Ajustar parámetros
+  iop += 2;
+  flowRate = 30;
+  perfusion += 1;
+}
 
-    /* ================== CONTROL DE JOYSTICKS ================== */
-    function initJoystick(joystickElement, updateCallback) {
-      const handle = joystickElement.querySelector('.joystick-handle');
-      const rect = joystickElement.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const maxDistance = rect.width / 2;
-      let isTouching = false;
-      
-      function handleStart(e) {
-        e.preventDefault();
-        isTouching = true;
-        handleMove(e);
-      }
-      
-      function handleMove(e) {
-        if (!isTouching) return;
-        
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        
-        if(!clientX || !clientY) return;
-        
-        const bounds = joystickElement.getBoundingClientRect();
-        const x = clientX - bounds.left;
-        const y = clientY - bounds.top;
-        
-        let deltaX = x - centerX;
-        let deltaY = y - centerY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
-        if (distance > maxDistance) {
-          const angle = Math.atan2(deltaY, deltaX);
-          deltaX = Math.cos(angle) * maxDistance;
-          deltaY = Math.sin(angle) * maxDistance;
-        }
-        
-        handle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-        
-        const normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
-        const normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
-        
-        updateCallback(normalizedX, normalizedY);
-      }
-      
-      function handleEnd() {
-        isTouching = false;
-        handle.style.transform = `translate(0px, 0px)`;
-        updateCallback(50, 50);
-      }
-      
-      // Eventos táctiles
-      joystickElement.addEventListener('touchstart', handleStart, { passive: false });
-      joystickElement.addEventListener('touchmove', handleMove, { passive: false });
-      joystickElement.addEventListener('touchend', handleEnd);
-      
-      // Eventos de ratón para compatibilidad
-      joystickElement.addEventListener('mousedown', handleStart);
-      document.addEventListener('mousemove', handleMove);
-      document.addEventListener('mouseup', handleEnd);
-    }
+/* ================== ACTUALIZACIÓN DE PARÁMETROS ================== */
+function updateVitals() {
+  // Variación aleatoria de los parámetros
+  iop += (Math.random() - 0.5) * 0.1;
+  perfusion += (Math.random() - 0.5) * 0.2;
+  flowRate += (Math.random() - 0.5) * 0.1;
+  
+  // Efecto de instrumentos activos
+  if (activeInstrument === 'vitrectome') {
+    iop -= 0.05;
+    vitreousRemoved = Math.min(100, vitreousRemoved + 0.1);
+  }
+  
+  // Efecto de PFC
+  if (pfcLevel > 0) {
+    iop = Math.max(iop, 12 + pfcLevel / 10);
+    perfusion = Math.min(perfusion + pfcLevel / 50, 100);
+  }
+  
+  // Verificar alertas basadas en parámetros
+  checkRetinaDetachment();
+  checkHighIOP();
+  
+  // Limitar valores
+  iop = Math.max(10, Math.min(30, iop));
+  perfusion = Math.max(60, Math.min(100, perfusion));
+  vitreousRemoved = Math.max(0, Math.min(100, vitreousRemoved));
+  flowRate = Math.max(20, Math.min(35, flowRate));
+  
+  // Actualizar visualización
+  document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
+  document.getElementById('iop-level').style.width = ((iop - 10) / 20 * 100) + "%";
+  
+  document.getElementById('perfusion-value').innerText = perfusion.toFixed(0) + "%";
+  document.getElementById('perfusion-level').style.width = perfusion + "%";
+  
+  document.getElementById('vitreous-value').innerText = vitreousRemoved.toFixed(0) + "%";
+  document.getElementById('vitreous-level').style.width = vitreousRemoved + "%";
+  
+  document.getElementById('flow-value').innerText = flowRate.toFixed(1) + " ml/min";
+  
+  // Actualizar clase según presión
+  const iopElement = document.getElementById('iop-value');
+  iopElement.classList.remove('normal', 'warning', 'danger');
+  
+  if(iop < 15 || iop > 25) {
+    iopElement.classList.add('danger');
+    retinaStatus = 'Riesgo';
+  } else if(iop < 18 || iop > 22) {
+    iopElement.classList.add('warning');
+    retinaStatus = 'Alerta';
+  } else {
+    iopElement.classList.add('normal');
+    retinaStatus = 'Estable';
+  }
+  
+  // Actualizar estado de la retina
+  const retinaStatusElement = document.getElementById('retina-status');
+  retinaStatusElement.innerText = retinaStatus;
+  retinaStatusElement.className = `vital-value ${iopElement.className.split(' ')[1]}`;
+  
+  // Efectos de la perfusión en la retina
+  if(perfusion < 70) {
+    retinaStatusElement.classList.remove('normal', 'warning');
+    retinaStatusElement.classList.add('danger');
+    retinaStatus = 'Isquemia';
+  } else if(perfusion < 85) {
+    retinaStatusElement.classList.remove('normal', 'danger');
+    retinaStatusElement.classList.add('warning');
+    retinaStatus = 'Hipoperfusión';
+  }
+  
+  // Actualizar cada segundo
+  setTimeout(updateVitals, 1000);
+}
+    </script>
 
-    // Inicializar joysticks
-    const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
-    initJoystick(joystickVitrectomo, (x, y) => {
-      vitrectomoJoystickX = x;
-      vitrectomoJoystickY = y;
-      updateVitrectomoPosition(x, y);
-      updateMiniLeftLine(x, y);
-    });
-    
-    const joystickLight = document.getElementById('joystick-light');
-    initJoystick(joystickLight, (x, y) => {
-      lightJoystickX = x;
-      lightJoystickY = y;
-      updateEndoLightEffect(x, y);
-      updateMiniRightLine(x, y);
-    });
-
-    /* ================== ACTUALIZACIÓN DE POSICIONES ================== */
-    function updateVitrectomoPosition(normX, normY) {
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const maxOffset = retinaRect.width / 2;
-      const offsetX = (normX - 50) / 50 * maxOffset * 0.9;
-      const offsetY = (normY - 50) / 50 * maxOffset * 0.9;
-      
-      if(activeInstrument) {
-        const instr = document.getElementById(activeInstrument);
-        if(instr) {
-          instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${currentDepth}px)`;
-        }
-      }
-      
-      // Actualizar posición del peeling si está activo
-      if(activeInstrument === 'peeling' && peelingInstruments[peelingState.instrument]) {
-        peelingInstruments[peelingState.instrument].position = {
-          x: retinaRect.left + retinaRect.width/2 + offsetX,
-          y: retinaRect.top + retinaRect.height/2 + offsetY
-        };
-      }
-    }
-
-    function updateEndoLightEffect(normX, normY) {
-      document.documentElement.style.setProperty('--light-x', normX + '%');
-      document.documentElement.style.setProperty('--light-y', normY + '%');
-      
-      const zVal = parseInt(document.getElementById('endo-z-slider').value);
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const newLightSize = 20 + (retinaRect.width - 20) * (zVal / 200);
-      
-      document.documentElement.style.setProperty('--light-size', newLightSize + 'px');
-      document.getElementById('light-reflection').style.opacity = 0.7;
-    }
-
-    function updateMiniLeftLine(normX, normY) {
-      const defaultTipX = 350;
-      const defaultTipY = 300;
-      const scaleX = 2.5;
-      const scaleY = 1.8;
-      const offsetX = (normX - 50) * scaleX;
-      const offsetY = (normY - 50) * scaleY;
-      let tipX = defaultTipX + offsetX;
-      let tipY = defaultTipY + offsetY;
-      
-      const miniLeft = document.getElementById('probeLight');
-      const miniLeftInner = document.getElementById('probeLightInner');
-      if(miniLeft && miniLeftInner) {
-        miniLeft.setAttribute('x2', tipX);
-        miniLeftInner.setAttribute('x2', tipX);
-        miniLeft.setAttribute('y2', tipY);
-        miniLeftInner.setAttribute('y2', tipY);
-      }
-    }
-
-    function updateMiniRightLine(normX, normY) {
-      const defaultTipX = 450;
-      const defaultTipY = 300;
-      const scaleX = 2.5;
-      const scaleY = 1.8;
-      const offsetX = (normX - 50) * scaleX;
-      const offsetY = (normY - 50) * scaleY;
-      let tipX = defaultTipX + offsetX;
-      let tipY = defaultTipY + offsetY;
-      
-      const miniRight = document.getElementById('probeForceps');
-      const miniRightInner = document.getElementById('probeForcepsInner');
-      if(miniRight && miniRightInner) {
-        miniRight.setAttribute('x2', tipX);
-        miniRightInner.setAttribute('x2', tipX);
-        miniRight.setAttribute('y2', tipY);
-        miniRightInner.setAttribute('y2', tipY);
-      }
-    }
-
-    /* ================== ACTUALIZACIÓN DE PARÁMETROS ================== */
-    function updateVitals() {
-      // Variación aleatoria de los parámetros
-      iop += (Math.random() - 0.5) * 0.1;
-      perfusion += (Math.random() - 0.5) * 0.2;
-      flowRate += (Math.random() - 0.5) * 0.1;
-      
-      // Limitar valores
-      iop = Math.max(10, Math.min(30, iop));
-      perfusion = Math.max(60, Math.min(100, perfusion));
-      vitreousRemoved = Math.max(0, Math.min(100, vitreousRemoved));
-      flowRate = Math.max(20, Math.min(35, flowRate));
-      
-      // Actualizar visualización
-      document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
-      document.getElementById('iop-level').style.width = ((iop - 10) / 20 * 100) + "%";
-      
-      document.getElementById('perfusion-value').innerText = perfusion.toFixed(0) + "%";
-      document.getElementById('perfusion-level').style.width = perfusion + "%";
-      
-      document.getElementById('vitreous-value').innerText = vitreousRemoved.toFixed(0) + "%";
-      document.getElementById('vitreous-level').style.width = vitreousRemoved + "%";
-      
-      document.getElementById('flow-value').innerText = flowRate.toFixed(1) + " ml/min";
-      
-      // Actualizar clase según presión
-      const iopElement = document.getElementById('iop-value');
-      iopElement.classList.remove('normal', 'warning', 'danger');
-      
-      if(iop < 15 || iop > 25) {
-        iopElement.classList.add('danger');
-        retinaStatus = 'Riesgo';
-      } else if(iop < 18 || iop > 22) {
-        iopElement.classList.add('warning');
-        retinaStatus = 'Alerta';
-      } else {
-        iopElement.classList.add('normal');
-        retinaStatus = 'Estable';
-      }
-      
-      // Actualizar estado de la retina
-      const retinaStatusElement = document.getElementById('retina-status');
-      retinaStatusElement.innerText = retinaStatus;
-      retinaStatusElement.className = `vital-value ${iopElement.className.split(' ')[1]}`;
-      
-      // Efectos de la perfusión en la retina
-      if(perfusion < 70) {
-        retinaStatusElement.classList.remove('normal', 'warning');
-        retinaStatusElement.classList.add('danger');
-        retinaStatus = 'Isquemia';
-      } else if(perfusion < 85) {
-        retinaStatusElement.classList.remove('normal', 'danger');
-        retinaStatusElement.classList.add('warning');
-        retinaStatus = 'Hipoperfusión';
-      }
-    }
-
-    // Actualizar parámetros cada segundo
-    setInterval(updateVitals, 1000);
-
-    // Configurar sliders
-    document.getElementById('vitrectomo-z-slider').addEventListener('input', function() {
-      currentDepth = parseInt(this.value);
-      updateVitrectomoPosition(vitrectomoJoystickX, vitrectomoJoystickY);
-    });
-    
-    document.getElementById('endo-z-slider').addEventListener('input', function() {
-      updateEndoLightEffect(lightJoystickX, lightJoystickY);
-    });
-
-    // Inicialización
-    updateVitals();
-    updateEndoLightEffect(50, 50);
-  </script>
 </body>
 </html>
