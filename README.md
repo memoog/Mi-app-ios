@@ -2129,7 +2129,7 @@
       
       const lightDistance = Math.sqrt(Math.pow(lightRelX - retinaX, 2) + Math.pow(lightRelY - retinaY, 2));
       
-      if (lightDistance > retinaRadius * 1.0 && !wallCollisionActive) {
+      if (lightDistance > retinaRadius * 1.1 && !wallCollisionActive) {
         showAlert('wall-collision-alert');
         return true;
       }
@@ -2928,9 +2928,8 @@
         checkVesselDamage();
       }
     }
-
-    /* ================== FUNCIONES DE INSTRUMENTOS ================== */
-    function laserFunction(e) {
+/* ================== FUNCIONES DE INSTRUMENTOS ================== */
+function laserFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
       
