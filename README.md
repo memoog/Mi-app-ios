@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -8,7 +7,70 @@
   <link rel="stylesheet" href="d.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <style>
-    /* Estilos para los palitos blancos del minimapa */
+    /* MEJORAS PARA JOYSTICKS EN MÓVIL */
+.joystick {
+  touch-action: none;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 6px 15px rgba(0,0,0,0.4),
+    inset 0 0 25px rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  will-change: transform;
+}
+
+.joystick-handle {
+  touch-action: none;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  position: absolute;
+  transition: transform 0.05s ease;
+  box-shadow: 
+    0 0 15px rgba(255,255,255,0.4),
+    inset 0 0 8px rgba(255,255,255,0.7);
+  will-change: transform;
+}
+
+/* Mejoras de respuesta táctil */
+#btn-precionar {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .joystick {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .joystick-handle {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .joystick {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .joystick-handle {
+    width: 30px;
+    height: 30px;
+  }
+}
+/* Estilos para los palitos blancos del minimapa */
 #line-probeLight, #line-probeLightInner,
 #line-probeForceps, #line-probeForcepsInner {
   stroke-linecap: round;
@@ -1714,7 +1776,8 @@ input[type="range"]::-webkit-slider-thumb:active {
     font-size: 0.75rem;
     padding: 8px 15px;
   }
-}    /* Estilos adicionales para los instrumentos 3D */
+}
+/* Estilos adicionales para los instrumentos 3D */
     .instrument-tip {
       position: absolute;
       bottom: 0;
@@ -1912,7 +1975,7 @@ input[type="range"]::-webkit-slider-thumb:active {
           <p>Gas SF6 inyectado con éxito. El paciente debe mantener posición prono durante 7 días.</p>
           <div class="alert-timer"></div>
         </div>
-        <button class="alert-dismiss">×</button>
+        <button class="alert-dismiss" id="inicio.html">Volver al Menú</button>
       </div>
       
       <div class="alert-container" id="vitreous-removed-alert">
@@ -2195,6 +2258,8 @@ input[type="range"]::-webkit-slider-thumb:active {
     let isTouchingVitrectomo = false;
     let requiredMarks = 10;
     let marksAroundHole = 0;
+    let lastLightX = 50, lastLightY = 50;
+    let lastVitrectomoX = 50, lastVitrectomoY = 50;
 
     /* ================== INICIALIZACIÓN ================== */
     document.addEventListener('DOMContentLoaded', function() {
@@ -2786,6 +2851,8 @@ input[type="range"]::-webkit-slider-thumb:active {
       initJoystick(joystickVitrectomo, (x, y) => {
         vitrectomoJoystickX = x;
         vitrectomoJoystickY = y;
+        lastVitrectomoX = x;
+        lastVitrectomoY = y;
         updateInstrumentPosition(x, y);
         updateMiniLeftLine(x, y);
         checkWallCollision();
@@ -2796,6 +2863,8 @@ input[type="range"]::-webkit-slider-thumb:active {
       initJoystick(joystickLight, (x, y) => {
         lightJoystickX = x;
         lightJoystickY = y;
+        lastLightX = x;
+        lastLightY = y;
         updateEndoLightEffect(x, y);
         updateMiniRightLine(x, y);
         checkWallCollision();
@@ -2808,40 +2877,47 @@ input[type="range"]::-webkit-slider-thumb:active {
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
       const maxDistance = rect.width / 2;
+      let isDragging = false;
+      let touchId = null;
       
       function handleStart(e) {
         e.preventDefault();
-        if ((type === 'light' && isTouchingLight) || (type === 'vitrectomo' && isTouchingVitrectomo)) return;
+        if (isDragging) return;
         
-        if (type === 'light') isTouchingLight = true;
-        if (type === 'vitrectomo') isTouchingVitrectomo = true;
-        
-        handleMove(e);
-      }
-      
-      function handleMove(e) {
-        let clientX, clientY;
-        
+        isDragging = true;
         if (e.touches) {
           // Para multitouch, encontrar el touch correcto
           const touches = Array.from(e.touches);
           const touch = touches.find(t => {
-            const x = t.clientX;
-            const y = t.clientY;
-            const element = document.elementFromPoint(x, y);
+            const element = document.elementFromPoint(t.clientX, t.clientY);
             return element === joystickElement || element === handle;
           });
           
           if (!touch) return;
+          touchId = touch.identifier;
+          handleMove(e);
+        } else {
+          handleMove(e);
+        }
+      }
+      
+      function handleMove(e) {
+        if (!isDragging) return;
+        
+        let clientX, clientY;
+        
+        if (e.touches) {
+          // Encontrar el touch específico
+          const touches = Array.from(e.touches);
+          const touch = touches.find(t => t.identifier === touchId);
+          if (!touch) return;
+          
           clientX = touch.clientX;
           clientY = touch.clientY;
         } else {
-          if ((type === 'light' && !isTouchingLight) || (type === 'vitrectomo' && !isTouchingVitrectomo)) return;
           clientX = e.clientX;
           clientY = e.clientY;
         }
-        
-        if(!clientX || !clientY) return;
         
         const bounds = joystickElement.getBoundingClientRect();
         const x = clientX - bounds.left;
@@ -2866,11 +2942,13 @@ input[type="range"]::-webkit-slider-thumb:active {
       }
       
       function handleEnd() {
-        if (type === 'light') isTouchingLight = false;
-        if (type === 'vitrectomo') isTouchingVitrectomo = false;
+        if (!isDragging) return;
         
-        handle.style.transform = `translate(0px, 0px)`;
-        updateCallback(50, 50);
+        isDragging = false;
+        touchId = null;
+        
+        // No resetear la posición al soltar
+        handle.style.transform = `translate(${(lastVitrectomoX - 50) * maxDistance / 50}px, ${(lastVitrectomoY - 50) * maxDistance / 50}px)`;
       }
       
       // Eventos táctiles
@@ -3085,8 +3163,19 @@ input[type="range"]::-webkit-slider-thumb:active {
       const retinaRect = document.getElementById('retina').getBoundingClientRect();
       const instRect = instrument.getBoundingClientRect();
       
-      const x = instRect.left + instRect.width/2 - retinaRect.left;
-      const y = instRect.top + instRect.height/2 - retinaRect.top;
+      // Calcular posición de la punta del instrumento
+      let x, y;
+      if (activeInstrument === 'laser-probe' || activeInstrument === 'cautery-probe') {
+        // Para láser y cauterio, usar la punta exacta del instrumento
+        const tip = instrument.querySelector('.instrument-tip');
+        const tipRect = tip.getBoundingClientRect();
+        x = tipRect.left + tipRect.width/2 - retinaRect.left;
+        y = tipRect.top + tipRect.height/2 - retinaRect.top;
+      } else {
+        // Para otros instrumentos, usar el centro
+        x = instRect.left + instRect.width/2 - retinaRect.left;
+        y = instRect.top + instRect.height/2 - retinaRect.top;
+      }
       
       const syntheticEvent = { 
         clientX: retinaRect.left + x, 
@@ -3129,7 +3218,7 @@ input[type="range"]::-webkit-slider-thumb:active {
         case 'cautery-probe':
           if (procedureStep === 2 || procedureStep === 4) {
             cauteryFunction(syntheticEvent);
-            // Crear marca permanente en cualquier posición cuando se presiona el botón
+            // Crear marca permanente en la punta del instrumento
             const retina = document.getElementById('retina');
             const rect = retina.getBoundingClientRect();
             
@@ -3191,7 +3280,7 @@ input[type="range"]::-webkit-slider-thumb:active {
       iop += 0.5;
       perfusion -= 0.2;
       
-      // Verificar si está cerca del agujero
+      // Verificar si está cerca del agujero (dentro de las líneas blancas)
       const hole = document.getElementById('retinal-hole');
       const holeRect = hole.getBoundingClientRect();
       const distance = Math.sqrt(
@@ -3199,7 +3288,10 @@ input[type="range"]::-webkit-slider-thumb:active {
         Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
       );
       
-      if (distance < 50) {
+      // Radio del agujero más las líneas blancas alrededor
+      const holeRadiusWithBorder = holeRect.width/2 + 15;
+      
+      if (distance < holeRadiusWithBorder) {
         marksAroundHole++;
       }
       
@@ -3247,7 +3339,7 @@ input[type="range"]::-webkit-slider-thumb:active {
       
       // Solo verificar proximidad al agujero cuando se está en el paso 4 (fijación retiniana)
       if (procedureStep === 4) {
-        // Verificar si está cerca del agujero
+        // Verificar si está cerca del agujero (dentro de las líneas blancas)
         const hole = document.getElementById('retinal-hole');
         const holeRect = hole.getBoundingClientRect();
         const distance = Math.sqrt(
@@ -3255,7 +3347,10 @@ input[type="range"]::-webkit-slider-thumb:active {
           Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
         );
         
-        if (distance < 50) {
+        // Radio del agujero más las líneas blancas alrededor
+        const holeRadiusWithBorder = holeRect.width/2 + 15;
+        
+        if (distance < holeRadiusWithBorder) {
           marksAroundHole++;
           
           // Si es la primera marca cerca del agujero
