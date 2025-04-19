@@ -1,14 +1,15 @@
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Simulador Avanzado de Desprendimiento de Retina</title>
-  <link rel="stylesheet" href="css.css">
+  <link rel="stylesheet" href="d.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 </head>
 <style>
-  /* ================== SISTEMA DE ALERTAS PROFESIONAL ================== */
-#alert-system {
+    /* ================== SISTEMA DE ALERTAS PROFESIONAL ================== */
+  #alert-system {
     position: fixed;
     top: 20px;
     left: 50%;
@@ -1609,6 +1610,108 @@
       50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
       100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
     }
+    /* ================== NUEVAS ALERTAS ================== */
+.alert-container#vision-loss-alert {
+  border-left-color: #ff5555;
+  background: rgba(40, 10, 10, 0.95);
+  animation: alertShake 0.5s ease-out forwards;
+}
+
+.alert-container#surgery-complete-alert {
+  border-left-color: #00cc66;
+  background: rgba(10, 40, 20, 0.95);
+}
+
+/* ================== BURBUJAS DE GAS TRANSPARENTES ================== */
+.gas-bubble {
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.5),
+    inset 0 0 8px rgba(255, 255, 255, 0.3) !important;
+}
+
+.gas-bubble-large {
+  background: radial-gradient(circle, 
+    rgba(255,255,255,0.2) 0%, 
+    rgba(220,220,255,0.15) 70%, 
+    transparent 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  box-shadow: 
+    0 0 30px rgba(255,255,255,0.5),
+    inset 0 0 20px rgba(255,255,255,0.3) !important;
+}
+
+/* ================== BOTÓN VOLVER AL MENÚ ================== */
+#back-to-menu-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+}
+
+#back-to-menu-btn:hover {
+  background: #2563eb;
+}/* Estilos para las marcas de láser */
+    .laser-spot {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(255,100,100,0.8) 70%, transparent 100%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 20;
+      box-shadow: 0 0 15px rgba(255, 100, 100, 0.8);
+      transform: translate(-50%, -50%);
+    }
+    
+    .laser-burn-permanent {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 19;
+      box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+      transform: translate(-50%, -50%);
+    }
+    
+    /* Estilos para las marcas de cauterio */
+    .cautery-effect {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,200,100,0.7) 70%, transparent 100%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 20;
+      box-shadow: 0 0 10px rgba(255, 200, 100, 0.7);
+      transform: translate(-50%, -50%);
+      animation: cautery-pulse 0.5s ease-out;
+    }
+    
+    .cautery-mark-permanent {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 19;
+      transform: translate(-50%, -50%);
+    }
+    
+    @keyframes cautery-pulse {
+      0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+    }
   </style>
 <body>
   <!-- CASO CLÍNICO -->
@@ -1641,7 +1744,6 @@
       <button id="start-simulation-btn">Iniciar Simulación</button>
     </div>
   </div>
-
   <div id="container">
     <!-- SISTEMA DE ALERTAS -->
     <div id="alert-system">
@@ -1733,6 +1835,26 @@
           <div class="alert-timer"></div>
         </div>
         <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="vision-loss-alert">
+        <div class="alert-icon">👁️</div>
+        <div class="alert-content">
+          <h3>PÉRDIDA DE VISIÓN</h3>
+          <p>¡Precaución! Se ha aplicado cauterio en la mácula. Riesgo de pérdida visual permanente.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss">×</button>
+      </div>
+      
+      <div class="alert-container" id="surgery-complete-alert">
+        <div class="alert-icon">🏥</div>
+        <div class="alert-content">
+          <h3>CIRUGÍA COMPLETADA</h3>
+          <p>Procedimiento finalizado con éxito. La retina ha sido completamente reparada.</p>
+          <div class="alert-timer"></div>
+        </div>
+        <button class="alert-dismiss" id="inicio.html">Volver al Menú</button>
       </div>
     </div>
 
@@ -1961,6 +2083,7 @@
     let gasLevel = 0; // %
     let bloodClots = [];
     let laserBurns = [];
+    let cauteryMarks = [];
     let hemorrhageActive = false;
     let wallCollisionActive = false;
     let retinaDetached = false;
@@ -1972,6 +2095,8 @@
     let holeLocated = false;
     let isTouchingLight = false;
     let isTouchingVitrectomo = false;
+    let requiredMarks = 10;
+    let marksAroundHole = 0;
 
     /* ================== INICIALIZACIÓN ================== */
     document.addEventListener('DOMContentLoaded', function() {
@@ -1985,6 +2110,11 @@
             initSimulation();
           }
         });
+      });
+      
+      // Botón para volver al menú
+      document.getElementById('back-to-menu-btn').addEventListener('click', function() {
+        location.reload();
       });
     });
 
@@ -2456,9 +2586,9 @@
         
         // Guiar al usuario a usar el láser
         setTimeout(() => {
-          document.getElementById('btn-laser').classList.add('active');
-          document.getElementById('laser-probe').style.display = 'block';
-          activeInstrument = 'laser-probe';
+          document.getElementById('btn-cautery').classList.add('active');
+          document.getElementById('cautery-probe').style.display = 'block';
+          activeInstrument = 'cautery-probe';
           procedureStep = 4;
         }, 2000);
       }, 2000);
@@ -2508,10 +2638,11 @@
           bubble.style.top = `${40 + Math.random() * 20}%`;
           bubble.style.width = `${15 + Math.random() * 30}px`;
           bubble.style.height = bubble.style.width;
-          bubble.style.background = 'rgba(255, 255, 255, 0.95)';
+          bubble.style.background = 'rgba(255, 255, 255, 0.2)';
+          bubble.style.border = '1px solid rgba(255, 255, 255, 0.4)';
           bubble.style.boxShadow = 
-            '0 0 15px rgba(255, 255, 255, 0.9), ' +
-            'inset 0 0 8px rgba(255, 255, 255, 0.8)';
+            '0 0 15px rgba(255, 255, 255, 0.5), ' +
+            'inset 0 0 8px rgba(255, 255, 255, 0.3)';
           bubble.style.setProperty('--tx', Math.random() * 40 - 20);
           bubble.style.setProperty('--ty', -Math.random() * 60 - 30);
           gasBubbles.appendChild(bubble);
@@ -2537,7 +2668,17 @@
       if (gasLevel >= 100) {
         showAlert('gas-injected-alert');
         retinaFixed = true;
+        completeSurgery();
       }
+    }
+    
+    function completeSurgery() {
+      // Restaurar retina a su color original
+      const retina = document.querySelector('.retina-sphere');
+      retina.style.background = 'radial-gradient(circle at center, #500000 0%, #400000 20%, #300000 40%, #200000 70%, #100000 100%)';
+      
+      // Mostrar alerta de cirugía completada
+      showAlert('surgery-complete-alert', 0);
     }
 
     /* ================== CONTROL DE JOYSTICKS ================== */
@@ -2889,24 +3030,8 @@
           }
           break;
         case 'cautery-probe':
-          if (procedureStep === 2) {
+          if (procedureStep === 2 || procedureStep === 4) {
             cauteryFunction(syntheticEvent);
-            // Verificar si está cerca del agujero
-            const hole = document.getElementById('retinal-hole');
-            const holeRect = hole.getBoundingClientRect();
-            const distance = Math.sqrt(
-              Math.pow(syntheticEvent.clientX - (holeRect.left + holeRect.width/2), 2) + 
-              Math.pow(syntheticEvent.clientY - (holeRect.top + holeRect.height/2), 2)
-            );
-            
-            if (distance < 50 && !holeLocated) {
-              holeLocated = true;
-              showAlert('hole-located-alert');
-              procedureStep = 3;
-              document.getElementById('btn-pfc').classList.add('active');
-              document.getElementById('pfc-probe').style.display = 'block';
-              activeInstrument = 'pfc-probe';
-            }
           }
           break;
         case 'gas-probe':
@@ -2920,8 +3045,9 @@
         checkVesselDamage();
       }
     }
-/* ================== FUNCIONES DE INSTRUMENTOS ================== */
-function laserFunction(e) {
+
+    /* ================== FUNCIONES DE INSTRUMENTOS ================== */
+    function laserFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
       
@@ -2953,8 +3079,20 @@ function laserFunction(e) {
       iop += 0.5;
       perfusion -= 0.2;
       
+      // Verificar si está cerca del agujero
+      const hole = document.getElementById('retinal-hole');
+      const holeRect = hole.getBoundingClientRect();
+      const distance = Math.sqrt(
+        Math.pow(e.clientX - (holeRect.left + holeRect.width/2), 2) + 
+        Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
+      );
+      
+      if (distance < 50) {
+        marksAroundHole++;
+      }
+      
       // Si hay suficientes quemaduras alrededor del agujero
-      if (laserBurns.length > 10 && procedureStep === 4) {
+      if (marksAroundHole >= requiredMarks && procedureStep === 4) {
         procedureStep = 5;
         showAlert('retina-fixed-alert');
         
@@ -2976,6 +3114,18 @@ function laserFunction(e) {
       const retina = document.getElementById('retina');
       const rect = retina.getBoundingClientRect();
       
+      // Verificar si está en la mácula
+      const macula = document.querySelector('.macula');
+      const maculaRect = macula.getBoundingClientRect();
+      const maculaDistance = Math.sqrt(
+        Math.pow(e.clientX - (maculaRect.left + maculaRect.width/2), 2) + 
+        Math.pow(e.clientY - (maculaRect.top + maculaRect.height/2), 2)
+      );
+      
+      if (maculaDistance < maculaRect.width/2) {
+        showAlert('vision-loss-alert');
+      }
+      
       // Efecto visual de cauterio temporal
       const cauteryEffect = document.createElement('div');
       cauteryEffect.className = 'cautery-effect';
@@ -2983,16 +3133,57 @@ function laserFunction(e) {
       cauteryEffect.style.top = (e.clientY - rect.top - 15) + 'px';
       retina.appendChild(cauteryEffect);
       
-      // Crear marca permanente de cauterio (punto blanco)
-      const burnMark = document.createElement('div');
-      burnMark.className = 'cautery-mark-permanent';
-      burnMark.style.left = (e.clientX - rect.left - 2) + 'px';
-      burnMark.style.top = (e.clientY - rect.top - 2) + 'px';
-      burnMark.style.width = '4px';
-      burnMark.style.height = '4px';
-      burnMark.style.borderRadius = '50%';
-      burnMark.style.background = 'rgba(255, 255, 255, 0.8)';
-      document.getElementById('permanent-marks').appendChild(burnMark);
+      // Solo crear marca permanente cuando se presiona el botón de acción
+      if (procedureStep === 4) {
+        // Crear marca permanente de cauterio (punto blanco)
+        const burnMark = document.createElement('div');
+        burnMark.className = 'cautery-mark-permanent';
+        burnMark.style.left = (e.clientX - rect.left - 2) + 'px';
+        burnMark.style.top = (e.clientY - rect.top - 2) + 'px';
+        burnMark.style.width = '4px';
+        burnMark.style.height = '4px';
+        burnMark.style.borderRadius = '50%';
+        burnMark.style.background = 'rgba(255, 255, 255, 0.8)';
+        document.getElementById('permanent-marks').appendChild(burnMark);
+        
+        cauteryMarks.push({
+          element: burnMark,
+          x: e.clientX - rect.left - 2,
+          y: e.clientY - rect.top - 2
+        });
+        
+        // Verificar si está cerca del agujero
+        const hole = document.getElementById('retinal-hole');
+        const holeRect = hole.getBoundingClientRect();
+        const distance = Math.sqrt(
+          Math.pow(e.clientX - (holeRect.left + holeRect.width/2), 2) + 
+          Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
+        );
+        
+        if (distance < 50) {
+          marksAroundHole++;
+          
+          // Si es la primera marca cerca del agujero
+          if (marksAroundHole === 1 && !holeLocated) {
+            holeLocated = true;
+            showAlert('hole-located-alert');
+          }
+        }
+        
+        // Si hay suficientes marcas alrededor del agujero
+        if (marksAroundHole >= requiredMarks && procedureStep === 4) {
+          procedureStep = 5;
+          showAlert('retina-fixed-alert');
+          
+          // Guiar al usuario a remover el PFC
+          setTimeout(() => {
+            procedureStep = 6;
+            document.getElementById('btn-vitrectomo').classList.add('active');
+            document.getElementById('vitrectome').style.display = 'block';
+            activeInstrument = 'vitrectome';
+          }, 2000);
+        }
+      }
       
       // Actualizar parámetros
       perfusion += 1;
