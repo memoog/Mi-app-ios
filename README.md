@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2113,7 +2113,6 @@
           return true;
         }
       }
-      
       // Verificar colisión para el endoiluminador
       const lightPosX = retinaRect.left + retinaRect.width * lightJoystickX / 100;
       const lightPosY = retinaRect.top + retinaRect.height * lightJoystickY / 100;
@@ -2133,13 +2132,7 @@
         showAlert('wall-collision-alert');
         return true;
       }
-      
       // Verificar contacto con iris (cristalino) para el endoiluminador
-      const iris = document.getElementById('iris-minimap');
-      const irisX = 400 * (miniMapRect.width / 800);
-      const irisY = 150 * (miniMapRect.height / 600);
-      const lightIrisDistance = Math.sqrt(Math.pow(lightRelX - irisX, 2) + Math.pow(lightRelY - irisY, 2));
-      
       if (lightIrisDistance < 30 && !lensContactActive) {
         showAlert('lens-contact-alert');
         return true;
