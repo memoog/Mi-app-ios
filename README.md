@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +7,98 @@
   <link rel="stylesheet" href="d.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <style>
-    /* ================== GUÍA VISUAL PARA PUNTOS DE LÁSER ================== */
+    /* ================== MEJORAS PARA LAS VENAS RETINIANAS ================== */
+.blood-vessels {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  filter: drop-shadow(0 0 3px rgba(80, 0, 0, 0.7));
+  will-change: transform;
+  animation: vesselPulse 3s ease-in-out infinite;
+}
+
+@keyframes vesselPulse {
+  0%, 100% { 
+      transform: scale(1);
+      opacity: 0.8;
+  }
+  50% { 
+      transform: scale(1.02);
+      opacity: 0.9;
+  }
+}
+
+/* ================== MEJORAS PARA JOYSTICKS EN MÓVIL ================== */
+.joystick {
+  touch-action: none;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+      0 6px 15px rgba(0,0,0,0.4),
+      inset 0 0 25px rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  will-change: transform;
+}
+
+.joystick-handle {
+  touch-action: none;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  position: absolute;
+  transition: transform 0.05s ease;
+  box-shadow: 
+      0 0 15px rgba(255,255,255,0.4),
+      inset 0 0 8px rgba(255,255,255,0.7);
+  will-change: transform;
+}
+
+/* Mejoras de respuesta táctil */
+#btn-precionar {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease;
+}
+
+#btn-precionar:active {
+  transform: scale(0.95);
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .joystick {
+      width: 80px;
+      height: 80px;
+  }
+  
+  .joystick-handle {
+      width: 35px;
+      height: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .joystick {
+      width: 70px;
+      height: 70px;
+  }
+  
+  .joystick-handle {
+      width: 30px;
+      height: 30px;
+  }
+}
+/* ================== GUÍA VISUAL PARA PUNTOS DE LÁSER ================== */
 #laser-guide-ring {
   animation: pulse 2s infinite ease-in-out;
 }
@@ -2185,9 +2276,9 @@ input[type="range"]::-webkit-slider-thumb:active {
       <h3>OBJETIVOS QUIRÚRGICOS:</h3>
       <ol>
         <li>Realizar vitrectomía posterior completa</li>
-        <li>Identificar y marcar todos los desgarros retinianos</li>
-        <li>Aplicar endoláser alrededor de los desgarros</li>
+        <li>Identificar y marcar agujero con endocauterio</li>
         <li>Inyectar perfluorocarbono (PFC) para reaplicación retiniana</li>
+        <li>Aplicar endoláser alrededor de los desgarros</li>
         <li>Considerar inyección de gas o aceite de silicona según evolución</li>
       </ol>
       
@@ -2431,6 +2522,10 @@ input[type="range"]::-webkit-slider-thumb:active {
             <path d="M100,300 Q250,200 300,300 T500,300" fill="none" stroke="#8b0000" stroke-width="2" stroke-opacity="0.7"/>
             <path d="M100,280 Q250,400 300,280 T500,280" fill="none" stroke="#8b0000" stroke-width="1.5" stroke-opacity="0.6"/>
             <path d="M300,100 Q200,250 300,300 T300,500" fill="none" stroke="#8b0000" stroke-width="1.8" stroke-opacity="0.7"/>
+            <path d="M150,350 Q200,250 250,350 T350,350" fill="none" stroke="#8b0000" stroke-width="1.2" stroke-opacity="0.5"/>
+            <path d="M450,250 Q400,300 450,350" fill="none" stroke="#8b0000" stroke-width="1.3" stroke-opacity="0.6"/>
+            <path d="M200,200 Q250,150 300,200 T400,200" fill="none" stroke="#8b0000" stroke-width="1.1" stroke-opacity="0.5"/>
+            <path d="M400,400 Q350,450 400,500" fill="none" stroke="#8b0000" stroke-width="1.4" stroke-opacity="0.6"/>
           </svg>
           <div id="detached-retina-overlay"></div>
           <div id="retina-edge-detachment"></div>
@@ -2544,6 +2639,7 @@ input[type="range"]::-webkit-slider-thumb:active {
     let lastLightX = 50, lastLightY = 50;
     let lastVitrectomoX = 50, lastVitrectomoY = 50;
     let joystickSensitivity = 0.7; // Factor de sensibilidad para los joysticks (0.5-1.0)
+    let activeTouchId = null; // Para manejar multitouch
 
     /* ================== INICIALIZACIÓN ================== */
     document.addEventListener('DOMContentLoaded', function() {
@@ -3115,7 +3211,8 @@ input[type="range"]::-webkit-slider-thumb:active {
       const rect = joystickElement.getBoundingClientRect();
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-      const maxDistance = rect.width / 2 * joystickSensitivity; // Aplicar sensibilidad
+      const maxDistance = rect.width / 2 * joystickSensitivity;
+      
       let isDragging = false;
       let touchId = null;
       
@@ -3134,6 +3231,7 @@ input[type="range"]::-webkit-slider-thumb:active {
           
           if (!touch) return;
           touchId = touch.identifier;
+          activeTouchId = touchId;
           handleMove(e);
         } else {
           handleMove(e);
@@ -3187,11 +3285,19 @@ input[type="range"]::-webkit-slider-thumb:active {
         updateCallback(normalizedX, normalizedY);
       }
       
-      function handleEnd() {
+      function handleEnd(e) {
         if (!isDragging) return;
+        
+        // Verificar si el touch que terminó es el que controla este joystick
+        if (e.touches) {
+          const touches = Array.from(e.changedTouches);
+          const touch = touches.find(t => t.identifier === touchId);
+          if (!touch) return;
+        }
         
         isDragging = false;
         touchId = null;
+        activeTouchId = null;
         
         // Suavizar el retorno a la posición central
         gsap.to(handle, {
@@ -3200,11 +3306,26 @@ input[type="range"]::-webkit-slider-thumb:active {
           duration: 0.3,
           ease: "elastic.out(1, 0.5)"
         });
+        
+        // Resetear posición cuando se suelta
+        if (type === 'light') {
+          updateCallback(50, 50);
+        } else {
+          updateCallback(50, 50);
+        }
       }
       
       // Eventos táctiles
       joystickElement.addEventListener('touchstart', handleStart, { passive: false });
-      document.addEventListener('touchmove', handleMove, { passive: false });
+      document.addEventListener('touchmove', (e) => {
+        if (activeTouchId !== null) {
+          const touches = Array.from(e.touches);
+          if (touches.some(t => t.identifier === activeTouchId)) {
+            handleMove(e);
+          }
+        }
+      }, { passive: false });
+      
       document.addEventListener('touchend', handleEnd);
       document.addEventListener('touchcancel', handleEnd);
       
