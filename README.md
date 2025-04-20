@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2611,7 +2611,7 @@ input[type="range"]::-webkit-slider-thumb:active {
   </div>
 
   <script>
-  /* ================== VARIABLES GLOBALES ================== */
+ /* ================== VARIABLES GLOBALES ================== */
 let lightJoystickX = 50, lightJoystickY = 50;
 let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
 let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
@@ -2634,7 +2634,7 @@ let procedureStep = 0; // 0: no iniciado, 1: vitrectomía, 2: localización aguj
 let holeLocated = false;
 let isTouchingLight = false;
 let isTouchingVitrectomo = false;
-let requiredMarks = 5; // Cambiado a 5 puntos
+let requiredMarks = 3; // Cambiado a 3 puntos como solicitado
 let marksAroundHole = 0;
 let lastLightX = 50, lastLightY = 50;
 let lastVitrectomoX = 50, lastVitrectomoY = 50;
@@ -3107,7 +3107,7 @@ function injectGas() {
   const retina = document.getElementById('retina');
   const gasBubbles = document.getElementById('gas-bubbles');
   
-  // Crear burbuja grande central
+  // Crear burbuja grande central que abarque el 85% de la retina
   if (gasLevel === 0) {
     const bigBubble = document.createElement('div');
     bigBubble.className = 'gas-bubble-large';
@@ -3116,21 +3116,20 @@ function injectGas() {
     bigBubble.style.width = '85%';
     bigBubble.style.height = '85%';
     bigBubble.style.zIndex = '5';
+    bigBubble.style.background = 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(220,220,255,0.15) 70%, transparent 100%)';
+    bigBubble.style.border = '1px solid rgba(255,255,255,0.4)';
+    bigBubble.style.boxShadow = '0 0 30px rgba(255,255,255,0.5), inset 0 0 20px rgba(255,255,255,0.3)';
     gasBubbles.appendChild(bigBubble);
     
-    gsap.to(bigBubble, {
-      scale: 1.1,
-      opacity: 0.9,
-      duration: 3,
-      onComplete: () => {
-        if (bigBubble.parentNode) {
-          bigBubble.parentNode.removeChild(bigBubble);
-        }
+    // Eliminar la burbuja grande después de 3 segundos
+    setTimeout(() => {
+      if (bigBubble.parentNode) {
+        bigBubble.parentNode.removeChild(bigBubble);
       }
-    });
+    }, 3000);
   }
   
-  // Crear múltiples burbujas pequeñas
+  // Crear múltiples burbujas pequeñas transparentes
   for (let i = 0; i < 30; i++) {
     setTimeout(() => {
       const bubble = document.createElement('div');
@@ -3141,9 +3140,7 @@ function injectGas() {
       bubble.style.height = bubble.style.width;
       bubble.style.background = 'rgba(255, 255, 255, 0.2)';
       bubble.style.border = '1px solid rgba(255, 255, 255, 0.4)';
-      bubble.style.boxShadow = 
-        '0 0 15px rgba(255, 255, 255, 0.5), ' +
-        'inset 0 0 8px rgba(255, 255, 255, 0.3)';
+      bubble.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.3)';
       bubble.style.setProperty('--tx', Math.random() * 40 - 20);
       bubble.style.setProperty('--ty', -Math.random() * 60 - 30);
       gasBubbles.appendChild(bubble);
@@ -3177,6 +3174,15 @@ function injectGas() {
     // Mostrar alerta de cirugía completada
     showAlert('surgery-complete-alert', 0);
   }
+}
+
+function completeSurgery() {
+  // Restaurar retina a su color original
+  const retina = document.querySelector('.retina-sphere');
+  retina.style.background = 'radial-gradient(circle at center, #500000 0%, #400000 20%, #300000 40%, #200000 70%, #100000 100%)';
+  
+  // Mostrar alerta de cirugía completada
+  showAlert('surgery-complete-alert', 0);
 }
 
 /* ================== CONTROL DE JOYSTICKS MEJORADO ================== */
@@ -3553,7 +3559,7 @@ function handleMainAction() {
   
   switch(activeInstrument) {
     case 'laser-probe':
-      if (procedureStep === 5) {
+      if (procedureStep === 4) {
         laserFunction(syntheticEvent);
       }
       break;
@@ -3567,12 +3573,12 @@ function handleMainAction() {
           activeInstrument = 'cautery-probe';
           showAlert('vitreous-removed-alert');
         }
+        // Activar el gas cuando se haya retirado el 50% del PFC
         if (pfcLevel <= 50 && procedureStep === 6) {
           procedureStep = 7;
           document.getElementById('btn-gas').classList.add('active');
           document.getElementById('gas-probe').style.display = 'block';
           activeInstrument = 'gas-probe';
-          showAlert('gas-injected-alert');
         }
       }
       removeNearbyBloodClots(instrument, x, y);
@@ -3603,7 +3609,7 @@ function handleMainAction() {
           y: syntheticEvent.clientY - rect.top - 2
         });
         
-        // Verificar si se han colocado los 5 puntos alrededor del agujero
+        // Verificar si se han colocado los 3 puntos alrededor del agujero
         if (procedureStep === 2) {
           const hole = document.getElementById('retinal-hole');
           const holeRect = hole.getBoundingClientRect();
@@ -3685,8 +3691,8 @@ function laserFunction(e) {
   iop += 0.5;
   perfusion -= 0.2;
   
-  // Verificar proximidad al agujero cuando se está en la fase de fijación retiniana (paso 5)
-  if (procedureStep === 5) {
+  // Solo verificar proximidad al agujero cuando se está en la fase de fijación retiniana (paso 4)
+  if (procedureStep === 4) {
     const hole = document.getElementById('retinal-hole');
     const holeRect = hole.getBoundingClientRect();
     const holeCenterX = holeRect.left + holeRect.width/2;
@@ -3746,7 +3752,7 @@ function laserFunction(e) {
         repeat: 1
       });
       
-      // Si se alcanza el número requerido de puntos
+      // Si se alcanza el número requerido de puntos (3)
       if (marksAroundHole >= requiredMarks) {
         // Eliminar el anillo guía
         const guideRing = document.getElementById('laser-guide-ring');
@@ -3754,10 +3760,11 @@ function laserFunction(e) {
         
         // Mostrar mensaje de éxito
         showAlert('retina-fixed-alert');
-        procedureStep = 6;
+        procedureStep = 5;
         
         // Cambiar a vitrectomo después de 2 segundos
         setTimeout(() => {
+          procedureStep = 6;
           document.getElementById('btn-vitrectomo').classList.add('active');
           document.getElementById('vitrectome').style.display = 'block';
           activeInstrument = 'vitrectome';
@@ -3843,6 +3850,8 @@ function vitrectomyFunction(e) {
     // Eliminar el efecto de PFC cuando se remueve completamente
     if (pfcLevel <= 0) {
       document.getElementById('detached-retina-overlay').style.background = 'transparent';
+      // Finalizar la cirugía cuando se elimina todo el PFC
+      completeSurgery();
     }
   }
 }
