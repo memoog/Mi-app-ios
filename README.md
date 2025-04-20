@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -7,7 +7,101 @@
   <link rel="stylesheet" href="d.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <style>
-    /* MEJORAS PARA JOYSTICKS EN MÓVIL */
+    /* ================== GUÍA VISUAL PARA PUNTOS DE LÁSER ================== */
+#laser-guide-ring {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 0.5; transform: scale(1); }
+}
+
+/* ================== MEJORAS PARA JOYSTICKS ================== */
+.joystick {
+  transition: transform 0.1s ease-out;
+}
+
+.joystick-handle {
+  will-change: transform;
+  transition: transform 0.2s ease-out;
+}
+
+.joystick:active {
+  transform: scale(0.95);
+}
+
+/* Efecto de retroalimentación táctil */
+.joystick-handle:active {
+  transform: scale(0.9) !important;
+  box-shadow: 
+    0 0 20px rgba(255,255,255,0.6),
+    inset 0 0 10px rgba(255,255,255,0.8) !important;
+}
+
+/* ================== INDICADOR DE PUNTOS RESTANTES ================== */
+.laser-progress-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  padding: 10px 20px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.9rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.laser-progress-indicator::before {
+  content: 'Puntos:';
+  margin-right: 10px;
+  color: #aaa;
+}
+
+.laser-progress-indicator span {
+  font-weight: bold;
+  color: #3b82f6;
+}
+/* ================== INDICADORES DE PUNTOS DE LÁSER ================== */
+.laser-marker-number {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  color: #d00;
+  font-weight: bold;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 16;
+  pointer-events: none;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+}
+
+/* ================== EFECTOS DE RESALTADO ================== */
+#retinal-hole {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+/* ================== ANIMACIONES ================== */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.pulse-effect {
+  animation: pulse 0.5s ease-in-out;
+}
+/* MEJORAS PARA JOYSTICKS EN MÓVIL */
 .joystick {
   touch-action: none;
   position: relative;
@@ -1867,7 +1961,90 @@ input[type="range"]::-webkit-slider-thumb:active {
     inset 0 0 3px rgba(255,255,255,0.8);
   z-index: 1;
 }
-/* Estilos adicionales para los instrumentos 3D */
+/* ================== INDICADOR DE ACCIÓN DEL INSTRUMENTO ================== */
+.instrument-action-indicator {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.instrument-action-indicator.active {
+  opacity: 1;
+  animation: fadeInOut 1s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(0); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+  80% { opacity: 1; transform: translateX(-50%) translateY(-10px); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+/* ================== EFECTO DE PFC MEJORADO ================== */
+#detached-retina-overlay {
+  transition: background 1.5s ease;
+  background: radial-gradient(circle at 30% 20%, rgba(100,255,255,0.3) 0%, rgba(50,200,200,0.2) 60%, transparent 100%);
+}
+
+/* ================== EFECTO DE GAS MEJORADO ================== */
+.gas-bubble {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 6;
+  filter: blur(1px);
+  box-shadow: 
+    0 0 15px rgba(255, 255, 255, 0.9),
+    inset 0 0 8px rgba(255, 255, 255, 0.8);
+  transform: translate(-50%, -50%);
+  will-change: transform, opacity;
+  animation: bubbleFloat 4s ease-in-out forwards;
+}
+
+.gas-bubble-large {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  background: radial-gradient(circle, 
+    rgba(255,255,255,0.95) 0%, 
+    rgba(220,220,255,0.8) 70%, 
+    transparent 100%);
+  border-radius: 50%;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  filter: blur(2px);
+  box-shadow: 
+    0 0 30px rgba(255,255,255,0.9),
+    inset 0 0 20px rgba(255,255,255,0.8);
+  animation: largeBubblePulse 3s infinite alternate;
+}
+
+@keyframes bubbleFloat {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; }
+  100% { transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px)) scale(1); opacity: 0; }
+}
+
+@keyframes largeBubblePulse {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}    /* Estilos adicionales para los instrumentos 3D */
     .instrument-tip {
       position: absolute;
       bottom: 0;
@@ -1961,6 +2138,28 @@ input[type="range"]::-webkit-slider-thumb:active {
       0% { transform: scale(0.5); opacity: 0; }
       50% { transform: scale(1.3); opacity: 1; }
       100% { transform: scale(1); opacity: 0; }
+    }
+
+    /* Nuevo estilo para mostrar acción del instrumento */
+    .instrument-action-indicator {
+      position: absolute;
+      top: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    
+    .instrument-action-indicator.active {
+      opacity: 1;
     }
   </style>
 </head>
@@ -2250,6 +2449,7 @@ input[type="range"]::-webkit-slider-thumb:active {
             <div class="instrument-side"></div>
           </div>
           <div class="instrument-shadow"></div>
+          <div class="instrument-action-indicator">Vitrectomía</div>
         </div>
         
         <!-- Sonda de Láser -->
@@ -2259,6 +2459,7 @@ input[type="range"]::-webkit-slider-thumb:active {
             <div class="instrument-tip"></div>
           </div>
           <div class="instrument-shadow"></div>
+          <div class="instrument-action-indicator">Aplicando láser</div>
         </div>
 
         <!-- Sonda de PFC -->
@@ -2268,6 +2469,7 @@ input[type="range"]::-webkit-slider-thumb:active {
             <div class="instrument-tip"></div>
           </div>
           <div class="instrument-shadow"></div>
+          <div class="instrument-action-indicator">Inyectando PFC</div>
         </div>
 
         <!-- Cauterio -->
@@ -2277,6 +2479,7 @@ input[type="range"]::-webkit-slider-thumb:active {
             <div class="instrument-tip"></div>
           </div>
           <div class="instrument-shadow"></div>
+          <div class="instrument-action-indicator">Marcando con cauterio</div>
         </div>
         
         <!-- Jeringa de Gas -->
@@ -2286,6 +2489,7 @@ input[type="range"]::-webkit-slider-thumb:active {
             <div class="instrument-tip"></div>
           </div>
           <div class="instrument-shadow"></div>
+          <div class="instrument-action-indicator">Inyectando gas</div>
         </div>
 
         <!-- Burbujas de PFC -->
@@ -2335,10 +2539,11 @@ input[type="range"]::-webkit-slider-thumb:active {
     let holeLocated = false;
     let isTouchingLight = false;
     let isTouchingVitrectomo = false;
-    let requiredMarks = 7; // Cambiado de 10 a 7 puntos
+    let requiredMarks = 5; // Cambiado a 5 puntos
     let marksAroundHole = 0;
     let lastLightX = 50, lastLightY = 50;
     let lastVitrectomoX = 50, lastVitrectomoY = 50;
+    let joystickSensitivity = 0.7; // Factor de sensibilidad para los joysticks (0.5-1.0)
 
     /* ================== INICIALIZACIÓN ================== */
     document.addEventListener('DOMContentLoaded', function() {
@@ -2880,7 +3085,7 @@ input[type="range"]::-webkit-slider-thumb:active {
       showAlert('surgery-complete-alert', 0);
     }
 
-    /* ================== CONTROL DE JOYSTICKS ================== */
+    /* ================== CONTROL DE JOYSTICKS MEJORADO ================== */
     function initJoysticks() {
       const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
       initJoystick(joystickVitrectomo, (x, y) => {
@@ -2910,7 +3115,7 @@ input[type="range"]::-webkit-slider-thumb:active {
       const rect = joystickElement.getBoundingClientRect();
       const centerX = rect.width / 2;
       const centerY = rect.height / 2;
-      const maxDistance = rect.width / 2;
+      const maxDistance = rect.width / 2 * joystickSensitivity; // Aplicar sensibilidad
       let isDragging = false;
       let touchId = null;
       
@@ -2967,8 +3172,15 @@ input[type="range"]::-webkit-slider-thumb:active {
           deltaY = Math.sin(angle) * maxDistance;
         }
         
-        handle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+        // Suavizar el movimiento con interpolación
+        gsap.to(handle, {
+          x: deltaX,
+          y: deltaY,
+          duration: 0.1,
+          ease: "power1.out"
+        });
         
+        // Normalizar las coordenadas (0-100)
         const normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
         const normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
         
@@ -2981,8 +3193,13 @@ input[type="range"]::-webkit-slider-thumb:active {
         isDragging = false;
         touchId = null;
         
-        // No resetear la posición al soltar
-        handle.style.transform = `translate(${(lastVitrectomoX - 50) * maxDistance / 50}px, ${(lastVitrectomoY - 50) * maxDistance / 50}px)`;
+        // Suavizar el retorno a la posición central
+        gsap.to(handle, {
+          x: 0,
+          y: 0,
+          duration: 0.3,
+          ease: "elastic.out(1, 0.5)"
+        });
       }
       
       // Eventos táctiles
@@ -3196,6 +3413,13 @@ input[type="range"]::-webkit-slider-thumb:active {
       const retinaRect = document.getElementById('retina').getBoundingClientRect();
       const instRect = instrument.getBoundingClientRect();
       
+      // Mostrar indicador de acción
+      const actionIndicator = instrument.querySelector('.instrument-action-indicator');
+      if (actionIndicator) {
+        actionIndicator.classList.add('active');
+        setTimeout(() => actionIndicator.classList.remove('active'), 1000);
+      }
+      
       // Calcular posición de la punta del instrumento
       const tip = instrument.querySelector('.instrument-tip');
       const tipRect = tip.getBoundingClientRect();
@@ -3224,7 +3448,7 @@ input[type="range"]::-webkit-slider-thumb:active {
               activeInstrument = 'cautery-probe';
               showAlert('vitreous-removed-alert');
             }
-            if (pfcLevel <= 0 && procedureStep === 6) {
+            if (pfcLevel <= 50 && procedureStep === 6) {
               procedureStep = 7;
               document.getElementById('btn-gas').classList.add('active');
               document.getElementById('gas-probe').style.display = 'block';
@@ -3258,6 +3482,52 @@ input[type="range"]::-webkit-slider-thumb:active {
               x: syntheticEvent.clientX - rect.left - 2,
               y: syntheticEvent.clientY - rect.top - 2
             });
+            
+            // Verificar si se han colocado los 5 puntos alrededor del agujero
+            if (procedureStep === 2) {
+              const hole = document.getElementById('retinal-hole');
+              const holeRect = hole.getBoundingClientRect();
+              const holeCenterX = holeRect.left + holeRect.width/2;
+              const holeCenterY = holeRect.top + holeRect.height/2;
+              
+              const distance = Math.sqrt(
+                Math.pow(syntheticEvent.clientX - holeCenterX, 2) + 
+                Math.pow(syntheticEvent.clientY - holeCenterY, 2)
+              );
+              
+              if (distance < holeRect.width/2 + 30) {
+                marksAroundHole++;
+                
+                // Crear indicador numérico del punto aplicado
+                const markerNumber = document.createElement('div');
+                markerNumber.className = 'laser-marker-number';
+                markerNumber.textContent = marksAroundHole;
+                markerNumber.style.left = (syntheticEvent.clientX - rect.left - 10) + 'px';
+                markerNumber.style.top = (syntheticEvent.clientY - rect.top - 10) + 'px';
+                document.getElementById('permanent-marks').appendChild(markerNumber);
+                
+                // Animación de confirmación
+                gsap.to(markerNumber, {
+                  scale: 1.5,
+                  duration: 0.3,
+                  yoyo: true,
+                  repeat: 1
+                });
+                
+                if (marksAroundHole >= requiredMarks) {
+                  holeLocated = true;
+                  showAlert('hole-located-alert');
+                  procedureStep = 3;
+                  
+                  // Cambiar a PFC después de 2 segundos
+                  setTimeout(() => {
+                    document.getElementById('btn-pfc').classList.add('active');
+                    document.getElementById('pfc-probe').style.display = 'block';
+                    activeInstrument = 'pfc-probe';
+                  }, 2000);
+                }
+              }
+            }
           }
           break;
         case 'gas-probe':
@@ -3272,76 +3542,135 @@ input[type="range"]::-webkit-slider-thumb:active {
       }
     }
 
-    /* ================== FUNCIONES DE INSTRUMENTOS ================== */
+    /* ================== FUNCIONES DE INSTRUMENTOS MEJORADAS ================== */
     function laserFunction(e) {
       const retina = document.getElementById('retina');
-      const rect = retina.getBoundingClientRect();
+      const retinaRect = retina.getBoundingClientRect();
       
       // Crear efecto de láser temporal
       const laserSpot = document.createElement('div');
       laserSpot.className = 'laser-spot';
-      laserSpot.style.left = (e.clientX - rect.left - 12) + 'px';
-      laserSpot.style.top = (e.clientY - rect.top - 12) + 'px';
+      laserSpot.style.left = (e.clientX - retinaRect.left - 12) + 'px';
+      laserSpot.style.top = (e.clientY - retinaRect.top - 12) + 'px';
       retina.appendChild(laserSpot);
       
       // Crear marca permanente de láser (punto blanco)
       const burnMark = document.createElement('div');
       burnMark.className = 'laser-burn-permanent';
-      burnMark.style.left = (e.clientX - rect.left - 3) + 'px';
-      burnMark.style.top = (e.clientY - rect.top - 3) + 'px';
-      burnMark.style.width = '6px';
-      burnMark.style.height = '6px';
-      burnMark.style.borderRadius = '50%';
-      burnMark.style.background = 'rgba(255, 255, 255, 0.9)';
-      burnMark.style.boxShadow = '0 0 5px rgba(255, 255, 255, 0.8)';
+      burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
+      burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
       document.getElementById('permanent-marks').appendChild(burnMark);
       
-      laserBurns.push({
-        element: burnMark,
-        x: e.clientX - rect.left - 3,
-        y: e.clientY - rect.top - 3
-      });
-      
+      // Actualizar parámetros fisiológicos
       iop += 0.5;
       perfusion -= 0.2;
       
-      // Verificar si está cerca del agujero (dentro de las líneas blancas)
-      const hole = document.getElementById('retinal-hole');
-      const holeRect = hole.getBoundingClientRect();
-      const distance = Math.sqrt(
-        Math.pow(e.clientX - (holeRect.left + holeRect.width/2), 2) + 
-        Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
-      );
-      
-      // Radio del agujero más las líneas blancas alrededor
-      const holeRadiusWithBorder = holeRect.width/2 + 15;
-      
-      if (distance < holeRadiusWithBorder) {
-        marksAroundHole++;
-      }
-      
-      // Si hay suficientes quemaduras alrededor del agujero
-      if (marksAroundHole >= requiredMarks && procedureStep === 4) {
-        procedureStep = 5;
-        showAlert('retina-fixed-alert');
+      // Solo verificar proximidad al agujero cuando se está en la fase de fijación retiniana (paso 4)
+      if (procedureStep === 4) {
+        const hole = document.getElementById('retinal-hole');
+        const holeRect = hole.getBoundingClientRect();
+        const holeCenterX = holeRect.left + holeRect.width/2;
+        const holeCenterY = holeRect.top + holeRect.height/2;
         
-        // Guiar al usuario a remover el PFC
-        setTimeout(() => {
-          procedureStep = 6;
-          document.getElementById('btn-vitrectomo').classList.add('active');
-          document.getElementById('vitrectome').style.display = 'block';
-          activeInstrument = 'vitrectome';
-        }, 2000);
+        // Calcular distancia al centro del agujero
+        const distance = Math.sqrt(
+          Math.pow(e.clientX - holeCenterX, 2) + 
+          Math.pow(e.clientY - holeCenterY, 2)
+        );
+        
+        // Radio efectivo (radio del agujero + margen de 15px)
+        const effectiveRadius = holeRect.width/2 + 15;
+        
+        // Mostrar guía visual para los puntos de láser
+        if (distance < effectiveRadius + 50 && marksAroundHole < requiredMarks) {
+          // Crear anillo guía alrededor del agujero
+          if (!document.getElementById('laser-guide-ring')) {
+            const guideRing = document.createElement('div');
+            guideRing.id = 'laser-guide-ring';
+            guideRing.style.position = 'absolute';
+            guideRing.style.width = `${effectiveRadius * 2}px`;
+            guideRing.style.height = `${effectiveRadius * 2}px`;
+            guideRing.style.left = `${holeCenterX - retinaRect.left - effectiveRadius}px`;
+            guideRing.style.top = `${holeCenterY - retinaRect.top - effectiveRadius}px`;
+            guideRing.style.border = '2px dashed rgba(255, 255, 255, 0.5)';
+            guideRing.style.borderRadius = '50%';
+            guideRing.style.pointerEvents = 'none';
+            guideRing.style.zIndex = '16';
+            guideRing.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.3)';
+            retina.appendChild(guideRing);
+          }
+          
+          // Resaltar el agujero cuando se acerca el instrumento
+          gsap.to(hole, {
+            boxShadow: '0 0 20px rgba(255,255,255,0.8)',
+            duration: 0.3
+          });
+        }
+        
+        if (distance < effectiveRadius) {
+          marksAroundHole++;
+          
+          // Crear indicador numérico del punto aplicado
+          const markerNumber = document.createElement('div');
+          markerNumber.className = 'laser-marker-number';
+          markerNumber.textContent = marksAroundHole;
+          markerNumber.style.left = (e.clientX - retinaRect.left - 10) + 'px';
+          markerNumber.style.top = (e.clientY - retinaRect.top - 10) + 'px';
+          document.getElementById('permanent-marks').appendChild(markerNumber);
+          
+          // Animación de confirmación
+          gsap.to(markerNumber, {
+            scale: 1.5,
+            duration: 0.3,
+            yoyo: true,
+            repeat: 1
+          });
+          
+          // Si se alcanza el número requerido de puntos
+          if (marksAroundHole >= requiredMarks) {
+            // Eliminar el anillo guía
+            const guideRing = document.getElementById('laser-guide-ring');
+            if (guideRing) guideRing.remove();
+            
+            // Mostrar mensaje de éxito
+            showAlert('retina-fixed-alert');
+            procedureStep = 5;
+            
+            // Cambiar a vitrectomo después de 2 segundos
+            setTimeout(() => {
+              procedureStep = 6;
+              document.getElementById('btn-vitrectomo').classList.add('active');
+              document.getElementById('vitrectome').style.display = 'block';
+              activeInstrument = 'vitrectome';
+              
+              // Restaurar apariencia normal del agujero
+              gsap.to(hole, {
+                boxShadow: '0 0 15px rgba(255,255,255,0.5)',
+                duration: 0.5
+              });
+            }, 2000);
+          }
+        }
       }
       
+      // Eliminar efecto de láser después de 2.5 segundos
       setTimeout(() => {
-        laserSpot.remove();
+        if (laserSpot.parentNode) {
+          laserSpot.parentNode.removeChild(laserSpot);
+        }
       }, 2500);
     }
 
     function cauteryFunction(e) {
       const retina = document.getElementById('retina');
-      const rect = retina.getBoundingClientRect();
+      const retinaRect = retina.getBoundingClientRect();
+      
+      // Efecto visual de cauterio temporal
+      const cauteryEffect = document.createElement('div');
+      cauteryEffect.className = 'cautery-effect';
+      cauteryEffect.style.left = (e.clientX - retinaRect.left - 15) + 'px';
+      cauteryEffect.style.top = (e.clientY - retinaRect.top - 15) + 'px';
+      retina.appendChild(cauteryEffect);
       
       // Verificar si está en la mácula
       const macula = document.querySelector('.macula');
@@ -3355,57 +3684,15 @@ input[type="range"]::-webkit-slider-thumb:active {
         showAlert('vision-loss-alert');
       }
       
-      // Efecto visual de cauterio temporal
-      const cauteryEffect = document.createElement('div');
-      cauteryEffect.className = 'cautery-effect';
-      cauteryEffect.style.left = (e.clientX - rect.left - 15) + 'px';
-      cauteryEffect.style.top = (e.clientY - rect.top - 15) + 'px';
-      retina.appendChild(cauteryEffect);
-      
-      // Solo verificar proximidad al agujero cuando se está en el paso 4 (fijación retiniana)
-      if (procedureStep === 4) {
-        // Verificar si está cerca del agujero (dentro de las líneas blancas)
-        const hole = document.getElementById('retinal-hole');
-        const holeRect = hole.getBoundingClientRect();
-        const distance = Math.sqrt(
-          Math.pow(e.clientX - (holeRect.left + holeRect.width/2), 2) + 
-          Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
-        );
-        
-        // Radio del agujero más las líneas blancas alrededor
-        const holeRadiusWithBorder = holeRect.width/2 + 15;
-        
-        if (distance < holeRadiusWithBorder) {
-          marksAroundHole++;
-          
-          // Si es la primera marca cerca del agujero
-          if (marksAroundHole === 1 && !holeLocated) {
-            holeLocated = true;
-            showAlert('hole-located-alert');
-          }
-        }
-        
-        // Si hay suficientes marcas alrededor del agujero
-        if (marksAroundHole >= requiredMarks) {
-          procedureStep = 5;
-          showAlert('retina-fixed-alert');
-          
-          // Guiar al usuario a remover el PFC
-          setTimeout(() => {
-            procedureStep = 6;
-            document.getElementById('btn-vitrectomo').classList.add('active');
-            document.getElementById('vitrectome').style.display = 'block';
-            activeInstrument = 'vitrectome';
-          }, 2000);
-        }
-      }
-      
-      // Actualizar parámetros
+      // Actualizar parámetros fisiológicos
       perfusion += 1;
       iop = Math.min(30, iop + 0.3);
       
+      // Eliminar efecto de cauterio después de 1 segundo
       setTimeout(() => {
-        cauteryEffect.remove();
+        if (cauteryEffect.parentNode) {
+          cauteryEffect.parentNode.removeChild(cauteryEffect);
+        }
       }, 1000);
     }
 
@@ -3427,34 +3714,6 @@ input[type="range"]::-webkit-slider-thumb:active {
       
       vitreousRemoved = Math.min(100, vitreousRemoved + 0.8);
       iop = Math.max(20, iop - 0.3); // No permitir que la PIO baje de 20
-      
-      // Efecto de burbujeo cuando se está sobre el agujero
-      if (procedureStep === 4) {
-        const hole = document.getElementById('retinal-hole');
-        const holeRect = hole.getBoundingClientRect();
-        const distance = Math.sqrt(
-          Math.pow(e.clientX - (holeRect.left + holeRect.width/2), 2) + 
-          Math.pow(e.clientY - (holeRect.top + holeRect.height/2), 2)
-        );
-        
-        if (distance < 30) {
-          for (let i = 0; i < 3; i++) {
-            setTimeout(() => {
-              const bubble = document.createElement('div');
-              bubble.className = 'injection-bubble';
-              bubble.style.left = (holeRect.left - rect.left + holeRect.width/2 + (Math.random()*20 - 10)) + 'px';
-              bubble.style.top = (holeRect.top - rect.top + holeRect.height/2 + (Math.random()*20 - 10)) + 'px';
-              bubble.style.width = `${5 + Math.random() * 15}px`;
-              bubble.style.height = bubble.style.width;
-              bubble.style.setProperty('--tx', Math.random()*40 - 20);
-              bubble.style.setProperty('--ty', -Math.random()*60 - 30);
-              retina.appendChild(bubble);
-              
-              setTimeout(() => bubble.remove(), 2000);
-            }, i * 300);
-          }
-        }
-      }
       
       // Remoción de PFC
       if (procedureStep === 6) {
