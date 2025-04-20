@@ -1,4 +1,3 @@
-
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -1777,6 +1776,96 @@ input[type="range"]::-webkit-slider-thumb:active {
     padding: 8px 15px;
   }
 }
+/* MEJORAS PARA JOYSTICKS */
+.joystick {
+  touch-action: none;
+  position: relative;
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 6px 15px rgba(0,0,0,0.4),
+    inset 0 0 25px rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  will-change: transform;
+}
+
+.joystick-handle {
+  touch-action: none;
+  width: 40px;
+  height: 40px;
+  background: rgba(255,255,255,0.8);
+  border-radius: 50%;
+  position: absolute;
+  transition: transform 0.05s ease;
+  box-shadow: 
+    0 0 15px rgba(255,255,255,0.4),
+    inset 0 0 8px rgba(255,255,255,0.7);
+  will-change: transform;
+}
+
+/* Mejoras de respuesta táctil */
+#btn-precionar {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease;
+}
+
+#btn-precionar:active {
+  transform: scale(0.95);
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  .joystick {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .joystick-handle {
+    width: 35px;
+    height: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .joystick {
+    width: 70px;
+    height: 70px;
+  }
+  
+  .joystick-handle {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* Mejoras para los instrumentos */
+#laser-probe .instrument-tip {
+  width: 0.8mm;
+  height: 1.5mm;
+  background: radial-gradient(circle, #fff, #f99);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 5px rgba(255,100,100,0.8),
+    inset 0 0 3px rgba(255,255,255,0.8);
+}
+
+#cautery-probe .instrument-tip {
+  width: 1.2mm;
+  height: 2mm;
+  background: radial-gradient(circle, #ff9999, #ff3333);
+  border-radius: 0.3mm;
+  box-shadow: 
+    0 0 5px rgba(255,100,100,0.8),
+    inset 0 0 3px rgba(255,255,255,0.8);
+  z-index: 1;
+}
 /* Estilos adicionales para los instrumentos 3D */
     .instrument-tip {
       position: absolute;
@@ -1953,16 +2042,6 @@ input[type="range"]::-webkit-slider-thumb:active {
         <div class="alert-content">
           <h3>RETINA FIJADA</h3>
           <p>Procedimiento completado con éxito. La retina ha sido reposicionada y fijada con láser.</p>
-          <div class="alert-timer"></div>
-        </div>
-        <button class="alert-dismiss">×</button>
-      </div>
-      
-      <div class="alert-container" id="lens-contact-alert">
-        <div class="alert-icon">🔍</div>
-        <div class="alert-content">
-          <h3>CONTACTO CON CRISTALINO</h3>
-          <p>¡Precaución! El instrumento está en contacto con el cristalino. Riesgo de cataratas iatrogénicas.</p>
           <div class="alert-timer"></div>
         </div>
         <button class="alert-dismiss">×</button>
@@ -2251,12 +2330,11 @@ input[type="range"]::-webkit-slider-thumb:active {
     let retinaFixed = false;
     let pfcInjected = false;
     let gasInjected = false;
-    let lensContactActive = false;
     let procedureStep = 0; // 0: no iniciado, 1: vitrectomía, 2: localización agujero, 3: inyección PFC, 4: burbujeo, 5: láser, 6: remoción PFC, 7: inyección gas
     let holeLocated = false;
     let isTouchingLight = false;
     let isTouchingVitrectomo = false;
-    let requiredMarks = 10;
+    let requiredMarks = 7; // Cambiado de 10 a 7 puntos
     let marksAroundHole = 0;
     let lastLightX = 50, lastLightY = 50;
     let lastVitrectomoX = 50, lastVitrectomoY = 50;
@@ -2308,9 +2386,6 @@ input[type="range"]::-webkit-slider-thumb:active {
               if(alert.id === 'wall-collision-alert') {
                 wallCollisionActive = false;
               }
-              if(alert.id === 'lens-contact-alert') {
-                lensContactActive = false;
-              }
             }
           });
         });
@@ -2350,9 +2425,6 @@ input[type="range"]::-webkit-slider-thumb:active {
               if(alertId === 'wall-collision-alert') {
                 wallCollisionActive = false;
               }
-              if(alertId === 'lens-contact-alert') {
-                lensContactActive = false;
-              }
             }
           });
         }, duration);
@@ -2360,9 +2432,6 @@ input[type="range"]::-webkit-slider-thumb:active {
       
       if(alertId === 'wall-collision-alert') {
         wallCollisionActive = true;
-      }
-      if(alertId === 'lens-contact-alert') {
-        lensContactActive = true;
       }
     }
 
@@ -2393,17 +2462,6 @@ input[type="range"]::-webkit-slider-thumb:active {
           showAlert('wall-collision-alert');
           return true;
         }
-        
-        // Verificar contacto con iris (cristalino) en mini mapa
-        const iris = document.getElementById('iris-minimap');
-        const irisX = 400 * (miniMapRect.width / 800);
-        const irisY = 150 * (miniMapRect.height / 600);
-        const irisDistance = Math.sqrt(Math.pow(relX - irisX, 2) + Math.pow(relY - irisY, 2));
-        
-        if (irisDistance < 30 && currentDepth > -100 && !lensContactActive) {
-          showAlert('lens-contact-alert');
-          return true;
-        }
       }
       // Verificar colisión para el endoiluminador
       const lightPosX = retinaRect.left + retinaRect.width * lightJoystickX / 100;
@@ -2422,30 +2480,6 @@ input[type="range"]::-webkit-slider-thumb:active {
       
       if (lightDistance > retinaRadius * 1.1 && !wallCollisionActive) {
         showAlert('wall-collision-alert');
-        return true;
-      }
-      // Verificar contacto con iris (cristalino) para el endoiluminador
-      const lightIrisDistance = Math.sqrt(Math.pow(lightRelX - 400 * (miniMapRect.width / 800), 2) + Math.pow(lightRelY - 150 * (miniMapRect.height / 600), 2));
-      if (lightIrisDistance < 30 && !lensContactActive) {
-        showAlert('lens-contact-alert');
-        return true;
-      }
-      
-      return false;
-    }
-
-    function checkLensContact() {
-      if (!activeInstrument || currentDepth > -80 || lensContactActive) return false;
-      
-      const instrumentLine = document.getElementById('probeForceps');
-      const instrumentX2 = parseFloat(instrumentLine.getAttribute('x2'));
-      const instrumentY2 = parseFloat(instrumentLine.getAttribute('y2'));
-      
-      const isNearLens = instrumentY2 < 200 && 
-                       instrumentX2 > 300 && instrumentX2 < 500;
-      
-      if (isNearLens) {
-        showAlert('lens-contact-alert');
         return true;
       }
       
@@ -2856,7 +2890,6 @@ input[type="range"]::-webkit-slider-thumb:active {
         updateInstrumentPosition(x, y);
         updateMiniLeftLine(x, y);
         checkWallCollision();
-        checkLensContact();
       }, 'vitrectomo');
       
       const joystickLight = document.getElementById('joystick-light');
@@ -2994,7 +3027,6 @@ input[type="range"]::-webkit-slider-thumb:active {
           }
           
           checkWallCollision();
-          checkLensContact();
           
           if (currentDepth <= -200) {
             checkVesselDamage();
@@ -3164,18 +3196,10 @@ input[type="range"]::-webkit-slider-thumb:active {
       const instRect = instrument.getBoundingClientRect();
       
       // Calcular posición de la punta del instrumento
-      let x, y;
-      if (activeInstrument === 'laser-probe' || activeInstrument === 'cautery-probe') {
-        // Para láser y cauterio, usar la punta exacta del instrumento
-        const tip = instrument.querySelector('.instrument-tip');
-        const tipRect = tip.getBoundingClientRect();
-        x = tipRect.left + tipRect.width/2 - retinaRect.left;
-        y = tipRect.top + tipRect.height/2 - retinaRect.top;
-      } else {
-        // Para otros instrumentos, usar el centro
-        x = instRect.left + instRect.width/2 - retinaRect.left;
-        y = instRect.top + instRect.height/2 - retinaRect.top;
-      }
+      const tip = instrument.querySelector('.instrument-tip');
+      const tipRect = tip.getBoundingClientRect();
+      const x = tipRect.left + tipRect.width/2 - retinaRect.left;
+      const y = tipRect.top + tipRect.height/2 - retinaRect.top;
       
       const syntheticEvent = { 
         clientX: retinaRect.left + x, 
