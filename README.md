@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -2634,7 +2634,7 @@ let procedureStep = 0; // 0: no iniciado, 1: vitrectomía, 2: localización aguj
 let holeLocated = false;
 let isTouchingLight = false;
 let isTouchingVitrectomo = false;
-let requiredMarks = 3; // Cambiado a 3 puntos como solicitado
+let requiredMarks = 7; // Cambiado a 7 puntos como solicitaste
 let marksAroundHole = 0;
 let lastLightX = 50, lastLightY = 50;
 let lastVitrectomoX = 50, lastVitrectomoY = 50;
@@ -3107,53 +3107,64 @@ function injectGas() {
   const retina = document.getElementById('retina');
   const gasBubbles = document.getElementById('gas-bubbles');
   
-  // Crear burbuja grande central que abarque el 85% de la retina
+  // Crear burbuja grande central
   if (gasLevel === 0) {
     const bigBubble = document.createElement('div');
     bigBubble.className = 'gas-bubble-large';
     bigBubble.style.left = '50%';
     bigBubble.style.top = '50%';
-    bigBubble.style.width = '85%';
-    bigBubble.style.height = '85%';
+    bigBubble.style.width = '40%';
+    bigBubble.style.height = '40%';
     bigBubble.style.zIndex = '5';
-    bigBubble.style.background = 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(220,220,255,0.15) 70%, transparent 100%)';
-    bigBubble.style.border = '1px solid rgba(255,255,255,0.4)';
-    bigBubble.style.boxShadow = '0 0 30px rgba(255,255,255,0.5), inset 0 0 20px rgba(255,255,255,0.3)';
     gasBubbles.appendChild(bigBubble);
     
-    // Eliminar la burbuja grande después de 3 segundos
-    setTimeout(() => {
-      if (bigBubble.parentNode) {
-        bigBubble.parentNode.removeChild(bigBubble);
+    gsap.to(bigBubble, {
+      scale: 1.2,
+      opacity: 0.9,
+      duration: 3,
+      onComplete: () => {
+        if (bigBubble.parentNode) {
+          bigBubble.parentNode.removeChild(bigBubble);
+        }
       }
-    }, 3000);
+    });
   }
   
-  // Crear múltiples burbujas pequeñas transparentes
-  for (let i = 0; i < 30; i++) {
+  // Crear múltiples burbujas de gas transparentes con bordes grises claros
+  for (let i = 0; i < 25; i++) { // Más burbujas para cubrir el 85% de la retina
     setTimeout(() => {
       const bubble = document.createElement('div');
       bubble.className = 'gas-bubble';
-      bubble.style.left = `${30 + Math.random() * 40}%`;
+      
+      // Tamaños aleatorios (grandes y pequeñas)
+      const size = 15 + Math.random() * 40; // Tamaños entre 15px y 55px
+      
+      bubble.style.left = `${30 + Math.random() * 40}%`; // Cubrir área central del 85%
       bubble.style.top = `${30 + Math.random() * 40}%`;
-      bubble.style.width = `${15 + Math.random() * 30}px`;
-      bubble.style.height = bubble.style.width;
-      bubble.style.background = 'rgba(255, 255, 255, 0.2)';
-      bubble.style.border = '1px solid rgba(255, 255, 255, 0.4)';
-      bubble.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.5), inset 0 0 8px rgba(255, 255, 255, 0.3)';
+      bubble.style.width = `${size}px`;
+      bubble.style.height = `${size}px`;
+      
+      // Estilo de burbuja transparente con borde gris claro
+      bubble.style.background = 'rgba(255, 255, 255, 0.1)';
+      bubble.style.border = '1px solid rgba(200, 200, 200, 0.6)';
+      bubble.style.boxShadow = 
+        '0 0 10px rgba(255, 255, 255, 0.5), ' +
+        'inset 0 0 5px rgba(255, 255, 255, 0.3)';
+      
       bubble.style.setProperty('--tx', Math.random() * 40 - 20);
       bubble.style.setProperty('--ty', -Math.random() * 60 - 30);
       gasBubbles.appendChild(bubble);
       
+      // Animación de flotación
       gsap.to(bubble, {
         y: `-=${20 + Math.random() * 30}`,
         x: `+=${Math.random() * 20 - 10}`,
-        scale: 1.5,
-        opacity: 0.9,
+        scale: 1.2,
+        opacity: 0.8,
         duration: 3,
         onComplete: () => bubble.remove()
       });
-    }, i * 100);
+    }, i * 120); // Más rápido para crear más burbujas
   }
   
   gasLevel = Math.min(100, gasLevel + 20);
@@ -3166,13 +3177,7 @@ function injectGas() {
   if (gasLevel >= 100) {
     showAlert('gas-injected-alert');
     retinaFixed = true;
-    
-    // Restaurar retina a su color original
-    const retina = document.querySelector('.retina-sphere');
-    retina.style.background = 'radial-gradient(circle at center, #500000 0%, #400000 20%, #300000 40%, #200000 70%, #100000 100%)';
-    
-    // Mostrar alerta de cirugía completada
-    showAlert('surgery-complete-alert', 0);
+    completeSurgery();
   }
 }
 
@@ -3573,12 +3578,17 @@ function handleMainAction() {
           activeInstrument = 'cautery-probe';
           showAlert('vitreous-removed-alert');
         }
-        // Activar el gas cuando se haya retirado el 50% del PFC
+        // Activar el gas cuando el PFC llegue al 50%
         if (pfcLevel <= 50 && procedureStep === 6) {
           procedureStep = 7;
           document.getElementById('btn-gas').classList.add('active');
           document.getElementById('gas-probe').style.display = 'block';
           activeInstrument = 'gas-probe';
+          
+          // Inyectar gas automáticamente
+          setTimeout(() => {
+            injectGas();
+          }, 500);
         }
       }
       removeNearbyBloodClots(instrument, x, y);
@@ -3609,7 +3619,7 @@ function handleMainAction() {
           y: syntheticEvent.clientY - rect.top - 2
         });
         
-        // Verificar si se han colocado los 3 puntos alrededor del agujero
+        // Verificar si se han colocado los 7 puntos alrededor del agujero
         if (procedureStep === 2) {
           const hole = document.getElementById('retinal-hole');
           const holeRect = hole.getBoundingClientRect();
@@ -3752,7 +3762,7 @@ function laserFunction(e) {
         repeat: 1
       });
       
-      // Si se alcanza el número requerido de puntos (3)
+      // Si se alcanza el número requerido de puntos (7)
       if (marksAroundHole >= requiredMarks) {
         // Eliminar el anillo guía
         const guideRing = document.getElementById('laser-guide-ring');
@@ -3850,7 +3860,8 @@ function vitrectomyFunction(e) {
     // Eliminar el efecto de PFC cuando se remueve completamente
     if (pfcLevel <= 0) {
       document.getElementById('detached-retina-overlay').style.background = 'transparent';
-      // Finalizar la cirugía cuando se elimina todo el PFC
+      
+      // Completar la cirugía cuando se elimina todo el PFC
       completeSurgery();
     }
   }
