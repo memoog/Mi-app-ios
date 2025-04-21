@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Simulador de Extracción de Hemorragia Vítrea</title>
-  <link rel="stylesheet" href="css.css">
+  <link rel="stylesheet" href="d.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </head>
-<body>
   <style>
+    
 /* Estilos base */
 body {
   margin: 0;
@@ -2163,7 +2163,762 @@ body {
       padding: 8px 15px;
     }
   }
-  </style>
+  /* Estilos base */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #0f172a;
+  color: white;
+  overflow: hidden;
+  touch-action: none;
+  height: 100vh;
+  width: 100vw;
+}
+
+#container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Caso clínico */
+#clinical-case {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.5s;
+}
+
+#clinical-case-content {
+  max-width: 800px;
+  padding: 20px;
+  background-color: #1e293b;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#clinical-case h2 {
+  color: #38bdf8;
+  margin-top: 0;
+}
+
+#clinical-case button {
+  background-color: #38bdf8;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: background-color 0.3s;
+}
+
+#clinical-case button:hover {
+  background-color: #0ea5e9;
+}
+
+/* Sistema de alertas */
+#alert-system {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.alert-container {
+  background-color: #1e293b;
+  border-left: 5px solid;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: none;
+  max-width: 350px;
+  animation: slideIn 0.3s ease-out;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.alert-icon {
+  font-size: 1.5rem;
+  margin-right: 10px;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-content h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+}
+
+.alert-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #e2e8f0;
+}
+
+.alert-timer {
+  height: 3px;
+  background-color: rgba(255, 255, 255, 0.3);
+  margin-top: 10px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.alert-dismiss {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 10px;
+}
+
+/* Mini mapa */
+#miniMapContainer {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  width: 200px;
+  height: 150px;
+  background-color: #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  z-index: 20;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Panel de instrumentos */
+.instrument-panel {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  background-color: #1e293b;
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 20;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-btn {
+  background-color: #334155;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle-btn:hover {
+  background-color: #475569;
+}
+
+.toggle-btn.active {
+  background-color: #38bdf8;
+  color: white;
+}
+
+/* Panel de parámetros */
+.control-panel {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 10;
+  width: 200px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.vital-sign {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.vital-label {
+  color: #94a3b8;
+}
+
+.vital-value {
+  font-weight: bold;
+}
+
+.vital-value.normal {
+  color: #4ade80;
+}
+
+.vital-value.warning {
+  color: #fbbf24;
+}
+
+.vital-value.danger {
+  color: #f87171;
+}
+
+.gauge-container {
+  height: 6px;
+  background-color: #334155;
+  border-radius: 3px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.gauge-level {
+  height: 100%;
+  background-color: #38bdf8;
+  width: 50%;
+  transition: width 0.5s ease;
+}
+
+/* Joysticks */
+.joystick-container {
+  position: absolute;
+  bottom: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 20;
+}
+
+#joystick-light-container {
+  left: 30px;
+}
+
+#joystick-vitrectomo-container {
+  right: 30px;
+}
+
+.joystick {
+  width: 80px;
+  height: 80px;
+  background-color: #334155;
+  border-radius: 50%;
+  position: relative;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.joystick-handle {
+  width: 30px;
+  height: 30px;
+  background-color: #38bdf8;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s;
+}
+
+.slider-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.slider-container label {
+  margin-bottom: 5px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.slider-container input[type="range"] {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.slider-container button {
+  background-color: #38bdf8;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.slider-container button:hover {
+  background-color: #0ea5e9;
+}
+
+/* Cámara de retina */
+#eye-chamber {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+
+.retina-container {
+  position: relative;
+  width: 80vmin;
+  height: 80vmin;
+  max-width: 500px;
+  max-height: 500px;
+}
+
+.retina-sphere {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, #500000 0%, #400000 20%, #300000 40%, #200000 70%, #100000 100%);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 0, 0, 0.6);
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+
+.retina-texture {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 30% 30%, transparent 60%, rgba(0, 0, 0, 0.3) 100%),
+    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px);
+  border-radius: 50%;
+}
+
+.retina-nerve {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 15%;
+  height: 8%;
+  background: radial-gradient(circle, rgba(220, 80, 80, 0.8) 0%, rgba(180, 40, 40, 0.6) 100%);
+  border-radius: 50% 50% 0 0;
+}
+
+.optic-disc {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10%;
+  height: 5%;
+  background: radial-gradient(circle, rgba(220, 80, 80, 0.8) 0%, rgba(180, 40, 40, 0.6) 100%);
+  border-radius: 50%;
+  box-shadow: inset 0 0 20px rgba(220, 80, 80, 0.6), 0 0 25px rgba(220, 80, 80, 0.5);
+}
+
+.optic-cup {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 50%;
+  height: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+}
+
+.macula {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8%;
+  height: 8%;
+  background: radial-gradient(circle, rgba(255, 255, 200, 0.3) 0%, rgba(255, 255, 150, 0.2) 50%, transparent 100%);
+  border-radius: 50%;
+}
+
+.blood-vessels {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+#light-mask {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
+    transparent 0%, 
+    rgba(0, 0, 0, 0.8) calc(var(--light-size, 100px) * 1.5), 
+    rgba(0, 0, 0, 0.9) 100%);
+  pointer-events: none;
+  z-index: 6;
+}
+
+#light-reflection {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.1) var(--light-size, 100px), 
+    transparent calc(var(--light-size, 100px) * 1.5));
+  pointer-events: none;
+  z-index: 7;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.light-scatter {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
+    rgba(255, 255, 255, 0.05) 0%, 
+    transparent 70%);
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.light-scatter.active {
+  opacity: 1;
+}
+
+.specular-highlight {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+  top: calc(var(--light-y, 50%) - 15px);
+  left: calc(var(--light-x, 50%) - 15px);
+  pointer-events: none;
+  z-index: 8;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.specular-highlight.active {
+  opacity: 0.6;
+}
+
+/* Instrumentos */
+.instrument {
+  position: absolute;
+  width: 40px;
+  height: 120px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transform-style: preserve-3d;
+  display: none;
+  z-index: 10;
+}
+
+.instrument-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #555 0%, #777 50%, #555 100%);
+  border-radius: 5px;
+  transform: rotateX(75deg);
+  transform-origin: bottom center;
+}
+
+.instrument-tip {
+  width: 10px;
+  height: 30px;
+  background: linear-gradient(to right, #333 0%, #666 50%, #333 100%);
+  border-radius: 0 0 5px 5px;
+}
+
+.instrument-side {
+  position: absolute;
+  width: 100%;
+  height: 20px;
+  background: linear-gradient(to right, #444 0%, #666 50%, #444 100%);
+  top: 50%;
+  transform: translateY(-50%) rotateX(90deg);
+  transform-origin: top center;
+}
+
+.instrument-light-reflection {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255,0.3) 0%,
+    rgba(255,255,255,0.1) 50%,
+    transparent 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.instrument-shadow {
+  position: absolute;
+  width: 100%;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  bottom: -10px;
+  left: 0;
+  border-radius: 50%;
+  filter: blur(5px);
+  transform: rotateX(75deg) translateZ(-10px);
+  z-index: -1;
+}
+
+/* Efectos */
+.vitreous-particle {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background-color: rgba(200, 200, 255, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9;
+  animation: float 1.5s ease-out forwards;
+}
+
+@keyframes float {
+  to {
+    transform: translate(var(--tx, 0), var(--ty, 0));
+    opacity: 0;
+  }
+}
+
+.pfc-bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(100, 255, 255, 0.8) 0%, rgba(50, 200, 200, 0.6) 70%, transparent 100%);
+  pointer-events: none;
+  z-index: 11;
+  animation: float-up 2s ease-out forwards;
+}
+
+@keyframes float-up {
+  to {
+    transform: translate(var(--tx, 0), var(--ty, -100px));
+    opacity: 0;
+  }
+}
+
+.hemorrhage-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(180, 0, 0, 0.7) 0%, rgba(120, 0, 0, 0.5) 100%);
+  pointer-events: none;
+  z-index: 12;
+  opacity: 0;
+  display: none;
+}
+
+/* Indicador de profundidad */
+.depth-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1e293b;
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  z-index: 20;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  color: var(--depth-color, #10b981);
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ================== MEJORAS PARA MÓVIL ================== */
+@media (max-width: 768px) {
+  #miniMapContainer {
+    width: 150px;
+    height: 110px;
+    top: 10px;
+    left: 10px;
+  }
+
+  .control-panel {
+    width: 160px;
+    padding: 10px;
+    top: 10px;
+    right: 10px;
+  }
+
+  .instrument-panel {
+    bottom: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 90%;
+  }
+
+  .toggle-btn {
+    padding: 10px;
+    margin: 5px;
+    font-size: 0.8rem;
+  }
+
+  .joystick-container {
+    bottom: 120px;
+  }
+
+  #joystick-light-container {
+    left: 10px;
+  }
+
+  #joystick-vitrectomo-container {
+    right: 10px;
+  }
+
+  .joystick {
+    width: 70px;
+    height: 70px;
+  }
+
+  .joystick-handle {
+    width: 25px;
+    height: 25px;
+  }
+
+  .slider-container {
+    width: 80px;
+  }
+
+  .slider-container button {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .depth-indicator {
+    bottom: 80px;
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+}
+
+/* Efectos mejorados con Anime.js */
+.laser-spot {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(circle, rgba(255,50,50,0.8) 0%, rgba(255,0,0,0.6) 70%, transparent 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(255,100,100,0.7);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.laser-burn-permanent {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  z-index: 15;
+}
+
+.cautery-effect {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: radial-gradient(circle, rgba(255,200,0,0.8) 0%, rgba(255,150,0,0.6) 70%, transparent 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(255,200,0,0.7);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.blood-clot {
+  position: absolute;
+  background: radial-gradient(circle, rgba(180,0,0,0.8) 0%, rgba(120,0,0,0.6) 70%, transparent 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.instrument-action-indicator {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.instrument-action-indicator.active {
+  opacity: 1;
+}
+
+/* Efectos de retina mejorados */
+.retina-sphere {
+  animation: retinaPulse 8s infinite alternate;
+}
+
+@keyframes retinaPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.005); }
+  100% { transform: scale(1); }
+}
+
+.blood-vessels {
+  animation: vesselPulse 5s infinite alternate;
+}
+
+@keyframes vesselPulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.7; }
+}  </style>
+<body>
   <!-- CASO CLÍNICO -->
   <div id="clinical-case">
     <div id="clinical-case-content">
