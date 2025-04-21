@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -6,8 +6,11 @@
   <title>Simulador de Extracción de Hemorragia Vítrea</title>
   <link rel="stylesheet" href="css.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+</head>
+<body>
   <style>
-    /* Estilos base */
+/* Estilos base */
 body {
   margin: 0;
   padding: 0;
@@ -2159,91 +2162,8 @@ body {
       font-size: 0.75rem;
       padding: 8px 15px;
     }
-  }    /* Estilos para efectos de láser y cauterio */
-    .laser-spot {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      background: radial-gradient(circle, rgba(255,50,50,0.8) 0%, rgba(255,0,0,0.6) 70%, transparent 100%);
-      border-radius: 50%;
-      box-shadow: 0 0 15px rgba(255,100,100,0.7);
-      pointer-events: none;
-      z-index: 20;
-      animation: laser-pulse 0.5s ease-out;
-    }
-
-    .laser-burn-permanent {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 50%;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-      pointer-events: none;
-      z-index: 15;
-    }
-
-    .cautery-effect {
-      position: absolute;
-      width: 30px;
-      height: 30px;
-      background: radial-gradient(circle, rgba(255,200,0,0.8) 0%, rgba(255,150,0,0.6) 70%, transparent 100%);
-      border-radius: 50%;
-      box-shadow: 0 0 20px rgba(255,200,0,0.7);
-      pointer-events: none;
-      z-index: 20;
-      animation: cautery-fade 1s ease-out forwards;
-    }
-
-    .blood-clot {
-      position: absolute;
-      background: radial-gradient(circle, rgba(180,0,0,0.8) 0%, rgba(120,0,0,0.6) 70%, transparent 100%);
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 10;
-      animation: clotPulse 2s infinite alternate;
-    }
-
-    @keyframes laser-pulse {
-      0% { transform: scale(0.5); opacity: 0; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); opacity: 0.8; }
-    }
-
-    @keyframes cautery-fade {
-      0% { transform: scale(0.5); opacity: 0; }
-      50% { transform: scale(1.3); opacity: 1; }
-      100% { transform: scale(1); opacity: 0; }
-    }
-
-    @keyframes clotPulse {
-      0% { transform: scale(1); }
-      100% { transform: scale(1.05); }
-    }
-
-    .instrument-action-indicator {
-      position: absolute;
-      top: -30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 15px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      z-index: 100;
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-    
-    .instrument-action-indicator.active {
-      opacity: 1;
-    }
+  }
   </style>
-</head>
-<body>
   <!-- CASO CLÍNICO -->
   <div id="clinical-case">
     <div id="clinical-case-content">
@@ -2549,10 +2469,12 @@ body {
     document.addEventListener('DOMContentLoaded', function() {
       // Mostrar caso clínico al inicio
       document.getElementById('start-simulation-btn').addEventListener('click', function() {
-        gsap.to('#clinical-case', {
+        anime({
+          targets: '#clinical-case',
           opacity: 0,
-          duration: 0.5,
-          onComplete: () => {
+          duration: 500,
+          easing: 'easeInOutQuad',
+          complete: () => {
             document.getElementById('clinical-case').style.display = 'none';
             initSimulation();
           }
@@ -2575,7 +2497,30 @@ body {
       // Crear hemorragia inicial
       createInitialHemorrhage();
       
+      // Iniciar animación de pulsación de la retina
+      animateRetina();
+      
       requestAnimationFrame(updateInstrumentPositions);
+    }
+
+    function animateRetina() {
+      anime({
+        targets: '.retina-sphere',
+        scale: [1, 1.005],
+        duration: 8000,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
+      
+      anime({
+        targets: '.blood-vessels',
+        opacity: [0.7, 0.9],
+        duration: 5000,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
     }
 
     function createInitialHemorrhage() {
@@ -2603,12 +2548,13 @@ body {
       document.querySelectorAll('.alert-dismiss').forEach(btn => {
         btn.addEventListener('click', function() {
           const alert = this.parentElement;
-          gsap.to(alert, {
+          anime({
+            targets: alert,
             opacity: 0,
-            y: -20,
-            duration: 0.3,
-            ease: "power1.out",
-            onComplete: () => {
+            translateY: -20,
+            duration: 300,
+            easing: 'easeOutQuad',
+            complete: () => {
               alert.style.display = 'none';
               alert.style.opacity = '1';
               alert.style.transform = 'translateY(0)';
@@ -2626,28 +2572,34 @@ body {
       if (!alert) return;
       
       alert.style.display = 'flex';
-      gsap.fromTo(alert, 
-        { opacity: 0, y: -20 }, 
-        { opacity: 1, y: 0, duration: 0.3, ease: "power1.out" }
-      );
+      anime({
+        targets: alert,
+        opacity: [0, 1],
+        translateY: [-20, 0],
+        duration: 300,
+        easing: 'easeOutQuad'
+      });
       
       const timer = alert.querySelector('.alert-timer');
       if (timer) {
         timer.style.width = '100%';
-        timer.style.transition = `width ${duration/1000}s linear`;
-        setTimeout(() => {
-          timer.style.width = '0%';
-        }, 10);
+        anime({
+          targets: timer,
+          width: '0%',
+          duration: duration,
+          easing: 'linear'
+        });
       }
       
       if (duration > 0) {
         setTimeout(() => {
-          gsap.to(alert, {
+          anime({
+            targets: alert,
             opacity: 0,
-            y: -20,
-            duration: 0.3,
-            ease: "power1.out",
-            onComplete: () => {
+            translateY: -20,
+            duration: 300,
+            easing: 'easeOutQuad',
+            complete: () => {
               alert.style.display = 'none';
               alert.style.opacity = '1';
               alert.style.transform = 'translateY(0)';
@@ -2738,7 +2690,12 @@ body {
         showAlert('vessel-damage-alert', 0);
         
         document.getElementById('hemorrhage-effect').style.display = 'block';
-        gsap.to('#hemorrhage-effect', { opacity: 0.7, duration: 1 });
+        anime({
+          targets: '#hemorrhage-effect',
+          opacity: 0.7,
+          duration: 1000,
+          easing: 'easeOutQuad'
+        });
         
         createBloodClots(5, {x: instrumentCenterX, y: instrumentCenterY});
         
@@ -2771,15 +2728,26 @@ body {
         
         clot.style.left = `${x}px`;
         clot.style.top = `${y}px`;
-        clot.style.width = `${10 + Math.random() * 20}px`;
-        clot.style.height = clot.style.width;
+        const size = 10 + Math.random() * 20;
+        clot.style.width = `${size}px`;
+        clot.style.height = `${size}px`;
+        
+        // Animación de pulso para los coágulos
+        anime({
+          targets: clot,
+          scale: [1, 1.05],
+          duration: 2000,
+          direction: 'alternate',
+          loop: true,
+          easing: 'easeInOutSine'
+        });
         
         bloodClotsContainer.appendChild(clot);
         bloodClots.push({
           element: clot,
           x: x,
           y: y,
-          size: parseFloat(clot.style.width)
+          size: size
         });
       }
     }
@@ -2787,26 +2755,28 @@ body {
     function removeBloodClot(index) {
       if (index >= 0 && index < bloodClots.length) {
         const clot = bloodClots[index];
-        if (clot.element.parentNode) {
-          gsap.to(clot.element, {
-            opacity: 0,
-            scale: 0.5,
-            duration: 0.5,
-            onComplete: () => {
-              if (clot.element.parentNode) {
-                clot.element.parentNode.removeChild(clot.element);
-              }
+        anime({
+          targets: clot.element,
+          opacity: 0,
+          scale: 0.5,
+          duration: 500,
+          easing: 'easeOutQuad',
+          complete: () => {
+            if (clot.element.parentNode) {
+              clot.element.parentNode.removeChild(clot.element);
             }
-          });
-        }
+          }
+        });
         bloodClots.splice(index, 1);
         
         if (bloodClots.length === 0) {
           hemorrhageActive = false;
-          gsap.to('#hemorrhage-overlay', { 
-            opacity: 0, 
-            duration: 1, 
-            onComplete: () => {
+          anime({
+            targets: '#hemorrhage-overlay',
+            opacity: 0,
+            duration: 1000,
+            easing: 'easeOutQuad',
+            complete: () => {
               document.getElementById('hemorrhage-overlay').style.display = 'none';
             }
           });
@@ -2957,12 +2927,13 @@ body {
           deltaY = Math.sin(angle) * maxDistance;
         }
         
-        // Suavizar el movimiento con interpolación
-        gsap.to(handle, {
-          x: deltaX,
-          y: deltaY,
-          duration: 0.1,
-          ease: "power1.out"
+        // Suavizar el movimiento con anime.js
+        anime({
+          targets: handle,
+          translateX: deltaX,
+          translateY: deltaY,
+          duration: 100,
+          easing: 'easeOutQuad'
         });
         
         // Normalizar las coordenadas (0-100)
@@ -2986,12 +2957,13 @@ body {
         touchId = null;
         activeTouchId = null;
         
-        // Suavizar el retorno a la posición central
-        gsap.to(handle, {
-          x: 0,
-          y: 0,
-          duration: 0.3,
-          ease: "elastic.out(1, 0.5)"
+        // Suavizar el retorno a la posición central con anime.js
+        anime({
+          targets: handle,
+          translateX: 0,
+          translateY: 0,
+          duration: 300,
+          easing: 'easeOutElastic(1, 0.5)'
         });
         
         // Resetear posición cuando se suelta
@@ -3218,11 +3190,24 @@ body {
       const retinaRect = document.getElementById('retina').getBoundingClientRect();
       const instRect = instrument.getBoundingClientRect();
       
-      // Mostrar indicador de acción
+      // Mostrar indicador de acción con anime.js
       const actionIndicator = instrument.querySelector('.instrument-action-indicator');
       if (actionIndicator) {
-        actionIndicator.classList.add('active');
-        setTimeout(() => actionIndicator.classList.remove('active'), 1000);
+        anime({
+          targets: actionIndicator,
+          opacity: [0, 1],
+          duration: 200,
+          easing: 'easeOutQuad',
+          complete: () => {
+            anime({
+              targets: actionIndicator,
+              opacity: 0,
+              delay: 800,
+              duration: 200,
+              easing: 'easeOutQuad'
+            });
+          }
+        });
       }
       
       // Calcular posición de la punta del instrumento
@@ -3288,12 +3273,20 @@ body {
       
       if (tooClose) return;
       
-      // Crear efecto de láser temporal
+      // Crear efecto de láser temporal con anime.js
       const laserSpot = document.createElement('div');
       laserSpot.className = 'laser-spot';
       laserSpot.style.left = (e.clientX - retinaRect.left - 12) + 'px';
       laserSpot.style.top = (e.clientY - retinaRect.top - 12) + 'px';
       retina.appendChild(laserSpot);
+      
+      anime({
+        targets: laserSpot,
+        scale: [0.5, 1.2, 1],
+        opacity: [0, 1, 0.8],
+        duration: 500,
+        easing: 'easeOutQuad'
+      });
       
       // Crear marca permanente de láser (punto blanco)
       const burnMark = document.createElement('div');
@@ -3301,6 +3294,17 @@ body {
       burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
       burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
       document.getElementById('permanent-marks').appendChild(burnMark);
+      
+      // Animación de pulso para la marca de láser
+      anime({
+        targets: burnMark,
+        scale: [1, 1.1],
+        opacity: [0.8, 1],
+        duration: 3000,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
       
       laserBurns.push({
         element: burnMark,
@@ -3348,12 +3352,25 @@ body {
       
       if (tooClose) return;
       
-      // Efecto visual de cauterio temporal
+      // Efecto visual de cauterio temporal con anime.js
       const cauteryEffect = document.createElement('div');
       cauteryEffect.className = 'cautery-effect';
       cauteryEffect.style.left = (e.clientX - retinaRect.left - 15) + 'px';
       cauteryEffect.style.top = (e.clientY - retinaRect.top - 15) + 'px';
       retina.appendChild(cauteryEffect);
+      
+      anime({
+        targets: cauteryEffect,
+        scale: [0.5, 1.3, 1],
+        opacity: [0, 1, 0],
+        duration: 1000,
+        easing: 'easeOutQuad',
+        complete: () => {
+          if (cauteryEffect.parentNode) {
+            cauteryEffect.parentNode.removeChild(cauteryEffect);
+          }
+        }
+      });
       
       // Crear marca permanente de cauterio (punto blanco)
       const burnMark = document.createElement('div');
@@ -3361,6 +3378,17 @@ body {
       burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
       burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
       document.getElementById('permanent-marks').appendChild(burnMark);
+      
+      // Animación de pulso para la marca de cauterio
+      anime({
+        targets: burnMark,
+        scale: [1, 1.1],
+        opacity: [0.8, 1],
+        duration: 3000,
+        direction: 'alternate',
+        loop: true,
+        easing: 'easeInOutSine'
+      });
       
       cauteryMarks.push({
         element: burnMark,
@@ -3374,13 +3402,6 @@ body {
       // Actualizar parámetros fisiológicos
       perfusion += 1;
       iop = Math.min(30, iop + 0.3);
-      
-      // Eliminar efecto de cauterio después de 1 segundo
-      setTimeout(() => {
-        if (cauteryEffect.parentNode) {
-          cauteryEffect.parentNode.removeChild(cauteryEffect);
-        }
-      }, 1000);
     }
 
     function isInSensitiveArea(x, y) {
@@ -3443,7 +3464,16 @@ body {
         particle.style.setProperty('--ty', Math.random()*40 - 20);
         retina.appendChild(particle);
         
-        setTimeout(() => particle.remove(), 1500);
+        // Animación de partículas con anime.js
+        anime({
+          targets: particle,
+          translateX: particle.style.getPropertyValue('--tx'),
+          translateY: particle.style.getPropertyValue('--ty'),
+          opacity: [1, 0],
+          duration: 1500,
+          easing: 'easeOutQuad',
+          complete: () => particle.remove()
+        });
       }
       
       // Calcular porcentaje de hemorragia removida basado en coágulos eliminados
@@ -3476,12 +3506,23 @@ body {
       iop = Math.max(20, Math.min(30, iop));
       perfusion = Math.max(60, Math.min(100, perfusion));
       
-      // Actualizar valores en la interfaz
-      document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
-      document.getElementById('iop-level').style.width = ((iop - 10) / 20 * 100) + "%";
+      // Actualizar valores en la interfaz con anime.js para transiciones suaves
+      anime({
+        targets: '#iop-level',
+        width: `${((iop - 10) / 20 * 100)}%`,
+        duration: 500,
+        easing: 'easeOutQuad'
+      });
       
+      anime({
+        targets: '#perfusion-level',
+        width: `${perfusion}%`,
+        duration: 500,
+        easing: 'easeOutQuad'
+      });
+      
+      document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
       document.getElementById('perfusion-value').innerText = perfusion.toFixed(0) + "%";
-      document.getElementById('perfusion-level').style.width = perfusion + "%";
       
       // Actualizar clases de estado
       const iopElement = document.getElementById('iop-value');
