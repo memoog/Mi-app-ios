@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -8,728 +8,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
-    /* Estilos base */
-body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #0f172a;
-  color: white;
-  overflow: hidden;
-  touch-action: none;
-  height: 100vh;
-  width: 100vw;
-}
-
-#container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Caso clínico */
-#clinical-case {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.5s;
-}
-
-#clinical-case-content {
-  max-width: 800px;
-  padding: 20px;
-  background-color: #1e293b;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-#clinical-case h2 {
-  color: #38bdf8;
-  margin-top: 0;
-}
-
-#clinical-case button {
-  background-color: #38bdf8;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: background-color 0.3s;
-}
-
-#clinical-case button:hover {
-  background-color: #0ea5e9;
-}
-
-/* Sistema de alertas */
-#alert-system {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10000;
-  width: 90%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.alert-container {
-  display: none;
-  background: rgba(20, 20, 30, 0.95);
-  border-left: 5px solid;
-  border-radius: 8px;
-  padding: 15px 20px;
-  align-items: center;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-  backdrop-filter: blur(8px);
-  transform-origin: top center;
-  border-left-color: #ff5555;
-}
-
-.alert-icon {
-  font-size: 1.8rem;
-  margin-right: 15px;
-  flex-shrink: 0;
-}
-
-.alert-content {
-  flex-grow: 1;
-}
-
-.alert-content h3 {
-  margin: 0 0 5px 0;
-  color: white;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.alert-content p {
-  margin: 0;
-  color: #ddd;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.alert-timer {
-  height: 3px;
-  background: rgba(255,255,255,0.3);
-  margin-top: 8px;
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.alert-timer::after {
-  content: '';
-  display: block;
-  height: 100%;
-  width: 100%;
-  background: white;
-}
-
-.alert-dismiss {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 0 0 0 15px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-  flex-shrink: 0;
-}
-
-.alert-dismiss:hover {
-  opacity: 1;
-}
-
-/* Mini mapa */
-#miniMapContainer {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 170px;
-  height: 120px;
-  overflow: hidden;
-  border-radius: 5px;
-  z-index: 2000;
-  background: rgba(0,0,0,0.85);
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 
-    0 6px 15px rgba(0,0,0,0.5),
-    inset 0 0 15px rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-}
-
-/* Panel de instrumentos */
-.instrument-panel {
-  position: absolute;
-  top: 50%;
-  left: 20px;
-  transform: translateY(-50%);
-  background: rgba(0,0,0,0.85);
-  padding: 15px 10px;
-  border-radius: 12px;
-  z-index: 5000;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 
-    0 6px 20px rgba(0,0,0,0.6),
-    inset 0 0 15px rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.15);
-}
-
-.toggle-btn {
-  background: #1a3a8a;
-  color: white;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: clamp(0.85rem, 2.5vw, 1rem);
-  margin: 8px 5px;
-  min-width: 100px;
-  transition: all 0.2s;
-  font-weight: 500;
-  box-shadow: 
-    0 3px 8px rgba(0,0,0,0.4),
-    inset 0 0 8px rgba(255,255,255,0.15);
-  position: relative;
-  overflow: hidden;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.toggle-btn.active {
-  background: #3b82f6;
-  box-shadow: 
-    0 0 20px #3b82f6,
-    0 0 40px rgba(59, 130, 246, 0.4);
-}
-
-/* Panel de parámetros */
-.control-panel {
-  position: absolute;
-  right: 20px;
-  top: 190px;
-  background: rgba(10,10,20,0.95);
-  padding: 20px;
-  border-radius: 50px;
-  z-index: 5000;
-  font-size: clamp(0.75rem, 2vw, 0.9rem);
-  width: 180px;
-  max-height: 80vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  box-shadow: 
-    0 6px 20px rgba(18, 20, 41, 0.6),
-    inset 0 0 15px rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-}
-
-.vital-sign {
-  display: flex;
-  justify-content: space-between;
-  margin: 15px 0;
-  flex-wrap: wrap;
-}
-
-.vital-label {
-  color: #aaa;
-  font-size: 0.85em;
-  width: 60%;
-}
-
-.vital-value {
-  font-family: 'Courier New', monospace;
-  font-weight: bold;
-  font-size: 0.95em;
-  width: 40%;
-  text-align: right;
-  transition: color 0.3s;
-}
-
-.normal { color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.4); }
-.warning { color: #f39c12; text-shadow: 0 0 8px rgba(243, 156, 18, 0.4); }
-.danger { color: #e74c3c; text-shadow: 0 0 8px rgba(231, 76, 60, 0.4); }
-
-.gauge-container {
-  width: 100%;
-  height: 10px;
-  background: #222;
-  border-radius: 5px;
-  margin: 8px 0 15px 0;
-  overflow: hidden;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
-}
-
-.gauge-level {
-  height: 100%;
-  border-radius: 5px;
-  transition: width 0.5s ease;
-  box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
-}
-
-/* Joysticks */
-.joystick-container {
-  position: absolute;
-  bottom: 1px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  z-index: 3000;
-}
-
-#joystick-light-container {
-  left: 200px;
-}
-
-#joystick-vitrectomo-container {
-  right: 180px;
-}
-
-.joystick {
-  width: 100px;
-  height: 100px;
-  background: rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.4);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: none;
-  position: relative;
-  box-shadow: 
-    0 6px 15px rgba(0,0,0,0.4),
-    inset 0 0 25px rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-  will-change: transform;
-}
-
-.joystick .joystick-handle {
-  width: 40px;
-  height: 40px;
-  background: rgba(255,255,255,0.8);
-  border-radius: 50%;
-  position: absolute;
-  transition: transform 0.1s ease;
-  box-shadow: 
-    0 0 15px rgba(255,255,255,0.4),
-    inset 0 0 8px rgba(255,255,255,0.7);
-  will-change: transform;
-}
-
-/* Controles Z */
-.slider-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  background: rgba(0,0,0,0.7);
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 
-    0 4px 10px rgba(0,0,0,0.4),
-    inset 0 0 8px rgba(255,255,255,0.15);
-  backdrop-filter: blur(8px);
-}
-
-.slider-container label {
-  font-size: 0.8rem;
-  margin-bottom: 10px;
-  text-align: center;
-  color: #eee;
-  font-weight: 500;
-  text-shadow: 0 0 8px rgba(0,0,0,0.6);
-}
-
-input[type="range"] {
-  width: 100%;
-  -webkit-appearance: none;
-  height: 10px;
-  background: #333;
-  border-radius: 5px;
-  margin: 8px 0 12px 0;
-  box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
-}
-
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
-  background: #3b82f6;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 
-    0 0 8px rgba(0,0,0,0.7),
-    0 0 15px rgba(59, 130, 246, 0.7);
-  transition: all 0.2s;
-}
-
-input[type="range"]::-webkit-slider-thumb:active {
-  transform: scale(1.2);
-  box-shadow: 
-    0 0 12px rgba(0,0,0,0.7),
-    0 0 20px rgba(59, 130, 246, 1);
-}
-
-#btn-precionar {
-  background: linear-gradient(to bottom, #dc2626, #b91c1c);
-  color: white;
-  padding: 12px 15px;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  margin-top: 8px;
-  width: 100%;
-  font-weight: bold;
-  box-shadow: 
-    0 4px 12px rgba(0,0,0,0.4),
-    0 0 15px rgba(220, 38, 38, 0.4);
-  transition: all 0.2s;
-  text-shadow: 0 0 8px rgba(0,0,0,0.4);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-#btn-precionar:active {
-  transform: scale(0.95);
-  box-shadow: 
-    0 2px 6px rgba(0,0,0,0.4),
-    0 0 8px rgba(220, 38, 38, 0.4);
-}
-
-/* Indicador de profundidad */
-.depth-indicator {
-  position: absolute;
-  bottom: 130px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,0.8);
-  padding: 10px 20px;
-  border-radius: 25px;
-  color: white;
-  font-size: 0.85rem;
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 15px rgba(0,0,0,0.6);
-  border: 1px solid var(--depth-color, #3b82f6);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.depth-indicator::before {
-  content: '';
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 10px;
-  background: var(--depth-color, #3b82f6);
-  box-shadow: 0 0 8px var(--depth-color, #3b82f6);
-}
-
-/* RETINA CENTRAL */
-#eye-chamber {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  touch-action: none;
-  background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, transparent 70%);
-}
-
-.retina-container {
-  position: relative;
-  width: 80vmin;
-  height: 80vmin;
-  max-width: 600px;
-  max-height: 600px;
-  transform-style: preserve-3d;
-  perspective: 1200px;
-  border-radius: 50%;
-  overflow: hidden;
-  transition: transform 0.3s ease;
-  filter: contrast(1.2) brightness(0.9) saturate(1.1);
-  will-change: transform, filter;
-  box-shadow: 
-    inset 0 0 100px rgba(100, 20, 20, 0.3),
-    0 0 80px rgba(0, 0, 0, 0.8);
-}
-
-.retina-sphere {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, 
-    #500000 0%, 
-    #400000 20%, 
-    #300000 40%,
-    #200000 70%,
-    #100000 100%);
-  transform: rotateX(15deg) translateZ(50px);
-  box-shadow: 
-    inset 0 0 200px rgba(220, 80, 80, 0.3),
-    inset 0 0 80px rgba(255, 120, 120, 0.2),
-    0 0 120px rgba(0, 0, 0, 0.9);
-  overflow: hidden;
-}
-
-.retina-sphere::after {
-  content: '';
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  left: -50%;
-  top: -50%;
-  background-image: 
-    radial-gradient(circle at 50% 50%, 
-      rgba(255, 180, 180, 0.08) 0.5%, 
-      transparent 1.2%),
-    repeating-linear-gradient(
-      45deg,
-      transparent 0px,
-      transparent 2px,
-      rgba(255, 255, 255, 0.03) 2px,
-      rgba(255, 255, 255, 0.03) 3px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent 0px,
-      transparent 3px,
-      rgba(150, 50, 50, 0.05) 3px,
-      rgba(150, 50, 50, 0.05) 5px
-    );
-  background-size: 
-    60px 60px,
-    100% 100%,
-    100% 100%;
-  transform: rotate(15deg);
-  animation: textureMove 120s linear infinite;
-  pointer-events: none;
-}
-
-@keyframes textureMove {
-  0% { transform: rotate(15deg) translate(0,0); }
-  100% { transform: rotate(15deg) translate(200px,200px); }
-}
-
-/* INSTRUMENTOS QUIRÚRGICOS */
-.instrument {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) translateZ(0);
-  display: none;
-  z-index: 10;
-  transition: transform 0.1s ease-out;
-  will-change: transform;
-  transform-style: preserve-3d;
-  perspective: 1000px;
-}
-
-.instrument-body {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transform-style: preserve-3d;
-  transition: all 0.2s ease;
-}
-
-.instrument-shadow {
-  position: absolute;
-  width: 120%;
-  height: 120%;
-  left: -10%;
-  top: -10%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(0,0,0,0.4) 0%,
-    transparent 70%
-  );
-  transform: rotateX(75deg) translateZ(-10px);
-  pointer-events: none;
-  z-index: -1;
-  filter: blur(5px);
-  opacity: 0.7;
-  transition: all 0.3s ease;
-}
-
-/* Vitrectomo 3D */
-#vitrectome {
-  width: 2.5mm;
-  height: 15mm;
-  transform-style: preserve-3d;
-}
-
-#vitrectome .instrument-body {
-  background: linear-gradient(to bottom, 
-    #999 0%, 
-    #ccc 10%, 
-    #eee 20%, 
-    #fff 40%, 
-    #ddd 60%, 
-    #aaa 80%,
-    #888 100%);
-  border: 1px solid #777;
-  border-radius: 1.2mm;
-  box-shadow: 
-    0 0 1.5mm rgba(0,0,0,0.7),
-    0 0 3mm rgba(255,255,255,0.15),
-    inset 0 0 5px rgba(255,255,255,0.3);
-  transform: rotateX(10deg);
-}
-
-/* EFECTOS DE HEMORRAGIA */
-.hemorrhage-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(200, 0, 0, 0.5);
-  z-index: 9998;
-  pointer-events: none;
-  display: none;
-  opacity: 0;
-  transition: opacity 1s ease;
-}
-
-/* RESPONSIVE ADJUSTMENTS */
-@media (max-width: 768px) {
-  .instrument-panel {
-    top: 10px;
-    left: 10px;
-    right: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 8px;
-    width: calc(100% - 20px);
-  }
-  
-  .toggle-btn {
-    padding: 10px 12px;
-    min-width: auto;
-    font-size: 0.8rem;
-    margin: 4px;
-    flex: 1 1 calc(33% - 8px);
-    max-width: calc(33% - 8px);
-  }
-  
-  .control-panel {
-    top: 120px;
-    right: 10px;
-    width: 150px;
-    padding: 12px;
-  }
-  
-  #miniMapContainer {
-    top: 120px;
-    left: 10px;
-    width: 150px;
-    height: 110px;
-  }
-  
-  .joystick-container {
-    bottom: 20px;
-    width: 45%;
-  }
-  
-  #joystick-light-container {
-    left: 10px;
-  }
-  
-  #joystick-vitrectomo-container {
-    right: 10px;
-  }
-  
-  .joystick {
-    width: 80px;
-    height: 80px;
-  }
-  
-  .joystick .joystick-handle {
-    width: 35px;
-    height: 35px;
-  }
-  
-  .slider-container {
-    padding: 10px;
-  }
-  
-  #btn-precionar {
-    padding: 10px;
-    font-size: 0.9rem;
-  }
-  
-  .depth-indicator {
-    bottom: 110px;
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .retina-container {
-    width: 95vmin;
-    height: 95vmin;
-  }
-  
-  .toggle-btn {
-    font-size: 0.7rem;
-    padding: 8px 10px;
-  }
-  
-  .joystick {
-    width: 70px;
-    height: 70px;
-  }
-  
-  .joystick .joystick-handle {
-    width: 30px;
-    height: 30px;
-  }
-  
-  .control-panel {
-    width: 130px;
-    padding: 10px;
-  }
-  
-  #miniMapContainer {
-    width: 130px;
-    height: 95px;
-  }
-  
-  .depth-indicator {
-    bottom: 100px;
-    font-size: 0.75rem;
-    padding: 8px 15px;
-  }
-}
-
 /* Estilos base */
 body {
   margin: 0;
@@ -2882,8 +2160,313 @@ body {
       font-size: 0.75rem;
       padding: 8px 15px;
     }
-  }
-  /* Estilos para efectos de láser y cauterio */
+  }    /* Sistema de alertas */
+    #alert-system {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      width: 90%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .alert-container {
+      display: none;
+      background: rgba(20, 20, 30, 0.95);
+      border-left: 5px solid;
+      border-radius: 8px;
+      padding: 15px 20px;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      transform-origin: top center;
+      border-left-color: #ff5555;
+    }
+
+    .alert-icon {
+      font-size: 1.8rem;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+
+    .alert-content {
+      flex-grow: 1;
+    }
+
+    .alert-content h3 {
+      margin: 0 0 5px 0;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .alert-content p {
+      margin: 0;
+      color: #ddd;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .alert-timer {
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      margin-top: 8px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .alert-timer::after {
+      content: '';
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: white;
+    }
+
+    .alert-dismiss {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0 0 0 15px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+
+    .alert-dismiss:hover {
+      opacity: 1;
+    }
+
+    .toggle-btn {
+      background: #1a3a8a;
+      color: white;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: clamp(0.85rem, 2.5vw, 1rem);
+      margin: 8px 5px;
+      min-width: 100px;
+      transition: all 0.2s;
+      font-weight: 500;
+      box-shadow: 
+        0 3px 8px rgba(0,0,0,0.4),
+        inset 0 0 8px rgba(255,255,255,0.15);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .toggle-btn.active {
+      background: #3b82f6;
+      box-shadow: 
+        0 0 20px #3b82f6,
+        0 0 40px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Panel de parámetros */
+    .control-panel {
+      position: absolute;
+      right: 20px;
+      top: 190px;
+      background: rgba(10,10,20,0.95);
+      padding: 20px;
+      border-radius: 50px;
+      z-index: 5000;
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      width: 180px;
+      max-height: 80vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: 
+        0 6px 20px rgba(18, 20, 41, 0.6),
+        inset 0 0 15px rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+    }
+
+    .vital-sign {
+      display: flex;
+      justify-content: space-between;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+
+    .vital-label {
+      color: #aaa;
+      font-size: 0.85em;
+      width: 60%;
+    }
+
+    .vital-value {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 0.95em;
+      width: 40%;
+      text-align: right;
+      transition: color 0.3s;
+    }
+
+    .normal { color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.4); }
+    .warning { color: #f39c12; text-shadow: 0 0 8px rgba(243, 156, 18, 0.4); }
+    .danger { color: #e74c3c; text-shadow: 0 0 8px rgba(231, 76, 60, 0.4); }
+
+    .gauge-container {
+      width: 100%;
+      height: 10px;
+      background: #222;
+      border-radius: 5px;
+      margin: 8px 0 15px 0;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+    }
+
+    .gauge-level {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.5s ease;
+      box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
+    }
+
+    /* Joysticks */
+    .joystick-container {
+      position: absolute;
+      bottom: 1px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      z-index: 3000;
+    }
+
+    #joystick-light-container {
+      left: 200px;
+    }
+
+    #joystick-vitrectomo-container {
+      right: 180px;
+    }
+
+    .joystick {
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      position: relative;
+      box-shadow: 
+        0 6px 15px rgba(0,0,0,0.4),
+        inset 0 0 25px rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      will-change: transform;
+    }
+
+    .joystick .joystick-handle {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      position: absolute;
+      transition: transform 0.1s ease;
+      box-shadow: 
+        0 0 15px rgba(255,255,255,0.4),
+        inset 0 0 8px rgba(255,255,255,0.7);
+      will-change: transform;
+    }
+
+    /* Controles Z */
+    .slider-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      background: rgba(0,0,0,0.7);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 
+        0 4px 10px rgba(0,0,0,0.4),
+        inset 0 0 8px rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+    }
+
+    .slider-container label {
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #eee;
+      font-weight: 500;
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      margin: 8px 0 12px 0;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      background: #3b82f6;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 
+        0 0 8px rgba(0,0,0,0.7),
+        0 0 15px rgba(59, 130, 246, 0.7);
+      transition: all 0.2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+      box-shadow: 
+        0 0 12px rgba(0,0,0,0.7),
+        0 0 20px rgba(59, 130, 246, 1);
+    }
+
+    #btn-precionar {
+      background: linear-gradient(to bottom, #dc2626, #b91c1c);
+      color: white;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      margin-top: 8px;
+      width: 100%;
+      font-weight: bold;
+      box-shadow: 
+        0 4px 12px rgba(0,0,0,0.4),
+        0 0 15px rgba(220, 38, 38, 0.4);
+      transition: all 0.2s;
+      text-shadow: 0 0 8px rgba(0,0,0,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #btn-precionar:active {
+      transform: scale(0.95);
+      box-shadow: 
+        0 2px 6px rgba(0,0,0,0.4),
+        0 0 8px rgba(220, 38, 38, 0.4);
+    }
+
     .laser-spot {
       position: absolute;
       width: 24px;
@@ -3121,7 +2704,7 @@ body {
     <div class="control-panel">
       <div class="vital-sign">
         <span class="vital-label">Presión Intraocular:</span>
-        <span class="vital-value normal" id="iop-value">16 mmHg</span>
+        <span class="vital-value normal" id="iop-value">20 mmHg</span>
       </div>
       <div id="iop-gauge" class="gauge-container">
         <div class="gauge-level" id="iop-level"></div>
@@ -3251,1151 +2834,1198 @@ body {
   </div>
 
   <script>
-    /* ================== VARIABLES GLOBALES ================== */
-    let lightJoystickX = 50, lightJoystickY = 50;
-    let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
-    let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
-    let activeInstrument = null;
-    let iop = 16; // mmHg
-    let perfusion = 95; // %
-    let hemorrhageRemoved = 0; // %
-    let bloodClots = [];
-    let laserBurns = [];
-    let cauteryMarks = [];
-    let hemorrhageActive = true;
-    let wallCollisionActive = false;
-    let retinaDetached = false;
-    let procedureStep = 0; // 0: vitrectomía, 1: cauterio, 2: láser
-    let isTouchingLight = false;
-    let isTouchingVitrectomo = false;
-    let lastLightX = 50, lastLightY = 50;
-    let lastVitrectomoX = 50, lastVitrectomoY = 50;
-    let joystickSensitivity = 0.7;
-    let cauteryPoints = 0;
-    let laserPoints = 0;
-    let activeTouchId = null;
-    let isActionButtonPressed = false;
-    let vitrectomyInterval = null;
+/* ================== VARIABLES GLOBALES ================== */
+let lightJoystickX = 50, lightJoystickY = 50;
+let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
+let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
+let activeInstrument = null;
+let iop = 20; // mmHg (valor inicial ajustado a 20)
+let perfusion = 95; // %
+let hemorrhageRemoved = 0; // %
+let bloodClots = [];
+let laserBurns = [];
+let cauteryMarks = [];
+let hemorrhageActive = true;
+let wallCollisionActive = false;
+let retinaDetached = false;
+let procedureStep = 0; // 0: vitrectomía, 1: cauterio, 2: láser
+let isTouchingLight = false;
+let isTouchingVitrectomo = false;
+let lastLightX = 50, lastLightY = 50;
+let lastVitrectomoX = 50, lastVitrectomoY = 50;
+let joystickSensitivity = 0.7;
+let cauteryPoints = 0;
+let laserPoints = 0;
+let activeTouchId = null;
+let isActionButtonPressed = false;
+let vitrectomyInterval = null;
+let bloodClotsRemoved = 0;
+const TOTAL_BLOOD_CLOTS = 20; // Total de coágulos iniciales
 
-    /* ================== INICIALIZACIÓN ================== */
-    document.addEventListener('DOMContentLoaded', function() {
-      // Mostrar caso clínico al inicio
-      document.getElementById('start-simulation-btn').addEventListener('click', function() {
-        anime({
-          targets: '#clinical-case',
-          opacity: 0,
-          duration: 500,
-          easing: 'easeInOutQuad',
-          complete: () => {
-            document.getElementById('clinical-case').style.display = 'none';
-            initSimulation();
-          }
-        });
-      });
-      
-      // Botón para volver al menú
-      document.getElementById('back-to-menu-btn').addEventListener('click', function() {
-        location.reload();
-      });
-    });
-
-    function initSimulation() {
-      initJoysticks();
-      setupEventListeners();
-      setupAlertDismissButtons();
-      updateVitals();
-      updateEndoLightEffect(50, 50);
-      
-      // Crear hemorragia inicial
-      createInitialHemorrhage();
-      
-      requestAnimationFrame(updateInstrumentPositions);
-    }
-
-    function createInitialHemorrhage() {
-      const retina = document.getElementById('retina');
-      const overlay = document.getElementById('hemorrhage-overlay');
-      
-      overlay.style.position = 'absolute';
-      overlay.style.width = '100%';
-      overlay.style.height = '100%';
-      overlay.style.borderRadius = '50%';
-      overlay.style.background = 'radial-gradient(circle at center, rgba(180,0,0,0.8) 0%, rgba(120,0,0,0.7) 50%, rgba(80,0,0,0.6) 100%)';
-      overlay.style.zIndex = '13';
-      overlay.style.pointerEvents = 'none';
-      
-      // Crear coágulos iniciales (20 coágulos)
-      for (let i = 0; i < 20; i++) {
-        setTimeout(() => {
-          createBloodClots(1);
-        }, i * 100);
+/* ================== INICIALIZACIÓN ================== */
+document.addEventListener('DOMContentLoaded', function() {
+  // Mostrar caso clínico al inicio
+  document.getElementById('start-simulation-btn').addEventListener('click', function() {
+    anime({
+      targets: '#clinical-case',
+      opacity: 0,
+      duration: 500,
+      easing: 'easeInOutQuad',
+      complete: () => {
+        document.getElementById('clinical-case').style.display = 'none';
+        initSimulation();
       }
-    }
+    });
+  });
+  
+  // Botón para volver al menú
+  document.getElementById('back-to-menu-btn').addEventListener('click', function() {
+    location.reload();
+  });
+});
 
-    /* ================== SISTEMA DE ALERTAS ================== */
-    function setupAlertDismissButtons() {
-      document.querySelectorAll('.alert-dismiss').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const alert = this.parentElement;
-          anime({
-            targets: alert,
-            opacity: 0,
-            translateY: -20,
-            duration: 300,
-            easing: 'easeOutQuad',
-            complete: () => {
-              alert.style.display = 'none';
-              alert.style.opacity = '1';
-              alert.style.transform = 'translateY(0)';
-              if(alert.id === 'wall-collision-alert') {
-                wallCollisionActive = false;
-              }
-            }
-          });
-        });
-      });
-    }
+function initSimulation() {
+  initJoysticks();
+  setupEventListeners();
+  setupAlertDismissButtons();
+  updateVitals();
+  updateEndoLightEffect(50, 50);
+  
+  // Crear hemorragia inicial
+  createInitialHemorrhage();
+  
+  requestAnimationFrame(updateInstrumentPositions);
+}
 
-    function showAlert(alertId, duration = 5000) {
-      const alert = document.getElementById(alertId);
-      if (!alert) return;
-      
-      alert.style.display = 'flex';
+function createInitialHemorrhage() {
+  const retina = document.getElementById('retina');
+  const overlay = document.getElementById('hemorrhage-overlay');
+  
+  overlay.style.position = 'absolute';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.borderRadius = '50%';
+  overlay.style.background = 'radial-gradient(circle at center, rgba(180,0,0,0.8) 0%, rgba(120,0,0,0.7) 50%, rgba(80,0,0,0.6) 100%)';
+  overlay.style.zIndex = '13';
+  overlay.style.pointerEvents = 'none';
+  
+  // Crear coágulos iniciales
+  for (let i = 0; i < TOTAL_BLOOD_CLOTS; i++) {
+    setTimeout(() => {
+      createBloodClots(1);
+    }, i * 100);
+  }
+}
+
+/* ================== SISTEMA DE ALERTAS ================== */
+function setupAlertDismissButtons() {
+  document.querySelectorAll('.alert-dismiss').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const alert = this.parentElement;
       anime({
         targets: alert,
-        opacity: [0, 1],
-        translateY: [-20, 0],
+        opacity: 0,
+        translateY: -20,
         duration: 300,
-        easing: 'easeOutQuad'
+        easing: 'easeOutQuad',
+        complete: () => {
+          alert.style.display = 'none';
+          alert.style.opacity = '1';
+          alert.style.transform = 'translateY(0)';
+          if(alert.id === 'wall-collision-alert') {
+            wallCollisionActive = false;
+          }
+        }
       });
-      
-      const timer = alert.querySelector('.alert-timer');
-      if (timer) {
-        anime({
-          targets: timer,
-          width: ['100%', '0%'],
-          duration: duration,
-          easing: 'linear'
-        });
-      }
-      
-      if (duration > 0) {
-        setTimeout(() => {
-          anime({
-            targets: alert,
-            opacity: 0,
-            translateY: -20,
-            duration: 300,
-            easing: 'easeOutQuad',
-            complete: () => {
-              alert.style.display = 'none';
-              alert.style.opacity = '1';
-              alert.style.transform = 'translateY(0)';
-              if(alertId === 'wall-collision-alert') {
-                wallCollisionActive = false;
-              }
-            }
-          });
-        }, duration);
-      }
-      
-      if(alertId === 'wall-collision-alert') {
-        wallCollisionActive = true;
-      }
-    }
+    });
+  });
+}
 
-    function checkWallCollision() {
-      const miniMapRect = document.getElementById('miniMapContainer').getBoundingClientRect();
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      
-      // Verificar colisión para el instrumento activo
-      if (activeInstrument) {
-        const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
-        const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
-        const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
-        
-        // Coordenadas relativas al mini mapa
-        const relX = (instrumentCenterX - retinaRect.left) / retinaRect.width * miniMapRect.width;
-        const relY = (instrumentCenterY - retinaRect.top) / retinaRect.height * miniMapRect.height;
-        
-        // Verificar contacto con retina en mini mapa
-        const retinaWall = document.getElementById('retina-wall');
-        const retinaX = 400 * (miniMapRect.width / 800);
-        const retinaY = 300 * (miniMapRect.height / 600);
-        const retinaRadius = 250 * (miniMapRect.width / 800);
-        
-        const distance = Math.sqrt(Math.pow(relX - retinaX, 2) + Math.pow(relY - retinaY, 2));
-        
-        // Solo mostrar alerta si estamos en el borde (90% del radio)
-        if (distance > retinaRadius * 1.1 && !wallCollisionActive) {
-          showAlert('wall-collision-alert');
-          return true;
+function showAlert(alertId, duration = 5000) {
+  const alert = document.getElementById(alertId);
+  if (!alert) return;
+  
+  alert.style.display = 'flex';
+  anime({
+    targets: alert,
+    opacity: [0, 1],
+    translateY: [-20, 0],
+    duration: 300,
+    easing: 'easeOutQuad'
+  });
+  
+  const timer = alert.querySelector('.alert-timer');
+  if (timer) {
+    anime({
+      targets: timer,
+      width: ['100%', '0%'],
+      duration: duration,
+      easing: 'linear'
+    });
+  }
+  
+  if (duration > 0) {
+    setTimeout(() => {
+      anime({
+        targets: alert,
+        opacity: 0,
+        translateY: -20,
+        duration: 300,
+        easing: 'easeOutQuad',
+        complete: () => {
+          alert.style.display = 'none';
+          alert.style.opacity = '1';
+          alert.style.transform = 'translateY(0)';
+          if(alertId === 'wall-collision-alert') {
+            wallCollisionActive = false;
+          }
         }
-      }
-      // Verificar colisión para el endoiluminador
-      const lightPosX = retinaRect.left + retinaRect.width * lightJoystickX / 100;
-      const lightPosY = retinaRect.top + retinaRect.height * lightJoystickY / 100;
-      
-      // Coordenadas relativas al mini mapa
-      const lightRelX = (lightPosX - retinaRect.left) / retinaRect.width * miniMapRect.width;
-      const lightRelY = (lightPosY - retinaRect.top) / retinaRect.height * miniMapRect.height;
-      
-      // Verificar contacto con retina para el endoiluminador
-      const retinaX = 400 * (miniMapRect.width / 800);
-      const retinaY = 300 * (miniMapRect.height / 600);
-      const retinaRadius = 250 * (miniMapRect.width / 800);
-      
-      const lightDistance = Math.sqrt(Math.pow(lightRelX - retinaX, 2) + Math.pow(lightRelY - retinaY, 2));
-      
-      if (lightDistance > retinaRadius * 1.1 && !wallCollisionActive) {
-        showAlert('wall-collision-alert');
-        return true;
-      }
-      
-      return false;
-    }
+      });
+    }, duration);
+  }
+  
+  if(alertId === 'wall-collision-alert') {
+    wallCollisionActive = true;
+  }
+}
 
-    function checkVesselDamage() {
-      if (currentDepth > -200 || !hemorrhageActive) return false;
-      
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
-      
-      const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
-      const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
-      
-      const bloodVessels = document.querySelector('.blood-vessels');
-      const bloodVesselsRect = bloodVessels.getBoundingClientRect();
-      
-      const relX = instrumentCenterX - bloodVesselsRect.left;
-      const relY = instrumentCenterY - bloodVesselsRect.top;
-      
-      const proximityThreshold = 30;
-      const vesselProximity = Math.abs(relX - bloodVesselsRect.width/2) < proximityThreshold && 
-                            Math.abs(relY - bloodVesselsRect.height/2) < proximityThreshold;
-      
-      if (vesselProximity && hemorrhageActive) {
-        showAlert('vessel-damage-alert', 0);
-        
-        document.getElementById('hemorrhage-effect').style.display = 'block';
-        anime({
-          targets: '#hemorrhage-effect',
-          opacity: 0.7,
-          duration: 1000,
-          easing: 'easeOutQuad'
-        });
-        
-        createBloodClots(5, {x: instrumentCenterX, y: instrumentCenterY});
-        
-        perfusion -= 15;
-        iop += 5;
-        
-        return true;
-      }
-      return false;
+function checkWallCollision() {
+  const miniMapRect = document.getElementById('miniMapContainer').getBoundingClientRect();
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  
+  // Verificar colisión para el instrumento activo
+  if (activeInstrument) {
+    const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
+    const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
+    const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
+    
+    // Coordenadas relativas al mini mapa
+    const relX = (instrumentCenterX - retinaRect.left) / retinaRect.width * miniMapRect.width;
+    const relY = (instrumentCenterY - retinaRect.top) / retinaRect.height * miniMapRect.height;
+    
+    // Verificar contacto con retina en mini mapa
+    const retinaWall = document.getElementById('retina-wall');
+    const retinaX = 400 * (miniMapRect.width / 800);
+    const retinaY = 300 * (miniMapRect.height / 600);
+    const retinaRadius = 250 * (miniMapRect.width / 800);
+    
+    const distance = Math.sqrt(Math.pow(relX - retinaX, 2) + Math.pow(relY - retinaY, 2));
+    
+    // Solo mostrar alerta si estamos en el borde (90% del radio)
+    if (distance > retinaRadius * 1.1 && !wallCollisionActive) {
+      showAlert('wall-collision-alert');
+      return true;
     }
+  }
+  // Verificar colisión para el endoiluminador
+  const lightPosX = retinaRect.left + retinaRect.width * lightJoystickX / 100;
+  const lightPosY = retinaRect.top + retinaRect.height * lightJoystickY / 100;
+  
+  // Coordenadas relativas al mini mapa
+  const lightRelX = (lightPosX - retinaRect.left) / retinaRect.width * miniMapRect.width;
+  const lightRelY = (lightPosY - retinaRect.top) / retinaRect.height * miniMapRect.height;
+  
+  // Verificar contacto con retina para el endoiluminador
+  const retinaX = 400 * (miniMapRect.width / 800);
+  const retinaY = 300 * (miniMapRect.height / 600);
+  const retinaRadius = 250 * (miniMapRect.width / 800);
+  
+  const lightDistance = Math.sqrt(Math.pow(lightRelX - retinaX, 2) + Math.pow(lightRelY - retinaY, 2));
+  
+  if (lightDistance > retinaRadius * 1.1 && !wallCollisionActive) {
+    showAlert('wall-collision-alert');
+    return true;
+  }
+  
+  return false;
+}
 
-    function createBloodClots(count, position = null) {
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const bloodClotsContainer = document.getElementById('blood-clots');
-      
-      for (let i = 0; i < count; i++) {
-        const clot = document.createElement('div');
-        clot.className = 'blood-clot';
-        
-        let x, y;
-        if (position) {
-          x = position.x - retinaRect.left + (Math.random() * 40 - 20);
-          y = position.y - retinaRect.top + (Math.random() * 40 - 20);
-        } else {
-          const angle = Math.random() * Math.PI * 2;
-          const distance = Math.random() * retinaRect.width * 0.4;
-          x = retinaRect.width/2 + Math.cos(angle) * distance;
-          y = retinaRect.height/2 + Math.sin(angle) * distance;
-        }
-        
-        clot.style.left = `${x}px`;
-        clot.style.top = `${y}px`;
-        const size = 10 + Math.random() * 20;
-        clot.style.width = `${size}px`;
-        clot.style.height = `${size}px`;
-        
-        // Animación de aparición con anime.js
-        anime({
-          targets: clot,
-          scale: [0, 1],
-          opacity: [0, 1],
-          duration: 500,
-          easing: 'easeOutElastic'
-        });
-        
-        bloodClotsContainer.appendChild(clot);
-        bloodClots.push({
-          element: clot,
-          x: x,
-          y: y,
-          size: size
-        });
-      }
+function checkVesselDamage() {
+  if (currentDepth > -200 || !hemorrhageActive) return false;
+  
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
+  
+  const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
+  const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
+  
+  const bloodVessels = document.querySelector('.blood-vessels');
+  const bloodVesselsRect = bloodVessels.getBoundingClientRect();
+  
+  const relX = instrumentCenterX - bloodVesselsRect.left;
+  const relY = instrumentCenterY - bloodVesselsRect.top;
+  
+  const proximityThreshold = 30;
+  const vesselProximity = Math.abs(relX - bloodVesselsRect.width/2) < proximityThreshold && 
+                        Math.abs(relY - bloodVesselsRect.height/2) < proximityThreshold;
+  
+  if (vesselProximity && hemorrhageActive) {
+    showAlert('vessel-damage-alert', 0);
+    
+    document.getElementById('hemorrhage-effect').style.display = 'block';
+    anime({
+      targets: '#hemorrhage-effect',
+      opacity: 0.7,
+      duration: 1000,
+      easing: 'easeOutQuad'
+    });
+    
+    createBloodClots(5, {x: instrumentCenterX, y: instrumentCenterY});
+    
+    perfusion -= 15;
+    iop += 5;
+    updateVitals();
+    
+    return true;
+  }
+  return false;
+}
+
+function createBloodClots(count, position = null) {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const bloodClotsContainer = document.getElementById('blood-clots');
+  
+  for (let i = 0; i < count; i++) {
+    const clot = document.createElement('div');
+    clot.className = 'blood-clot';
+    
+    let x, y;
+    if (position) {
+      x = position.x - retinaRect.left + (Math.random() * 40 - 20);
+      y = position.y - retinaRect.top + (Math.random() * 40 - 20);
+    } else {
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * retinaRect.width * 0.4;
+      x = retinaRect.width/2 + Math.cos(angle) * distance;
+      y = retinaRect.height/2 + Math.sin(angle) * distance;
     }
+    
+    clot.style.left = `${x}px`;
+    clot.style.top = `${y}px`;
+    const size = 10 + Math.random() * 20;
+    clot.style.width = `${size}px`;
+    clot.style.height = `${size}px`;
+    
+    // Animación de aparición con anime.js
+    anime({
+      targets: clot,
+      scale: [0, 1],
+      opacity: [0, 1],
+      duration: 500,
+      easing: 'easeOutElastic'
+    });
+    
+    bloodClotsContainer.appendChild(clot);
+    bloodClots.push({
+      element: clot,
+      x: x,
+      y: y,
+      size: size
+    });
+  }
+}
 
-    function removeBloodClot(index) {
-      if (index >= 0 && index < bloodClots.length) {
-        const clot = bloodClots[index];
-        if (clot.element.parentNode) {
-          anime({
-            targets: clot.element,
-            opacity: 0,
-            scale: 0.5,
-            duration: 500,
-            easing: 'easeInOutQuad',
-            complete: () => {
-              if (clot.element.parentNode) {
-                clot.element.parentNode.removeChild(clot.element);
-              }
-            }
-          });
-        }
-        bloodClots.splice(index, 1);
-        
-        if (bloodClots.length === 0) {
-          hemorrhageActive = false;
-          anime({
-            targets: '#hemorrhage-overlay',
-            opacity: 0,
-            duration: 1000,
-            easing: 'easeInOutQuad',
-            complete: () => {
-              document.getElementById('hemorrhage-overlay').style.display = 'none';
-            }
-          });
-        }
-      }
-    }
-
-    function removeNearbyBloodClots(instrument, offsetX, offsetY) {
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const instrumentRect = instrument.getBoundingClientRect();
-      
-      const instrumentCenterX = retinaRect.left + retinaRect.width/2 + offsetX;
-      const instrumentCenterY = retinaRect.top + retinaRect.height/2 + offsetY;
-      
-      bloodClots.forEach((clot, index) => {
-        const dx = instrumentCenterX - (retinaRect.left + clot.x);
-        const dy = instrumentCenterY - (retinaRect.top + clot.y);
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        if (distance < clot.size + instrumentRect.width/2) {
-          removeBloodClot(index);
-          
-          const particleCount = 5 + Math.floor(Math.random() * 5);
-          for (let i = 0; i < particleCount; i++) {
-            const particle = document.createElement('div');
-            particle.className = 'suction-particle';
-            particle.style.left = `${clot.x + (Math.random()*20 - 10)}px`;
-            particle.style.top = `${clot.y + (Math.random()*20 - 10)}px`;
-            
-            anime({
-              targets: particle,
-              translateX: Math.random() * 40 - 20,
-              translateY: Math.random() * 40 - 20,
-              opacity: [1, 0],
-              duration: 1500,
-              easing: 'easeOutQuad',
-              complete: () => {
-                if (particle.parentNode) {
-                  particle.parentNode.removeChild(particle);
-                }
-              }
-            });
-            
-            document.getElementById('retina').appendChild(particle);
+function removeBloodClot(index) {
+  if (index >= 0 && index < bloodClots.length) {
+    const clot = bloodClots[index];
+    if (clot.element.parentNode) {
+      anime({
+        targets: clot.element,
+        opacity: 0,
+        scale: 0.5,
+        duration: 500,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          if (clot.element.parentNode) {
+            clot.element.parentNode.removeChild(clot.element);
           }
         }
       });
     }
-
-    function checkRetinaDetachment() {
-      if (iop > 28 && !retinaDetached) {
-        showAlert('retina-detachment-alert');
-        retinaDetached = true;
-        return true;
-      }
-      return false;
-    }
-
-    function checkHighIOP() {
-      if (iop > 25) {
-        showAlert('high-iop-alert', 0);
-        document.querySelector('.retina-nerve').style.backgroundColor = 'rgba(255,255,255,0.8)';
-        document.querySelector('.optic-disc').style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.5)';
-        return true;
-      } else {
-        document.querySelector('.retina-nerve').style.backgroundColor = '';
-        document.querySelector('.optic-disc').style.boxShadow = 'inset 0 0 20px rgba(220,80,80,0.6), 0 0 25px rgba(220,80,80,0.5)';
-        document.getElementById('high-iop-alert').style.display = 'none';
-        return false;
-      }
-    }
-
-    /* ================== CONTROL DE JOYSTICKS MEJORADO ================== */
-    function initJoysticks() {
-      const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
-      initJoystick(joystickVitrectomo, (x, y) => {
-        vitrectomoJoystickX = x;
-        vitrectomoJoystickY = y;
-        lastVitrectomoX = x;
-        lastVitrectomoY = y;
-        updateInstrumentPosition(x, y);
-        updateMiniLeftLine(x, y);
-        checkWallCollision();
-      }, 'vitrectomo');
-      
-      const joystickLight = document.getElementById('joystick-light');
-      initJoystick(joystickLight, (x, y) => {
-        lightJoystickX = x;
-        lightJoystickY = y;
-        lastLightX = x;
-        lastLightY = y;
-        updateEndoLightEffect(x, y);
-        updateMiniRightLine(x, y);
-        checkWallCollision();
-      }, 'light');
-    }
-
-    function initJoystick(joystickElement, updateCallback, type) {
-      const handle = joystickElement.querySelector('.joystick-handle');
-      const rect = joystickElement.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const maxDistance = rect.width / 2 * joystickSensitivity;
-      
-      let isDragging = false;
-      let touchId = null;
-      
-      function handleStart(e) {
-        e.preventDefault();
-        if (isDragging) return;
-        
-        isDragging = true;
-        if (e.touches) {
-          // Para multitouch, encontrar el touch correcto
-          const touches = Array.from(e.touches);
-          const touch = touches.find(t => {
-            const element = document.elementFromPoint(t.clientX, t.clientY);
-            return element === joystickElement || element === handle;
-          });
-          
-          if (!touch) return;
-          touchId = touch.identifier;
-          activeTouchId = touchId;
-          handleMove(e);
-        } else {
-          handleMove(e);
-        }
-      }
-      
-      function handleMove(e) {
-        if (!isDragging) return;
-        
-        let clientX, clientY;
-        
-        if (e.touches) {
-          // Encontrar el touch específico
-          const touches = Array.from(e.touches);
-          const touch = touches.find(t => t.identifier === touchId);
-          if (!touch) return;
-          
-          clientX = touch.clientX;
-          clientY = touch.clientY;
-        } else {
-          clientX = e.clientX;
-          clientY = e.clientY;
-        }
-        
-        const bounds = joystickElement.getBoundingClientRect();
-        const x = clientX - bounds.left;
-        const y = clientY - bounds.top;
-        
-        let deltaX = x - centerX;
-        let deltaY = y - centerY;
-        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        
-        if (distance > maxDistance) {
-          const angle = Math.atan2(deltaY, deltaX);
-          deltaX = Math.cos(angle) * maxDistance;
-          deltaY = Math.sin(angle) * maxDistance;
-        }
-        
-        // Suavizar el movimiento con anime.js
-        anime({
-          targets: handle,
-          translateX: deltaX,
-          translateY: deltaY,
-          duration: 100,
-          easing: 'easeOutQuad'
-        });
-        
-        // Normalizar las coordenadas (0-100)
-        const normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
-        const normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
-        
-        updateCallback(normalizedX, normalizedY);
-      }
-      
-      function handleEnd(e) {
-        if (!isDragging) return;
-        
-        // Verificar si el touch que terminó es el que controla este joystick
-        if (e.touches) {
-          const touches = Array.from(e.changedTouches);
-          const touch = touches.find(t => t.identifier === touchId);
-          if (!touch) return;
-        }
-        
-        isDragging = false;
-        touchId = null;
-        activeTouchId = null;
-        
-        // Suavizar el retorno a la posición central con anime.js
-        anime({
-          targets: handle,
-          translateX: 0,
-          translateY: 0,
-          duration: 300,
-          easing: 'easeOutElastic(1, 0.5)'
-        });
-        
-        // Resetear posición cuando se suelta
-        if (type === 'light') {
-          updateCallback(50, 50);
-        } else {
-          updateCallback(50, 50);
-        }
-      }
-      
-      // Eventos táctiles
-      joystickElement.addEventListener('touchstart', handleStart, { passive: false });
-      document.addEventListener('touchmove', (e) => {
-        if (activeTouchId !== null) {
-          const touches = Array.from(e.touches);
-          if (touches.some(t => t.identifier === activeTouchId)) {
-            handleMove(e);
-          }
-        }
-      }, { passive: false });
-      
-      document.addEventListener('touchend', handleEnd);
-      document.addEventListener('touchcancel', handleEnd);
-      
-      // Eventos de ratón
-      joystickElement.addEventListener('mousedown', handleStart);
-      document.addEventListener('mousemove', handleMove);
-      document.addEventListener('mouseup', handleEnd);
-    }
-
-    /* ================== ACTUALIZACIÓN DE POSICIONES ================== */
-    function updateInstrumentPositions() {
-      updateInstrumentPosition(vitrectomoJoystickX, vitrectomoJoystickY);
-      requestAnimationFrame(updateInstrumentPositions);
-    }
-
-    function updateInstrumentPosition(normX, normY) {
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const maxOffset = retinaRect.width / 2;
-      const offsetX = (normX - 50) / 50 * maxOffset * 0.9;
-      const offsetY = (normY - 50) / 50 * maxOffset * 0.9;
-      
-      if(activeInstrument) {
-        const instr = document.getElementById(activeInstrument);
-        if(instr) {
-          instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${currentDepth}px)`;
-          
-          const shadow = instr.querySelector('.instrument-shadow');
-          if(shadow) {
-            const lightX = parseInt(document.documentElement.style.getPropertyValue('--light-x'));
-            const lightY = parseInt(document.documentElement.style.getPropertyValue('--light-y'));
-            
-            const shadowOffsetX = (lightX - 50) / 10;
-            const shadowOffsetY = (lightY - 50) / 10;
-            const shadowBlur = 10 - Math.abs(lightX - normX) / 10;
-            
-            shadow.style.transform = `translate(${shadowOffsetX}px, ${shadowOffsetY}px) rotateX(75deg) translateZ(-10px)`;
-            shadow.style.filter = `blur(${Math.max(3, shadowBlur)}px)`;
-          }
-          
-          checkWallCollision();
-          
-          if (currentDepth <= -200) {
-            checkVesselDamage();
-          }
-          
-          updateDepthIndicator();
-        }
-      }
-    }
-
-    function updateDepthIndicator() {
-      const depthIndicator = document.getElementById('depth-indicator');
-      
-      if (currentDepth > -80) {
-        depthIndicator.textContent = "Profundidad: Superficial";
-        depthIndicator.style.setProperty('--depth-color', '#3b82f6');
-      } else if (currentDepth > -150) {
-        depthIndicator.textContent = "Profundidad: Media";
-        depthIndicator.style.setProperty('--depth-color', '#10b981');
-      } else {
-        depthIndicator.textContent = "Profundidad: Profunda";
-        depthIndicator.style.setProperty('--depth-color', '#ef4444');
-      }
-    }
-
-    function updateEndoLightEffect(normX, normY) {
-      document.documentElement.style.setProperty('--light-x', normX + '%');
-      document.documentElement.style.setProperty('--light-y', normY + '%');
-      
-      const zVal = parseInt(document.getElementById('endo-z-slider').value);
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const newLightSize = 20 + (retinaRect.width - 20) * (zVal / 200);
-      
-      document.documentElement.style.setProperty('--light-size', newLightSize + 'px');
-      document.getElementById('light-reflection').style.opacity = 0.7;
-      
-      if (zVal > 100) {
-        document.getElementById('light-scatter').classList.add('active');
-        document.getElementById('specular-highlight').classList.add('active');
-      } else {
-        document.getElementById('light-scatter').classList.remove('active');
-        document.getElementById('specular-highlight').classList.remove('active');
-      }
-      
-      document.querySelectorAll('.instrument-light-reflection').forEach(reflection => {
-        const instrument = reflection.closest('.instrument');
-        if(instrument) {
-          const instrRect = instrument.getBoundingClientRect();
-          const instrCenterX = instrRect.left + instrRect.width/2;
-          const instrCenterY = instrRect.top + instrRect.height/2;
-          
-          const retinaRect = document.getElementById('retina').getBoundingClientRect();
-          const retinaCenterX = retinaRect.left + retinaRect.width/2;
-          const retinaCenterY = retinaRect.top + retinaRect.height/2;
-          
-          const lightPosX = retinaRect.left + retinaRect.width * normX / 100;
-          const lightPosY = retinaRect.top + retinaRect.height * normY / 100;
-          
-          const angle = Math.atan2(lightPosY - instrCenterY, lightPosX - instrCenterX);
-          const distance = Math.sqrt(
-            Math.pow(lightPosX - instrCenterX, 2) + 
-            Math.pow(lightPosY - instrCenterY, 2)
-          );
-          
-          const intensity = Math.min(1, 100 / distance);
-          
-          reflection.style.background = `linear-gradient(
-            ${angle}rad,
-            rgba(255,255,255,${0.2 * intensity}) 0%,
-            rgba(255,255,255,${0.1 * intensity}) 50%,
-            transparent 100%
-          )`;
-        }
-      });
-    }
-
-    function updateMiniLeftLine(normX, normY) {
-      const defaultTipX = 350;
-      const defaultTipY = 300;
-      const scaleX = 2.5;
-      const scaleY = 1.8;
-      const offsetX = (normX - 50) * scaleX;
-      const offsetY = (normY - 50) * scaleY;
-      let tipX = defaultTipX + offsetX;
-      let tipY = defaultTipY + offsetY;
-      
-      tipX = Math.max(50, Math.min(750, tipX));
-      tipY = Math.max(50, Math.min(550, tipY));
-      
-      const miniLeft = document.getElementById('probeLight');
-      const miniLeftInner = document.getElementById('probeLightInner');
-      if(miniLeft && miniLeftInner) {
-        miniLeft.setAttribute('x2', tipX);
-        miniLeftInner.setAttribute('x2', tipX);
-        miniLeft.setAttribute('y2', tipY);
-        miniLeftInner.setAttribute('y2', tipY);
-      }
-    }
-
-    function updateMiniRightLine(normX, normY) {
-      const defaultTipX = 450;
-      const defaultTipY = 300;
-      const scaleX = 2.5;
-      const scaleY = 1.8;
-      const offsetX = (normX - 50) * scaleX;
-      const offsetY = (normY - 50) * scaleY;
-      let tipX = defaultTipX + offsetX;
-      let tipY = defaultTipY + offsetY;
-      
-      tipX = Math.max(50, Math.min(750, tipX));
-      tipY = Math.max(50, Math.min(550, tipY));
-      
-      const miniRight = document.getElementById('probeForceps');
-      const miniRightInner = document.getElementById('probeForcepsInner');
-      if(miniRight && miniRightInner) {
-        miniRight.setAttribute('x2', tipX);
-        miniRightInner.setAttribute('x2', tipX);
-        miniRight.setAttribute('y2', tipY);
-        miniRightInner.setAttribute('y2', tipY);
-      }
-    }
-
-    /* ================== GESTIÓN DE INSTRUMENTOS ================== */
-    function setupEventListeners() {
-      document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectome'));
-      document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser-probe'));
-      document.getElementById('btn-cautery').addEventListener('click', () => toggleInstrument('btn-cautery', 'cautery-probe'));
-      
-      document.getElementById('btn-precionar').addEventListener('mousedown', startVitrectomyAction);
-      document.getElementById('btn-precionar').addEventListener('touchstart', startVitrectomyAction, { passive: false });
-      document.getElementById('btn-precionar').addEventListener('mouseup', stopVitrectomyAction);
-      document.getElementById('btn-precionar').addEventListener('touchend', stopVitrectomyAction);
-      document.getElementById('btn-precionar').addEventListener('mouseleave', stopVitrectomyAction);
-      
-      document.getElementById('vitrectomo-z-slider').addEventListener('input', function() {
-        currentDepth = parseInt(this.value);
-        updateInstrumentPosition(vitrectomoJoystickX, vitrectomoJoystickY);
-      });
-      
-      document.getElementById('endo-z-slider').addEventListener('input', function() {
-        updateEndoLightEffect(lightJoystickX, lightJoystickY);
-      });
-    }
-
-    function startVitrectomyAction() {
-      if (activeInstrument !== 'vitrectome') return;
-      
-      isActionButtonPressed = true;
-      
-      // Mostrar indicador de acción
-      const actionIndicator = document.querySelector('#vitrectome .instrument-action-indicator');
-      if (actionIndicator) {
-        actionIndicator.classList.add('active');
-      }
-      
-      // Iniciar el efecto de vitrectomía continuo
-      vitrectomyInterval = setInterval(() => {
-        if (!isActionButtonPressed) {
-          clearInterval(vitrectomyInterval);
-          return;
-        }
-        
-        const instrument = document.getElementById('vitrectome');
-        const retinaRect = document.getElementById('retina').getBoundingClientRect();
-        const instRect = instrument.getBoundingClientRect();
-        
-        // Calcular posición de la punta del instrumento
-        const tip = instrument.querySelector('.instrument-tip');
-        const tipRect = tip.getBoundingClientRect();
-        const x = tipRect.left + tipRect.width/2 - retinaRect.left;
-        const y = tipRect.top + tipRect.height/2 - retinaRect.top;
-        
-        const syntheticEvent = { 
-          clientX: retinaRect.left + x, 
-          clientY: retinaRect.top + y,
-          preventDefault: () => {}
-        };
-        
-        vitrectomyFunction(syntheticEvent);
-        removeNearbyBloodClots(instrument, x, y);
-      }, 100);
-    }
-
-    function stopVitrectomyAction() {
-      isActionButtonPressed = false;
-      
-      // Ocultar indicador de acción
-      const actionIndicator = document.querySelector('#vitrectome .instrument-action-indicator');
-      if (actionIndicator) {
-        actionIndicator.classList.remove('active');
-      }
-      
-      // Detener el efecto de vitrectomía continuo
-      if (vitrectomyInterval) {
-        clearInterval(vitrectomyInterval);
-        vitrectomyInterval = null;
-      }
-    }
-
-    function toggleInstrument(btnId, instrumentId) {
-      const btn = document.getElementById(btnId);
-      
-      if(btn.classList.contains('active')) {
-        btn.classList.remove('active');
-        document.getElementById(instrumentId).style.display = 'none';
-        activeInstrument = null;
-        isActionButtonPressed = false;
-      } else {
-        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.instrument').forEach(i => i.style.display = 'none');
-        
-        btn.classList.add('active');
-        activeInstrument = instrumentId;
-        document.getElementById(instrumentId).style.display = 'block';
-      }
-    }
-
-    function handleMainAction() {
-      if(!activeInstrument) return;
-      
-      const instrument = document.getElementById(activeInstrument);
-      const retinaRect = document.getElementById('retina').getBoundingClientRect();
-      const instRect = instrument.getBoundingClientRect();
-      
-      // Mostrar indicador de acción
-      const actionIndicator = instrument.querySelector('.instrument-action-indicator');
-      if (actionIndicator) {
-        actionIndicator.classList.add('active');
-        setTimeout(() => actionIndicator.classList.remove('active'), 1000);
-      }
-      
-      // Calcular posición de la punta del instrumento
-      const tip = instrument.querySelector('.instrument-tip');
-      const tipRect = tip.getBoundingClientRect();
-      const x = tipRect.left + tipRect.width/2 - retinaRect.left;
-      const y = tipRect.top + tipRect.height/2 - retinaRect.top;
-      
-      const syntheticEvent = { 
-        clientX: retinaRect.left + x, 
-        clientY: retinaRect.top + y,
-        preventDefault: () => {}
-      };
-      
-      switch(activeInstrument) {
-        case 'laser-probe':
-          if (procedureStep === 2) {
-            laserFunction(syntheticEvent);
-          }
-          break;
-        case 'vitrectome':
-          vitrectomyFunction(syntheticEvent);
-          removeNearbyBloodClots(instrument, x, y);
-          if (bloodClots.length === 0 && procedureStep === 0) {
+    bloodClots.splice(index, 1);
+    bloodClotsRemoved++;
+    
+    // Actualizar porcentaje de hemorragia removida
+    hemorrhageRemoved = Math.min(100, Math.floor((bloodClotsRemoved / TOTAL_BLOOD_CLOTS) * 100));
+    document.getElementById('hemorrhage-value').textContent = `${hemorrhageRemoved}%`;
+    document.getElementById('hemorrhage-level').style.width = `${hemorrhageRemoved}%`;
+    
+    // Reducir la opacidad de la hemorragia
+    const overlay = document.getElementById('hemorrhage-overlay');
+    overlay.style.opacity = (1 - (hemorrhageRemoved / 100)).toString();
+    
+    if (bloodClots.length === 0) {
+      hemorrhageActive = false;
+      anime({
+        targets: '#hemorrhage-overlay',
+        opacity: 0,
+        duration: 1000,
+        easing: 'easeInOutQuad',
+        complete: () => {
+          document.getElementById('hemorrhage-overlay').style.display = 'none';
+          // Avanzar al siguiente paso del procedimiento
+          if (procedureStep === 0) {
             procedureStep = 1;
             document.getElementById('btn-cautery').classList.add('active');
             document.getElementById('cautery-probe').style.display = 'block';
             activeInstrument = 'cautery-probe';
           }
-          break;
-        case 'cautery-probe':
-          cauteryFunction(syntheticEvent);
-          if (cauteryPoints >= 15 && procedureStep === 1) {
-            procedureStep = 2;
-            document.getElementById('btn-laser').classList.add('active');
-            document.getElementById('laser-probe').style.display = 'block';
-            activeInstrument = 'laser-probe';
-          }
-          break;
+        }
+      });
+    }
+  }
+}
+
+function removeNearbyBloodClots(instrument, offsetX, offsetY) {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const instrumentRect = instrument.getBoundingClientRect();
+  
+  // Calcular posición central del instrumento relativa a la retina
+  const instrumentCenterX = retinaRect.width/2 + offsetX;
+  const instrumentCenterY = retinaRect.height/2 + offsetY;
+  
+  // Hacer una copia del array para evitar problemas al modificar durante la iteración
+  const clotsToCheck = [...bloodClots];
+  
+  clotsToCheck.forEach((clot, index) => {
+    const dx = instrumentCenterX - clot.x;
+    const dy = instrumentCenterY - clot.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    
+    if (distance < clot.size + instrumentRect.width/2) {
+      // Encontrar el índice real en el array bloodClots
+      const realIndex = bloodClots.findIndex(c => 
+        c.x === clot.x && c.y === clot.y && c.size === clot.size
+      );
+      
+      if (realIndex !== -1) {
+        removeBloodClot(realIndex);
+        
+        // Crear partículas de succión
+        for (let i = 0; i < 5; i++) {
+          const particle = document.createElement('div');
+          particle.className = 'suction-particle';
+          particle.style.left = `${clot.x + (Math.random()*20 - 10)}px`;
+          particle.style.top = `${clot.y + (Math.random()*20 - 10)}px`;
+          
+          anime({
+            targets: particle,
+            translateX: Math.random() * 40 - 20,
+            translateY: Math.random() * 40 - 20,
+            opacity: [1, 0],
+            duration: 1500,
+            easing: 'easeOutQuad',
+            complete: () => {
+              if (particle.parentNode) {
+                particle.parentNode.removeChild(particle);
+              }
+            }
+          });
+          
+          document.getElementById('retina').appendChild(particle);
+        }
+      }
+    }
+  });
+}
+
+function checkRetinaDetachment() {
+  if (iop > 28 && !retinaDetached) {
+    showAlert('retina-detachment-alert');
+    retinaDetached = true;
+    return true;
+  }
+  return false;
+}
+
+function checkHighIOP() {
+  if (iop > 25) {
+    showAlert('high-iop-alert', 0);
+    document.querySelector('.retina-nerve').style.backgroundColor = 'rgba(255,255,255,0.8)';
+    document.querySelector('.optic-disc').style.boxShadow = 'inset 0 0 20px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.5)';
+    return true;
+  } else {
+    document.querySelector('.retina-nerve').style.backgroundColor = '';
+    document.querySelector('.optic-disc').style.boxShadow = 'inset 0 0 20px rgba(220,80,80,0.6), 0 0 25px rgba(220,80,80,0.5)';
+    document.getElementById('high-iop-alert').style.display = 'none';
+    return false;
+  }
+}
+
+/* ================== CONTROL DE JOYSTICKS MEJORADO ================== */
+function initJoysticks() {
+  const joystickVitrectomo = document.getElementById('joystick-vitrectomo');
+  initJoystick(joystickVitrectomo, (x, y) => {
+    vitrectomoJoystickX = x;
+    vitrectomoJoystickY = y;
+    lastVitrectomoX = x;
+    lastVitrectomoY = y;
+    updateInstrumentPosition(x, y);
+    updateMiniLeftLine(x, y);
+    checkWallCollision();
+  }, 'vitrectomo');
+  
+  const joystickLight = document.getElementById('joystick-light');
+  initJoystick(joystickLight, (x, y) => {
+    lightJoystickX = x;
+    lightJoystickY = y;
+    lastLightX = x;
+    lastLightY = y;
+    updateEndoLightEffect(x, y);
+    updateMiniRightLine(x, y);
+    checkWallCollision();
+  }, 'light');
+}
+
+function initJoystick(joystickElement, updateCallback, type) {
+  const handle = joystickElement.querySelector('.joystick-handle');
+  const rect = joystickElement.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  const maxDistance = rect.width / 2 * joystickSensitivity;
+  
+  let isDragging = false;
+  let touchId = null;
+  
+  function handleStart(e) {
+    e.preventDefault();
+    if (isDragging) return;
+    
+    isDragging = true;
+    if (e.touches) {
+      // Para multitouch, encontrar el touch correcto
+      const touches = Array.from(e.touches);
+      const touch = touches.find(t => {
+        const element = document.elementFromPoint(t.clientX, t.clientY);
+        return element === joystickElement || element === handle;
+      });
+      
+      if (!touch) return;
+      touchId = touch.identifier;
+      activeTouchId = touchId;
+      handleMove(e);
+    } else {
+      handleMove(e);
+    }
+  }
+  
+  function handleMove(e) {
+    if (!isDragging) return;
+    
+    let clientX, clientY;
+    
+    if (e.touches) {
+      // Encontrar el touch específico
+      const touches = Array.from(e.touches);
+      const touch = touches.find(t => t.identifier === touchId);
+      if (!touch) return;
+      
+      clientX = touch.clientX;
+      clientY = touch.clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    
+    const bounds = joystickElement.getBoundingClientRect();
+    const x = clientX - bounds.left;
+    const y = clientY - bounds.top;
+    
+    let deltaX = x - centerX;
+    let deltaY = y - centerY;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    if (distance > maxDistance) {
+      const angle = Math.atan2(deltaY, deltaX);
+      deltaX = Math.cos(angle) * maxDistance;
+      deltaY = Math.sin(angle) * maxDistance;
+    }
+    
+    // Suavizar el movimiento con anime.js
+    anime({
+      targets: handle,
+      translateX: deltaX,
+      translateY: deltaY,
+      duration: 100,
+      easing: 'easeOutQuad'
+    });
+    
+    // Normalizar las coordenadas (0-100)
+    const normalizedX = ((deltaX + maxDistance) / (2 * maxDistance)) * 100;
+    const normalizedY = ((deltaY + maxDistance) / (2 * maxDistance)) * 100;
+    
+    updateCallback(normalizedX, normalizedY);
+  }
+  
+  function handleEnd(e) {
+    if (!isDragging) return;
+    
+    // Verificar si el touch que terminó es el que controla este joystick
+    if (e.touches) {
+      const touches = Array.from(e.changedTouches);
+      const touch = touches.find(t => t.identifier === touchId);
+      if (!touch) return;
+    }
+    
+    isDragging = false;
+    touchId = null;
+    activeTouchId = null;
+    
+    // Suavizar el retorno a la posición central con anime.js
+    anime({
+      targets: handle,
+      translateX: 0,
+      translateY: 0,
+      duration: 300,
+      easing: 'easeOutElastic(1, 0.5)'
+    });
+    
+    // Resetear posición cuando se suelta
+    if (type === 'light') {
+      updateCallback(50, 50);
+    } else {
+      updateCallback(50, 50);
+    }
+  }
+  
+  // Eventos táctiles
+  joystickElement.addEventListener('touchstart', handleStart, { passive: false });
+  document.addEventListener('touchmove', (e) => {
+    if (activeTouchId !== null) {
+      const touches = Array.from(e.touches);
+      if (touches.some(t => t.identifier === activeTouchId)) {
+        handleMove(e);
+      }
+    }
+  }, { passive: false });
+  
+  document.addEventListener('touchend', handleEnd);
+  document.addEventListener('touchcancel', handleEnd);
+  
+  // Eventos de ratón
+  joystickElement.addEventListener('mousedown', handleStart);
+  document.addEventListener('mousemove', handleMove);
+  document.addEventListener('mouseup', handleEnd);
+}
+
+/* ================== ACTUALIZACIÓN DE POSICIONES ================== */
+function updateInstrumentPositions() {
+  updateInstrumentPosition(vitrectomoJoystickX, vitrectomoJoystickY);
+  requestAnimationFrame(updateInstrumentPositions);
+}
+
+function updateInstrumentPosition(normX, normY) {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const maxOffset = retinaRect.width / 2;
+  const offsetX = (normX - 50) / 50 * maxOffset * 0.9;
+  const offsetY = (normY - 50) / 50 * maxOffset * 0.9;
+  
+  if(activeInstrument) {
+    const instr = document.getElementById(activeInstrument);
+    if(instr) {
+      instr.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) translateZ(${currentDepth}px)`;
+      
+      const shadow = instr.querySelector('.instrument-shadow');
+      if(shadow) {
+        const lightX = parseInt(document.documentElement.style.getPropertyValue('--light-x'));
+        const lightY = parseInt(document.documentElement.style.getPropertyValue('--light-y'));
+        
+        const shadowOffsetX = (lightX - 50) / 10;
+        const shadowOffsetY = (lightY - 50) / 10;
+        const shadowBlur = 10 - Math.abs(lightX - normX) / 10;
+        
+        shadow.style.transform = `translate(${shadowOffsetX}px, ${shadowOffsetY}px) rotateX(75deg) translateZ(-10px)`;
+        shadow.style.filter = `blur(${Math.max(3, shadowBlur)}px)`;
       }
       
-      if (currentDepth <= -200 && (activeInstrument === 'vitrectome' || activeInstrument === 'cautery-probe')) {
+      checkWallCollision();
+      
+      if (currentDepth <= -200) {
         checkVesselDamage();
       }
+      
+      updateDepthIndicator();
     }
+  }
+}
 
-    /* ================== FUNCIONES DE INSTRUMENTOS MEJORADAS ================== */
-    function laserFunction(e) {
-      const retina = document.getElementById('retina');
-      const retinaRect = retina.getBoundingClientRect();
-      
-      // Verificar que no esté en la mácula, nervio óptico o vasos sanguíneos
-      if (isInSensitiveArea(e.clientX, e.clientY)) {
-        return;
-      }
-      
-      // Verificar que no esté demasiado cerca de otro punto de láser
-      const tooClose = laserBurns.some(burn => {
-        const dx = e.clientX - retinaRect.left - burn.x;
-        const dy = e.clientY - retinaRect.top - burn.y;
-        return Math.sqrt(dx * dx + dy * dy) < 30;
-      });
-      
-      if (tooClose) return;
-      
-      // Crear efecto de láser temporal
-      const laserSpot = document.createElement('div');
-      laserSpot.className = 'laser-spot';
-      laserSpot.style.left = (e.clientX - retinaRect.left - 12) + 'px';
-      laserSpot.style.top = (e.clientY - retinaRect.top - 12) + 'px';
-      
-      anime({
-        targets: laserSpot,
-        scale: [0.5, 1.2, 1],
-        opacity: [0, 1, 0.8],
-        duration: 500,
-        easing: 'easeOutQuad'
-      });
-      
-      retina.appendChild(laserSpot);
-      
-      // Crear marca permanente de láser (punto blanco)
-      const burnMark = document.createElement('div');
-      burnMark.className = 'laser-burn-permanent';
-      burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
-      burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
-      
-      anime({
-        targets: burnMark,
-        scale: [0, 1],
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutElastic'
-      });
-      
-      document.getElementById('permanent-marks').appendChild(burnMark);
-      
-      laserBurns.push({
-        element: burnMark,
-        x: e.clientX - retinaRect.left - 3,
-        y: e.clientY - retinaRect.top - 3
-      });
-      
-      laserPoints++;
-      document.getElementById('laser-value').textContent = `${laserPoints}/30`;
-      
-      // Actualizar parámetros fisiológicos
-      iop += 0.5;
-      perfusion -= 0.2;
-      
-      // Eliminar efecto de láser después de 2.5 segundos
-      setTimeout(() => {
-        if (laserSpot.parentNode) {
-          laserSpot.parentNode.removeChild(laserSpot);
-        }
-      }, 2500);
-      
-      // Completar cirugía si se alcanzan los 30 puntos
-      if (laserPoints >= 30) {
-        setTimeout(() => {
-          showAlert('surgery-complete-alert');
-        }, 1000);
-      }
-    }
+function updateDepthIndicator() {
+  const depthIndicator = document.getElementById('depth-indicator');
+  
+  if (currentDepth > -80) {
+    depthIndicator.textContent = "Profundidad: Superficial";
+    depthIndicator.style.setProperty('--depth-color', '#3b82f6');
+  } else if (currentDepth > -150) {
+    depthIndicator.textContent = "Profundidad: Media";
+    depthIndicator.style.setProperty('--depth-color', '#10b981');
+  } else {
+    depthIndicator.textContent = "Profundidad: Profunda";
+    depthIndicator.style.setProperty('--depth-color', '#ef4444');
+  }
+}
 
-    function cauteryFunction(e) {
-      const retina = document.getElementById('retina');
-      const retinaRect = retina.getBoundingClientRect();
+function updateEndoLightEffect(normX, normY) {
+  document.documentElement.style.setProperty('--light-x', normX + '%');
+  document.documentElement.style.setProperty('--light-y', normY + '%');
+  
+  const zVal = parseInt(document.getElementById('endo-z-slider').value);
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const newLightSize = 20 + (retinaRect.width - 20) * (zVal / 200);
+  
+  document.documentElement.style.setProperty('--light-size', newLightSize + 'px');
+  document.getElementById('light-reflection').style.opacity = 0.7;
+  
+  if (zVal > 100) {
+    document.getElementById('light-scatter').classList.add('active');
+    document.getElementById('specular-highlight').classList.add('active');
+  } else {
+    document.getElementById('light-scatter').classList.remove('active');
+    document.getElementById('specular-highlight').classList.remove('active');
+  }
+  
+  document.querySelectorAll('.instrument-light-reflection').forEach(reflection => {
+    const instrument = reflection.closest('.instrument');
+    if(instrument) {
+      const instrRect = instrument.getBoundingClientRect();
+      const instrCenterX = instrRect.left + instrRect.width/2;
+      const instrCenterY = instrRect.top + instrRect.height/2;
       
-      // Verificar que no esté en la mácula, nervio óptico o vasos sanguíneos
-      if (isInSensitiveArea(e.clientX, e.clientY)) {
-        return;
-      }
+      const retinaRect = document.getElementById('retina').getBoundingClientRect();
+      const retinaCenterX = retinaRect.left + retinaRect.width/2;
+      const retinaCenterY = retinaRect.top + retinaRect.height/2;
       
-      // Verificar que no esté demasiado cerca de otro punto de cauterio
-      const tooClose = cauteryMarks.some(mark => {
-        const dx = e.clientX - retinaRect.left - mark.x;
-        const dy = e.clientY - retinaRect.top - mark.y;
-        return Math.sqrt(dx * dx + dy * dy) < 30;
-      });
+      const lightPosX = retinaRect.left + retinaRect.width * normX / 100;
+      const lightPosY = retinaRect.top + retinaRect.height * normY / 100;
       
-      if (tooClose) return;
-      
-      // Efecto visual de cauterio temporal
-      const cauteryEffect = document.createElement('div');
-      cauteryEffect.className = 'cautery-effect';
-      cauteryEffect.style.left = (e.clientX - retinaRect.left - 15) + 'px';
-      cauteryEffect.style.top = (e.clientY - retinaRect.top - 15) + 'px';
-      
-      anime({
-        targets: cauteryEffect,
-        scale: [0.5, 1.3, 1],
-        opacity: [0, 1, 0],
-        duration: 1000,
-        easing: 'easeOutQuad',
-        complete: () => {
-          if (cauteryEffect.parentNode) {
-            cauteryEffect.parentNode.removeChild(cauteryEffect);
-          }
-        }
-      });
-      
-      retina.appendChild(cauteryEffect);
-      
-      // Crear marca permanente de cauterio (punto blanco)
-      const burnMark = document.createElement('div');
-      burnMark.className = 'laser-burn-permanent';
-      burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
-      burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
-      
-      anime({
-        targets: burnMark,
-        scale: [0, 1],
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutElastic'
-      });
-      
-      document.getElementById('permanent-marks').appendChild(burnMark);
-      
-      cauteryMarks.push({
-        element: burnMark,
-        x: e.clientX - retinaRect.left - 3,
-        y: e.clientY - retinaRect.top - 3
-      });
-      
-      cauteryPoints++;
-      document.getElementById('cautery-value').textContent = `${cauteryPoints}/15`;
-      
-      // Actualizar parámetros fisiológicos
-      perfusion += 1;
-      iop = Math.min(30, iop + 0.3);
-    }
-
-    function isInSensitiveArea(x, y) {
-      const retina = document.getElementById('retina');
-      const retinaRect = retina.getBoundingClientRect();
-      
-      // Verificar mácula
-      const macula = document.querySelector('.macula');
-      const maculaRect = macula.getBoundingClientRect();
-      const maculaDistance = Math.sqrt(
-        Math.pow(x - (maculaRect.left + maculaRect.width/2), 2) + 
-        Math.pow(y - (maculaRect.top + maculaRect.height/2), 2)
+      const angle = Math.atan2(lightPosY - instrCenterY, lightPosX - instrCenterX);
+      const distance = Math.sqrt(
+        Math.pow(lightPosX - instrCenterX, 2) + 
+        Math.pow(lightPosY - instrCenterY, 2)
       );
       
-      if (maculaDistance < maculaRect.width/2) {
-        showAlert('vision-loss-alert');
-        return true;
-      }
+      const intensity = Math.min(1, 100 / distance);
       
-      // Verificar nervio óptico
-      const opticDisc = document.querySelector('.optic-disc');
-      const opticDiscRect = opticDisc.getBoundingClientRect();
-      const opticDiscDistance = Math.sqrt(
-        Math.pow(x - (opticDiscRect.left + opticDiscRect.width/2), 2) + 
-        Math.pow(y - (opticDiscRect.top + opticDiscRect.height/2), 2)
-      );
-      
-      if (opticDiscDistance < opticDiscRect.width/2) {
-        return true;
-      }
-      
-      // Verificar vasos sanguíneos (simplificado)
-      const bloodVessels = document.querySelector('.blood-vessels');
-      const bloodVesselsRect = bloodVessels.getBoundingClientRect();
-      const relX = x - bloodVesselsRect.left;
-      const relY = y - bloodVesselsRect.top;
-      
-      const proximityThreshold = 15;
-      const vesselProximity = Math.abs(relX - bloodVesselsRect.width/2) < proximityThreshold && 
-                            Math.abs(relY - bloodVesselsRect.height/2) < proximityThreshold;
-      
-      if (vesselProximity) {
-        showAlert('vessel-damage-alert');
-        return true;
-      }
-      
-      return false;
+      reflection.style.background = `linear-gradient(
+        ${angle}rad,
+        rgba(255,255,255,${0.2 * intensity}) 0%,
+        rgba(255,255,255,${0.1 * intensity}) 50%,
+        transparent 100%
+      )`;
     }
+  });
+}
 
-    function vitrectomyFunction(e) {
-      const retina = document.getElementById('retina');
-      const retinaRect = retina.getBoundingClientRect();
-      
-      // Efecto de vitrectomía
-      const vitrectomyEffect = document.createElement('div');
-      vitrectomyEffect.className = 'vitrectomy-effect';
-      vitrectomyEffect.style.left = (e.clientX - retinaRect.left - 30) + 'px';
-      vitrectomyEffect.style.top = (e.clientY - retinaRect.top - 30) + 'px';
-      
-      anime({
-        targets: vitrectomyEffect,
-        scale: [0, 1],
-        opacity: [0.8, 0],
-        duration: 800,
-        easing: 'easeOutQuad',
-        complete: () => {
-          if (vitrectomyEffect.parentNode) {
-            vitrectomyEffect.parentNode.removeChild(vitrectomyEffect);
-          }
+function updateMiniLeftLine(normX, normY) {
+  const defaultTipX = 350;
+  const defaultTipY = 300;
+  const scaleX = 2.5;
+  const scaleY = 1.8;
+  const offsetX = (normX - 50) * scaleX;
+  const offsetY = (normY - 50) * scaleY;
+  let tipX = defaultTipX + offsetX;
+  let tipY = defaultTipY + offsetY;
+  
+  tipX = Math.max(50, Math.min(750, tipX));
+  tipY = Math.max(50, Math.min(550, tipY));
+  
+  const miniLeft = document.getElementById('probeLight');
+  const miniLeftInner = document.getElementById('probeLightInner');
+  if(miniLeft && miniLeftInner) {
+    miniLeft.setAttribute('x2', tipX);
+    miniLeftInner.setAttribute('x2', tipX);
+    miniLeft.setAttribute('y2', tipY);
+    miniLeftInner.setAttribute('y2', tipY);
+  }
+}
+
+function updateMiniRightLine(normX, normY) {
+  const defaultTipX = 450;
+  const defaultTipY = 300;
+  const scaleX = 2.5;
+  const scaleY = 1.8;
+  const offsetX = (normX - 50) * scaleX;
+  const offsetY = (normY - 50) * scaleY;
+  let tipX = defaultTipX + offsetX;
+  let tipY = defaultTipY + offsetY;
+  
+  tipX = Math.max(50, Math.min(750, tipX));
+  tipY = Math.max(50, Math.min(550, tipY));
+  
+  const miniRight = document.getElementById('probeForceps');
+  const miniRightInner = document.getElementById('probeForcepsInner');
+  if(miniRight && miniRightInner) {
+    miniRight.setAttribute('x2', tipX);
+    miniRightInner.setAttribute('x2', tipX);
+    miniRight.setAttribute('y2', tipY);
+    miniRightInner.setAttribute('y2', tipY);
+  }
+}
+
+/* ================== GESTIÓN DE INSTRUMENTOS ================== */
+function setupEventListeners() {
+  document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectome'));
+  document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser-probe'));
+  document.getElementById('btn-cautery').addEventListener('click', () => toggleInstrument('btn-cautery', 'cautery-probe'));
+  
+  // Mejorar los eventos para el botón de acción
+  const actionButton = document.getElementById('btn-precionar');
+  
+  // Eventos de ratón
+  actionButton.addEventListener('mousedown', startVitrectomyAction);
+  actionButton.addEventListener('mouseup', stopVitrectomyAction);
+  actionButton.addEventListener('mouseleave', stopVitrectomyAction);
+  
+  // Eventos táctiles mejorados
+  actionButton.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    startVitrectomyAction();
+  }, { passive: false });
+  
+  actionButton.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    stopVitrectomyAction();
+  });
+  
+  document.getElementById('vitrectomo-z-slider').addEventListener('input', function() {
+    currentDepth = parseInt(this.value);
+    updateInstrumentPosition(vitrectomoJoystickX, vitrectomoJoystickY);
+  });
+  
+  document.getElementById('endo-z-slider').addEventListener('input', function() {
+    updateEndoLightEffect(lightJoystickX, lightJoystickY);
+  });
+}
+
+function startVitrectomyAction() {
+  if (activeInstrument !== 'vitrectome') return;
+  
+  isActionButtonPressed = true;
+  
+  // Mostrar indicador de acción
+  const actionIndicator = document.querySelector('#vitrectome .instrument-action-indicator');
+  if (actionIndicator) {
+    actionIndicator.classList.add('active');
+  }
+  
+  // Iniciar el efecto de vitrectomía continuo
+  vitrectomyInterval = setInterval(() => {
+    if (!isActionButtonPressed) {
+      clearInterval(vitrectomyInterval);
+      return;
+    }
+    
+    const instrument = document.getElementById('vitrectome');
+    const retinaRect = document.getElementById('retina').getBoundingClientRect();
+    const instrumentRect = instrument.getBoundingClientRect();
+    
+    // Calcular posición relativa al centro de la retina
+    const offsetX = instrumentRect.left + instrumentRect.width/2 - retinaRect.left - retinaRect.width/2;
+    const offsetY = instrumentRect.top + instrumentRect.height/2 - retinaRect.top - retinaRect.height/2;
+    
+    // Crear efecto visual
+    createVitrectomyEffect(instrumentRect.left + instrumentRect.width/2, instrumentRect.top + instrumentRect.height/2);
+    
+    // Remover coágulos cercanos (corregido)
+    removeNearbyBloodClots(instrument, offsetX, offsetY);
+    
+    // Actualizar parámetros fisiológicos
+    iop = Math.max(18, iop - 0.1);
+    perfusion = Math.min(100, perfusion + 0.05);
+    
+    // Actualizar UI inmediatamente
+    updateVitals();
+    
+  }, 100); // Ejecutar cada 100ms mientras se mantenga presionado
+}
+
+function stopVitrectomyAction() {
+  isActionButtonPressed = false;
+  
+  // Ocultar indicador de acción
+  const actionIndicator = document.querySelector('#vitrectome .instrument-action-indicator');
+  if (actionIndicator) {
+    actionIndicator.classList.remove('active');
+  }
+  
+  // Detener el efecto de vitrectomía continuo
+  if (vitrectomyInterval) {
+    clearInterval(vitrectomyInterval);
+    vitrectomyInterval = null;
+  }
+}
+
+function createVitrectomyEffect(x, y) {
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  
+  // Efecto de vitrectomía
+  const vitrectomyEffect = document.createElement('div');
+  vitrectomyEffect.className = 'vitrectomy-effect';
+  vitrectomyEffect.style.left = (x - retinaRect.left - 30) + 'px';
+  vitrectomyEffect.style.top = (y - retinaRect.top - 30) + 'px';
+  
+  anime({
+    targets: vitrectomyEffect,
+    scale: [0, 1],
+    opacity: [0.8, 0],
+    duration: 800,
+    easing: 'easeOutQuad',
+    complete: () => {
+      if (vitrectomyEffect.parentNode) {
+        vitrectomyEffect.parentNode.removeChild(vitrectomyEffect);
+      }
+    }
+  });
+  
+  retina.appendChild(vitrectomyEffect);
+  
+  // Partículas de succión
+  for (let i = 0; i < 8; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'suction-particle';
+    particle.style.left = (x - retinaRect.left + (Math.random()*20 - 10)) + 'px';
+    particle.style.top = (y - retinaRect.top + (Math.random()*20 - 10)) + 'px';
+    
+    anime({
+      targets: particle,
+      translateX: Math.random() * 40 - 20,
+      translateY: Math.random() * 40 - 20,
+      opacity: [1, 0],
+      duration: 1500,
+      easing: 'easeOutQuad',
+      complete: () => {
+        if (particle.parentNode) {
+          particle.parentNode.removeChild(particle);
         }
-      });
-      
-      retina.appendChild(vitrectomyEffect);
-      
-      // Partículas de succión
-      for (let i = 0; i < 8; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'suction-particle';
-        particle.style.left = (e.clientX - retinaRect.left + (Math.random()*20 - 10)) + 'px';
-        particle.style.top = (e.clientY - retinaRect.top + (Math.random()*20 - 10)) + 'px';
-        
-        anime({
-          targets: particle,
-          translateX: Math.random() * 40 - 20,
-          translateY: Math.random() * 40 - 20,
-          opacity: [1, 0],
-          duration: 1500,
-          easing: 'easeOutQuad',
-          complete: () => {
-            if (particle.parentNode) {
-              particle.parentNode.removeChild(particle);
-            }
-          }
-        });
-        
-        retina.appendChild(particle);
       }
-      
-      // Calcular porcentaje de hemorragia removida basado en coágulos eliminados
-      hemorrhageRemoved = Math.min(100, ((20 - bloodClots.length) / 20) * 100);
-      document.getElementById('hemorrhage-value').textContent = `${hemorrhageRemoved}%`;
-      document.getElementById('hemorrhage-level').style.width = `${hemorrhageRemoved}%`;
-      
-      // Reducir la opacidad de la hemorragia a medida que se remueve
-      const overlay = document.getElementById('hemorrhage-overlay');
-      overlay.style.opacity = 1 - (hemorrhageRemoved / 100);
-      
-      // Reducir la PIO durante la vitrectomía
-      iop = Math.max(20, iop - 0.3);
-    }
+    });
+    
+    retina.appendChild(particle);
+  }
+}
 
-    /* ================== ACTUALIZACIÓN DE PARÁMETROS ================== */
-    function updateVitals() {
-      // Variación natural de los parámetros
-      iop += (Math.random() - 0.5) * 0.1;
-      perfusion += (Math.random() - 0.5) * 0.2;
-      
-      // Efecto de la vitrectomía en la PIO
-      if (activeInstrument === 'vitrectome' && isActionButtonPressed) {
-        iop = Math.max(20, iop - 0.05);
-      }
-      
-      checkRetinaDetachment();
-      checkHighIOP();
-      
-      // Limitar valores dentro de rangos razonables
-      iop = Math.max(20, Math.min(30, iop));
-      perfusion = Math.max(60, Math.min(100, perfusion));
-      
-      // Actualizar valores en la interfaz
-      document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
-      document.getElementById('iop-level').style.width = ((iop - 10) / 20 * 100) + "%";
-      
-      document.getElementById('perfusion-value').innerText = perfusion.toFixed(0) + "%";
-      document.getElementById('perfusion-level').style.width = perfusion + "%";
-      
-      // Actualizar clases de estado
-      const iopElement = document.getElementById('iop-value');
-      iopElement.classList.remove('normal', 'warning', 'danger');
-      
-      if(iop < 15 || iop > 25) {
-        iopElement.classList.add('danger');
-      } else if(iop < 18 || iop > 22) {
-        iopElement.classList.add('warning');
-      } else {
-        iopElement.classList.add('normal');
-      }
-      
-      setTimeout(updateVitals, 1000);
+function toggleInstrument(btnId, instrumentId) {
+  const btn = document.getElementById(btnId);
+  
+  if(btn.classList.contains('active')) {
+    btn.classList.remove('active');
+    document.getElementById(instrumentId).style.display = 'none';
+    activeInstrument = null;
+    isActionButtonPressed = false;
+    
+    // Detener cualquier intervalo activo
+    if (vitrectomyInterval) {
+      clearInterval(vitrectomyInterval);
+      vitrectomyInterval = null;
     }
-  </script>
+  } else {
+    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.instrument').forEach(i => i.style.display = 'none');
+    
+    btn.classList.add('active');
+    activeInstrument = instrumentId;
+    document.getElementById(instrumentId).style.display = 'block';
+    
+    // Si es el vitrectomo, asegurarse de que el botón de acción esté listo
+    if (instrumentId === 'vitrectome') {
+      isActionButtonPressed = false;
+    }
+  }
+}
+
+function handleMainAction() {
+  if(!activeInstrument) return;
+  
+  const instrument = document.getElementById(activeInstrument);
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const instRect = instrument.getBoundingClientRect();
+  
+  // Mostrar indicador de acción
+  const actionIndicator = instrument.querySelector('.instrument-action-indicator');
+  if (actionIndicator) {
+    actionIndicator.classList.add('active');
+    setTimeout(() => actionIndicator.classList.remove('active'), 1000);
+  }
+  
+  // Calcular posición de la punta del instrumento
+  const tip = instrument.querySelector('.instrument-tip');
+  const tipRect = tip.getBoundingClientRect();
+  const x = tipRect.left + tipRect.width/2 - retinaRect.left;
+  const y = tipRect.top + tipRect.height/2 - retinaRect.top;
+  
+  const syntheticEvent = { 
+    clientX: retinaRect.left + x, 
+    clientY: retinaRect.top + y,
+    preventDefault: () => {}
+  };
+  
+  switch(activeInstrument) {
+    case 'laser-probe':
+      if (procedureStep === 2) {
+        laserFunction(syntheticEvent);
+      }
+      break;
+    case 'vitrectome':
+      createVitrectomyEffect(syntheticEvent.clientX, syntheticEvent.clientY);
+      removeNearbyBloodClots(instrument, x, y);
+      if (bloodClots.length === 0 && procedureStep === 0) {
+        procedureStep = 1;
+        document.getElementById('btn-cautery').classList.add('active');
+        document.getElementById('cautery-probe').style.display = 'block';
+        activeInstrument = 'cautery-probe';
+      }
+      break;
+    case 'cautery-probe':
+      cauteryFunction(syntheticEvent);
+      if (cauteryPoints >= 15 && procedureStep === 1) {
+        procedureStep = 2;
+        document.getElementById('btn-laser').classList.add('active');
+        document.getElementById('laser-probe').style.display = 'block';
+        activeInstrument = 'laser-probe';
+      }
+      break;
+  }
+  
+  if (currentDepth <= -200 && (activeInstrument === 'vitrectome' || activeInstrument === 'cautery-probe')) {
+    checkVesselDamage();
+  }
+}
+
+/* ================== FUNCIONES DE INSTRUMENTOS MEJORADAS ================== */
+function laserFunction(e) {
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  
+  // Verificar que no esté en la mácula, nervio óptico o vasos sanguíneos
+  if (isInSensitiveArea(e.clientX, e.clientY)) {
+    return;
+  }
+  
+  // Verificar que no esté demasiado cerca de otro punto de láser
+  const tooClose = laserBurns.some(burn => {
+    const dx = e.clientX - retinaRect.left - burn.x;
+    const dy = e.clientY - retinaRect.top - burn.y;
+    return Math.sqrt(dx * dx + dy * dy) < 30;
+  });
+  
+  if (tooClose) return;
+  
+  // Crear efecto de láser temporal
+  const laserSpot = document.createElement('div');
+  laserSpot.className = 'laser-spot';
+  laserSpot.style.left = (e.clientX - retinaRect.left - 12) + 'px';
+  laserSpot.style.top = (e.clientY - retinaRect.top - 12) + 'px';
+  
+  anime({
+    targets: laserSpot,
+    scale: [0.5, 1.2, 1],
+    opacity: [0, 1, 0.8],
+    duration: 500,
+    easing: 'easeOutQuad'
+  });
+  
+  retina.appendChild(laserSpot);
+  
+  // Crear marca permanente de láser (punto blanco)
+  const burnMark = document.createElement('div');
+  burnMark.className = 'laser-burn-permanent';
+  burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
+  burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
+  
+  anime({
+    targets: burnMark,
+    scale: [0, 1],
+    opacity: [0, 1],
+    duration: 500,
+    easing: 'easeOutElastic'
+  });
+  
+  document.getElementById('permanent-marks').appendChild(burnMark);
+  
+  laserBurns.push({
+    element: burnMark,
+    x: e.clientX - retinaRect.left - 3,
+    y: e.clientY - retinaRect.top - 3
+  });
+  
+  laserPoints++;
+  document.getElementById('laser-value').textContent = `${laserPoints}/30`;
+  
+  // Actualizar parámetros fisiológicos
+  iop += 0.5;
+  perfusion -= 0.2;
+  updateVitals();
+  
+  // Eliminar efecto de láser después de 2.5 segundos
+  setTimeout(() => {
+    if (laserSpot.parentNode) {
+      laserSpot.parentNode.removeChild(laserSpot);
+    }
+  }, 2500);
+  
+  // Completar cirugía si se alcanzan los 30 puntos
+  if (laserPoints >= 30) {
+    setTimeout(() => {
+      showAlert('surgery-complete-alert');
+    }, 1000);
+  }
+}
+
+function cauteryFunction(e) {
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  
+  // Verificar que no esté en la mácula, nervio óptico o vasos sanguíneos
+  if (isInSensitiveArea(e.clientX, e.clientY)) {
+    return;
+  }
+  
+  // Verificar que no esté demasiado cerca de otro punto de cauterio
+  const tooClose = cauteryMarks.some(mark => {
+    const dx = e.clientX - retinaRect.left - mark.x;
+    const dy = e.clientY - retinaRect.top - mark.y;
+    return Math.sqrt(dx * dx + dy * dy) < 30;
+  });
+  
+  if (tooClose) return;
+  
+  // Efecto visual de cauterio temporal
+  const cauteryEffect = document.createElement('div');
+  cauteryEffect.className = 'cautery-effect';
+  cauteryEffect.style.left = (e.clientX - retinaRect.left - 15) + 'px';
+  cauteryEffect.style.top = (e.clientY - retinaRect.top - 15) + 'px';
+  
+  anime({
+    targets: cauteryEffect,
+    scale: [0.5, 1.3, 1],
+    opacity: [0, 1, 0],
+    duration: 1000,
+    easing: 'easeOutQuad',
+    complete: () => {
+      if (cauteryEffect.parentNode) {
+        cauteryEffect.parentNode.removeChild(cauteryEffect);
+      }
+    }
+  });
+  
+  retina.appendChild(cauteryEffect);
+  
+  // Crear marca permanente de cauterio (punto blanco)
+  const burnMark = document.createElement('div');
+  burnMark.className = 'laser-burn-permanent';
+  burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
+  burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
+  
+  anime({
+    targets: burnMark,
+    scale: [0, 1],
+    opacity: [0, 1],
+    duration: 500,
+    easing: 'easeOutElastic'
+  });
+  
+  document.getElementById('permanent-marks').appendChild(burnMark);
+  
+  cauteryMarks.push({
+    element: burnMark,
+    x: e.clientX - retinaRect.left - 3,
+    y: e.clientY - retinaRect.top - 3
+  });
+  
+  cauteryPoints++;
+  document.getElementById('cautery-value').textContent = `${cauteryPoints}/15`;
+  
+  // Actualizar parámetros fisiológicos
+  perfusion += 1;
+  iop = Math.min(30, iop + 0.3);
+  updateVitals();
+}
+
+function isInSensitiveArea(x, y) {
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  
+  // Verificar mácula
+  const macula = document.querySelector('.macula');
+  const maculaRect = macula.getBoundingClientRect();
+  const maculaDistance = Math.sqrt(
+    Math.pow(x - (maculaRect.left + maculaRect.width/2), 2) + 
+    Math.pow(y - (maculaRect.top + maculaRect.height/2), 2)
+  );
+  
+  if (maculaDistance < maculaRect.width/2) {
+    showAlert('vision-loss-alert');
+    return true;
+  }
+  
+  // Verificar nervio óptico
+  const opticDisc = document.querySelector('.optic-disc');
+  const opticDiscRect = opticDisc.getBoundingClientRect();
+  const opticDiscDistance = Math.sqrt(
+    Math.pow(x - (opticDiscRect.left + opticDiscRect.width/2), 2) + 
+    Math.pow(y - (opticDiscRect.top + opticDiscRect.height/2), 2)
+  );
+  
+  if (opticDiscDistance < opticDiscRect.width/2) {
+    return true;
+  }
+  
+  // Verificar vasos sanguíneos (simplificado)
+  const bloodVessels = document.querySelector('.blood-vessels');
+  const bloodVesselsRect = bloodVessels.getBoundingClientRect();
+  const relX = x - bloodVesselsRect.left;
+  const relY = y - bloodVesselsRect.top;
+  
+  const proximityThreshold = 15;
+  const vesselProximity = Math.abs(relX - bloodVesselsRect.width/2) < proximityThreshold && 
+                        Math.abs(relY - bloodVesselsRect.height/2) < proximityThreshold;
+  
+  if (vesselProximity) {
+    showAlert('vessel-damage-alert');
+    return true;
+  }
+  
+  return false;
+}
+
+/* ================== ACTUALIZACIÓN DE PARÁMETROS ================== */
+function updateVitals() {
+  // Variación natural de los parámetros
+  iop += (Math.random() - 0.5) * 0.1;
+  perfusion += (Math.random() - 0.5) * 0.2;
+  
+  // Mantener la PIO alrededor de 20 mmHg
+  if (iop < 19.5) iop += 0.1;
+  if (iop > 20.5) iop -= 0.1;
+  
+  checkRetinaDetachment();
+  checkHighIOP();
+  
+  // Limitar valores dentro de rangos razonables
+  iop = Math.max(18, Math.min(30, iop));
+  perfusion = Math.max(60, Math.min(100, perfusion));
+  
+  // Actualizar valores en la interfaz
+  document.getElementById('iop-value').innerText = iop.toFixed(1) + " mmHg";
+  document.getElementById('iop-level').style.width = ((iop - 10) / 20 * 100) + "%";
+  
+  document.getElementById('perfusion-value').innerText = perfusion.toFixed(0) + "%";
+  document.getElementById('perfusion-level').style.width = perfusion + "%";
+  
+  // Actualizar clases de estado
+  const iopElement = document.getElementById('iop-value');
+  iopElement.classList.remove('normal', 'warning', 'danger');
+  
+  if(iop < 15 || iop > 25) {
+    iopElement.classList.add('danger');
+  } else if(iop < 18 || iop > 22) {
+    iopElement.classList.add('warning');
+  } else {
+    iopElement.classList.add('normal');
+  }
+  
+  setTimeout(updateVitals, 1000);
+}
+ </script>
 </body>
 </html>
