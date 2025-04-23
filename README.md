@@ -8,7 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
-/* Estilos base */
+    /* Estilos base */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -1411,6 +1411,27 @@ input[type="range"]::-webkit-slider-thumb:active {
   100% { transform: translate(-50%, -50%) scale(1.05); }
 }
 
+/* Efecto de extracción de sangre */
+.blood-extraction {
+  position: absolute;
+  background: radial-gradient(circle, 
+    rgba(200,0,0,0.8) 0%, 
+    rgba(150,0,0,0.6) 50%, 
+    transparent 80%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 13;
+  transform: scale(0);
+  filter: blur(2px);
+  animation: bloodExtraction 0.8s ease-out forwards;
+}
+
+@keyframes bloodExtraction {
+  0% { transform: scale(0); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
 /* Burbujas subretinianas */
 .subretinal-bubble {
   position: absolute;
@@ -1896,6 +1917,22 @@ input[type="range"]::-webkit-slider-thumb:active {
       pointer-events: none;
       z-index: 12;
       box-shadow: 0 0 5px rgba(255,255,255,0.6);
+    }
+
+    /* Efecto de sangre mejorado */
+    .blood-extraction {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, 
+        rgba(200,0,0,0.8) 0%, 
+        rgba(150,0,0,0.6) 50%, 
+        transparent 80%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 13;
+      transform: scale(0);
+      filter: blur(2px);
     }
   </style>
 </head>
@@ -2472,6 +2509,9 @@ function removeBloodClot(index) {
   if (index >= 0 && index < bloodClots.length) {
     const clot = bloodClots[index];
     if (clot.element.parentNode) {
+      // Efecto de extracción de sangre
+      createBloodExtractionEffect(clot.x + clot.size/2, clot.y + clot.size/2, clot.size);
+      
       anime({
         targets: clot.element,
         opacity: 0,
@@ -2517,6 +2557,34 @@ function removeBloodClot(index) {
       });
     }
   }
+}
+
+function createBloodExtractionEffect(x, y, size) {
+  const retina = document.getElementById('retina');
+  const bloodEffect = document.createElement('div');
+  bloodEffect.className = 'blood-extraction';
+  bloodEffect.style.left = `${x - 20}px`;
+  bloodEffect.style.top = `${y - 20}px`;
+  
+  // Ajustar tamaño según el coágulo
+  const effectSize = Math.max(20, Math.min(60, size * 2));
+  bloodEffect.style.width = `${effectSize}px`;
+  bloodEffect.style.height = `${effectSize}px`;
+  
+  anime({
+    targets: bloodEffect,
+    scale: [0, 1.5],
+    opacity: [1, 0],
+    duration: 800,
+    easing: 'easeOutQuad',
+    complete: () => {
+      if (bloodEffect.parentNode) {
+        bloodEffect.parentNode.removeChild(bloodEffect);
+      }
+    }
+  });
+  
+  retina.appendChild(bloodEffect);
 }
 
 function removeNearbyBloodClots(instrument, offsetX, offsetY) {
@@ -2731,14 +2799,12 @@ function initJoystick(joystickElement, updateCallback, type) {
     }
   }
   
-  // Eventos táctiles
+  // Eventos táctiles mejorados para multitouch
   joystickElement.addEventListener('touchstart', handleStart, { passive: false });
   document.addEventListener('touchmove', (e) => {
-    if (activeTouchId !== null) {
-      const touches = Array.from(e.touches);
-      if (touches.some(t => t.identifier === activeTouchId)) {
-        handleMove(e);
-      }
+    if (isDragging) {
+      e.preventDefault();
+      handleMove(e);
     }
   }, { passive: false });
   
