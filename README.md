@@ -4,885 +4,334 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Simulador de Extracción de Hemorragia Vítrea</title>
-  <link rel="stylesheet" href="css.css">
+  <link rel="stylesheet" href="SimuladorHV.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
     
 /* Estilos base */
 body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #0f172a;
-  color: white;
-  overflow: hidden;
-  touch-action: none;
-  height: 100vh;
-  width: 100vw;
-}
-
-#container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Caso clínico */
-#clinical-case {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.9);
-  z-index: 100;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: opacity 0.5s;
-}
-
-#clinical-case-content {
-  max-width: 800px;
-  padding: 20px;
-  background-color: #1e293b;
-  border-radius: 10px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
-#clinical-case h2 {
-  color: #38bdf8;
-  margin-top: 0;
-}
-
-#clinical-case button {
-  background-color: #38bdf8;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 20px;
-  transition: background-color 0.3s;
-}
-
-#clinical-case button:hover {
-  background-color: #0ea5e9;
-}
-
-/* Sistema de alertas */
-#alert-system {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.alert-container {
-  background-color: #1e293b;
-  border-left: 5px solid;
-  padding: 15px;
-  border-radius: 5px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  display: none;
-  max-width: 350px;
-  animation: slideIn 0.3s ease-out;
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.alert-icon {
-  font-size: 1.5rem;
-  margin-right: 10px;
-}
-
-.alert-content {
-  flex: 1;
-}
-
-.alert-content h3 {
-  margin: 0 0 5px 0;
-  font-size: 1rem;
-}
-
-.alert-content p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #e2e8f0;
-}
-
-.alert-timer {
-  height: 3px;
-  background-color: rgba(255, 255, 255, 0.3);
-  margin-top: 10px;
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.alert-dismiss {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 10px;
-}
-
-/* Mini mapa */
-#miniMapContainer {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  width: 200px;
-  height: 150px;
-  background-color: #1e293b;
-  border-radius: 10px;
-  overflow: hidden;
-  z-index: 20;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-/* Panel de instrumentos */
-.instrument-panel {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-  background-color: #1e293b;
-  padding: 10px;
-  border-radius: 10px;
-  z-index: 20;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.toggle-btn {
-  background-color: #334155;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.toggle-btn:hover {
-  background-color: #475569;
-}
-
-.toggle-btn.active {
-  background-color: #38bdf8;
-  color: white;
-}
-
-/* Panel de parámetros */
-.control-panel {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background-color: #1e293b;
-  padding: 15px;
-  border-radius: 10px;
-  z-index: 10;
-  width: 200px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.vital-sign {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-}
-
-.vital-label {
-  color: #94a3b8;
-}
-
-.vital-value {
-  font-weight: bold;
-}
-
-.vital-value.normal {
-  color: #4ade80;
-}
-
-.vital-value.warning {
-  color: #fbbf24;
-}
-
-.vital-value.danger {
-  color: #f87171;
-}
-
-.gauge-container {
-  height: 6px;
-  background-color: #334155;
-  border-radius: 3px;
-  margin-bottom: 15px;
-  overflow: hidden;
-}
-
-.gauge-level {
-  height: 100%;
-  background-color: #38bdf8;
-  width: 50%;
-  transition: width 0.5s ease;
-}
-
-/* Joysticks */
-.joystick-container {
-  position: absolute;
-  bottom: 100px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 20;
-}
-
-#joystick-light-container {
-  left: 30px;
-}
-
-#joystick-vitrectomo-container {
-  right: 30px;
-}
-
-.joystick {
-  width: 80px;
-  height: 80px;
-  background-color: #334155;
-  border-radius: 50%;
-  position: relative;
-  margin-bottom: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-.joystick-handle {
-  width: 30px;
-  height: 30px;
-  background-color: #38bdf8;
-  border-radius: 50%;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transition: transform 0.1s;
-}
-
-.slider-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-}
-
-.slider-container label {
-  margin-bottom: 5px;
-  font-size: 0.8rem;
-  color: #94a3b8;
-}
-
-.slider-container input[type="range"] {
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.slider-container button {
-  background-color: #38bdf8;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.slider-container button:hover {
-  background-color: #0ea5e9;
-}
-
-/* Cámara de retina */
-#eye-chamber {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 5;
-}
-
-.retina-container {
-  position: relative;
-  width: 80vmin;
-  height: 80vmin;
-  max-width: 500px;
-  max-height: 500px;
-}
-
-.retina-sphere {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, #500000 0%, #400000 20%, #300000 40%, #200000 70%, #100000 100%);
-  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 0, 0, 0.6);
-  transform-style: preserve-3d;
-  overflow: hidden;
-}
-
-.retina-texture {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: 
-    radial-gradient(circle at 30% 30%, transparent 60%, rgba(0, 0, 0, 0.3) 100%),
-    repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px);
-  border-radius: 50%;
-}
-
-.retina-nerve {
-  position: absolute;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 15%;
-  height: 8%;
-  background: radial-gradient(circle, rgba(220, 80, 80, 0.8) 0%, rgba(180, 40, 40, 0.6) 100%);
-  border-radius: 50% 50% 0 0;
-}
-
-.optic-disc {
-  position: absolute;
-  bottom: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 10%;
-  height: 5%;
-  background: radial-gradient(circle, rgba(220, 80, 80, 0.8) 0%, rgba(180, 40, 40, 0.6) 100%);
-  border-radius: 50%;
-  box-shadow: inset 0 0 20px rgba(220, 80, 80, 0.6), 0 0 25px rgba(220, 80, 80, 0.5);
-}
-
-.optic-cup {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50%;
-  height: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 50%;
-}
-
-.macula {
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 8%;
-  height: 8%;
-  background: radial-gradient(circle, rgba(255, 255, 200, 0.3) 0%, rgba(255, 255, 150, 0.2) 50%, transparent 100%);
-  border-radius: 50%;
-}
-
-.blood-vessels {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-}
-
-#light-mask {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
-    transparent 0%, 
-    rgba(0, 0, 0, 0.8) calc(var(--light-size, 100px) * 1.5), 
-    rgba(0, 0, 0, 0.9) 100%);
-  pointer-events: none;
-  z-index: 6;
-}
-
-#light-reflection {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
-    rgba(255, 255, 255, 0.3) 0%, 
-    rgba(255, 255, 255, 0.1) var(--light-size, 100px), 
-    transparent calc(var(--light-size, 100px) * 1.5));
-  pointer-events: none;
-  z-index: 7;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.light-scatter {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
-    rgba(255, 255, 255, 0.05) 0%, 
-    transparent 70%);
-  pointer-events: none;
-  z-index: 4;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.light-scatter.active {
-  opacity: 1;
-}
-
-.specular-highlight {
-  position: absolute;
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
-  top: calc(var(--light-y, 50%) - 15px);
-  left: calc(var(--light-x, 50%) - 15px);
-  pointer-events: none;
-  z-index: 8;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.specular-highlight.active {
-  opacity: 0.6;
-}
-
-/* Instrumentos */
-.instrument {
-  position: absolute;
-  width: 40px;
-  height: 120px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  transform-style: preserve-3d;
-  display: none;
-  z-index: 10;
-}
-
-.instrument-body {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, #555 0%, #777 50%, #555 100%);
-  border-radius: 5px;
-  transform: rotateX(75deg);
-  transform-origin: bottom center;
-}
-
-.instrument-tip {
-  width: 10px;
-  height: 30px;
-  background: linear-gradient(to right, #333 0%, #666 50%, #333 100%);
-  border-radius: 0 0 5px 5px;
-}
-
-.instrument-side {
-  position: absolute;
-  width: 100%;
-  height: 20px;
-  background: linear-gradient(to right, #444 0%, #666 50%, #444 100%);
-  top: 50%;
-  transform: translateY(-50%) rotateX(90deg);
-  transform-origin: top center;
-}
-
-.instrument-light-reflection {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    135deg,
-    rgba(255,255,255,0.3) 0%,
-    rgba(255,255,255,0.1) 50%,
-    transparent 100%
-  );
-  border-radius: inherit;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.instrument-shadow {
-  position: absolute;
-  width: 100%;
-  height: 20px;
-  background: rgba(0, 0, 0, 0.5);
-  bottom: -10px;
-  left: 0;
-  border-radius: 50%;
-  filter: blur(5px);
-  transform: rotateX(75deg) translateZ(-10px);
-  z-index: -1;
-}
-
-/* Efectos */
-.vitreous-particle {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  background-color: rgba(200, 200, 255, 0.7);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9;
-  animation: float 1.5s ease-out forwards;
-}
-
-@keyframes float {
-  to {
-    transform: translate(var(--tx, 0), var(--ty, 0));
-    opacity: 0;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f172a;
+    color: white;
+    overflow: hidden;
+    touch-action: none;
+    height: 100vh;
+    width: 100vw;
   }
-}
-
-.pfc-bubble {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(100, 255, 255, 0.8) 0%, rgba(50, 200, 200, 0.6) 70%, transparent 100%);
-  pointer-events: none;
-  z-index: 11;
-  animation: float-up 2s ease-out forwards;
-}
-
-@keyframes float-up {
-  to {
-    transform: translate(var(--tx, 0), var(--ty, -100px));
-    opacity: 0;
-  }
-}
-
-.hemorrhage-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(180, 0, 0, 0.7) 0%, rgba(120, 0, 0, 0.5) 100%);
-  pointer-events: none;
-  z-index: 12;
-  opacity: 0;
-  display: none;
-}
-
-/* Indicador de profundidad */
-.depth-indicator {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #1e293b;
-  padding: 8px 15px;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  z-index: 20;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  color: var(--depth-color, #10b981);
-}
-
-/* Animaciones */
-@keyframes slideIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-/* ================== SISTEMA DE ALERTAS PROFESIONAL ================== */
-#alert-system {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000;
-    width: 90%;
-    max-width: 600px;
+  
+  #container {
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+  }
+  
+  /* Caso clínico */
+  #clinical-case {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 0.5s;
+  }
+  
+  #clinical-case-content {
+    max-width: 800px;
+    padding: 20px;
+    background-color: #1e293b;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  }
+  
+  #clinical-case h2 {
+    color: #38bdf8;
+    margin-top: 0;
+  }
+  
+  #clinical-case button {
+    background-color: #38bdf8;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background-color 0.3s;
+  }
+  
+  #clinical-case button:hover {
+    background-color: #0ea5e9;
+  }
+  
+  /* Sistema de alertas */
+  #alert-system {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
   
   .alert-container {
-    display: none;
-    background: rgba(20, 20, 30, 0.95);
+    background-color: #1e293b;
     border-left: 5px solid;
-    border-radius: 8px;
-    padding: 15px 20px;
-    align-items: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    backdrop-filter: blur(8px);
-    animation: alertSlideIn 0.3s ease-out forwards;
-    transform-origin: top center;
-    border-left-color: #ff5555;
-  }
-  
-  @keyframes alertSlideIn {
-    0% { opacity: 0; transform: translateY(-20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-  
-  @keyframes alertSlideOut {
-    0% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-  }
-  
-  .alert-container#wall-collision-alert {
-    border-left-color: #ff9933;
-    background: rgba(40, 30, 10, 0.95);
-    animation: alertShake 0.5s ease-out forwards;
-  }
-  
-  @keyframes alertShake {
-    0%, 100% { transform: translateX(0) translateY(0); }
-    20% { transform: translateX(-10px) translateY(0); }
-    40% { transform: translateX(10px) translateY(0); }
-    60% { transform: translateX(-10px) translateY(0); }
-    80% { transform: translateX(10px) translateY(0); }
-  }
-  
-  .alert-container#vessel-damage-alert {
-    border-left-color: #ff3333;
-    background: rgba(40, 10, 10, 0.95);
-  }
-  
-  .alert-container#retina-detachment-alert {
-    border-left-color: #ff5555;
-    background: rgba(30, 10, 20, 0.95);
-  }
-  
-  .alert-container#lens-contact-alert {
-    border-left-color: #55aaff;
-    background: rgba(10, 20, 40, 0.95);
-  }
-  
-  .alert-container#high-iop-alert {
-    border-left-color: #ffcc00;
-    background: rgba(40, 30, 10, 0.95);
-  }
-  
-  .alert-container#retina-fixed-alert {
-    border-left-color: #00cc66;
-    background: rgba(10, 40, 20, 0.95);
-  }
-  
-  .alert-container#vitreous-removed-alert {
-    border-left-color: #55ff55;
-    background: rgba(10, 40, 10, 0.95);
-  }
-  
-  .alert-container#hole-located-alert {
-    border-left-color: #ffff55;
-    background: rgba(40, 40, 10, 0.95);
-  }
-  
-  .alert-container#gas-injected-alert {
-    border-left-color: #55aaff;
-    background: rgba(10, 20, 40, 0.95);
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none;
+    max-width: 350px;
+    animation: slideIn 0.3s ease-out;
+    transform: translateY(0);
+    opacity: 1;
   }
   
   .alert-icon {
-    font-size: 1.8rem;
-    margin-right: 15px;
-    flex-shrink: 0;
+    font-size: 1.5rem;
+    margin-right: 10px;
   }
   
   .alert-content {
-    flex-grow: 1;
+    flex: 1;
   }
   
   .alert-content h3 {
     margin: 0 0 5px 0;
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1rem;
   }
   
   .alert-content p {
     margin: 0;
-    color: #ddd;
     font-size: 0.9rem;
-    line-height: 1.4;
+    color: #e2e8f0;
   }
   
   .alert-timer {
     height: 3px;
-    background: rgba(255,255,255,0.3);
-    margin-top: 8px;
-    border-radius: 2px;
+    background-color: rgba(255, 255, 255, 0.3);
+    margin-top: 10px;
+    border-radius: 3px;
     overflow: hidden;
-  }
-  
-  .alert-timer::after {
-    content: '';
-    display: block;
-    height: 100%;
-    width: 100%;
-    background: white;
   }
   
   .alert-dismiss {
     background: none;
     border: none;
     color: white;
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     cursor: pointer;
-    padding: 0 0 0 15px;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    flex-shrink: 0;
-  }
-  
-  .alert-dismiss:hover {
-    opacity: 1;
-  }
-  
-  /* Efecto de hemorragia */
-  .hemorrhage-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(200, 0, 0, 0.5);
-    z-index: 9998;
-    pointer-events: none;
-    display: none;
-    opacity: 0;
-    transition: opacity 1s ease;
-  }
-  
-  /* Coágulos de sangre */
-  .blood-clot {
-    position: absolute;
-    background: radial-gradient(circle, rgba(180,0,0,0.9), rgba(120,0,0,0.7));
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 15;
-    box-shadow: 
-        0 0 10px rgba(180,0,0,0.8),
-        inset 0 0 5px rgba(255,255,255,0.3);
-    filter: blur(0.5px);
-    animation: clotPulse 2s infinite alternate;
-  }
-  
-  @keyframes clotPulse {
-    0% { transform: translate(-50%, -50%) scale(1); }
-    100% { transform: translate(-50%, -50%) scale(1.05); }
-  }
-  
-  /* Burbujas subretinianas */
-  .subretinal-bubble {
-    position: absolute;
-    background: rgba(200, 50, 50, 0.6);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 14;
-    filter: blur(1px);
-    box-shadow: 
-      0 0 8px rgba(200, 50, 50, 0.7),
-      inset 0 0 3px rgba(255, 255, 255, 0.4);
-  }
-  
-  /* Marcas de cauterio */
-  .cautery-mark {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, 
-      white 0%, 
-      rgba(255,255,255,0.9) 60%, 
-      transparent 80%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 16;
-    box-shadow: 0 0 15px rgba(255,180,180,0.6);
-    animation: burnPulse 3s infinite alternate;
-  }
-  
-  @keyframes burnPulse {
-    0%, 100% { opacity: 0.8; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.1); }
-    100% { opacity: 0.8; transform: scale(1); }
-  }
-  
-  /* ================== ESTILOS BASE MEJORADOS ================== */
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  
-  body {
-    margin: 0;
     padding: 0;
-    background: #0a0a12;
+    margin-left: 10px;
+  }
+  
+  /* Mini mapa */
+  #miniMapContainer {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 200px;
+    height: 150px;
+    background-color: #1e293b;
+    border-radius: 10px;
     overflow: hidden;
-    font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
-    color: #e0e0e0;
+    z-index: 20;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   }
   
-  #container {
+  /* Panel de instrumentos */
+  .instrument-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    background-color: #1e293b;
+    padding: 10px;
+    border-radius: 10px;
+    z-index: 20;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .toggle-btn {
+    background-color: #334155;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .toggle-btn:hover {
+    background-color: #475569;
+  }
+  
+  .toggle-btn.active {
+    background-color: #38bdf8;
+    color: white;
+  }
+  
+  /* Panel de parámetros */
+  .control-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: #1e293b;
+    padding: 15px;
+    border-radius: 10px;
+    z-index: 10;
+    width: 200px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+  
+  .vital-sign {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .vital-label {
+    color: #94a3b8;
+  }
+  
+  .vital-value {
+    font-weight: bold;
+  }
+  
+  .vital-value.normal {
+    color: #4ade80;
+  }
+  
+  .vital-value.warning {
+    color: #fbbf24;
+  }
+  
+  .vital-value.danger {
+    color: #f87171;
+  }
+  
+  .gauge-container {
+    height: 6px;
+    background-color: #334155;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    overflow: hidden;
+  }
+  
+  .gauge-level {
+    height: 100%;
+    background-color: #38bdf8;
+    width: 50%;
+    transition: width 0.5s ease;
+  }
+  
+  /* Joysticks */
+  .joystick-container {
+    position: absolute;
+    bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+  }
+  
+  #joystick-light-container {
+    left: 30px;
+  }
+  
+  #joystick-vitrectomo-container {
+    right: 30px;
+  }
+  
+  .joystick {
+    width: 80px;
+    height: 80px;
+    background-color: #334155;
+    border-radius: 50%;
     position: relative;
-    width: 100vw;
-    height: 100vh;
-    perspective: 1200px;
-    background: radial-gradient(circle at center, #1a1a2a 0%, #0a0a12 100%);
+    margin-bottom: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   }
   
-  /* ================== RETINA CENTRAL - MEJORADA CON TEXTURAS REALISTAS ================== */
+  .joystick-handle {
+    width: 30px;
+    height: 30px;
+    background-color: #38bdf8;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s;
+  }
+  
+  .slider-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .slider-container label {
+    margin-bottom: 5px;
+    font-size: 0.8rem;
+    color: #94a3b8;
+  }
+  
+  .slider-container input[type="range"] {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .slider-container button {
+    background-color: #38bdf8;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .slider-container button:hover {
+    background-color: #0ea5e9;
+  }
+  
+  /* Cámara de retina */
   #eye-chamber {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    touch-action: none;
-    background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, transparent 70%);
+    z-index: 5;
   }
   
   .retina-container {
     position: relative;
     width: 80vmin;
     height: 80vmin;
-    max-width: 600px;
-    max-height: 600px;
-    transform-style: preserve-3d;
-    perspective: 1200px;
-    border-radius: 50%;
-    overflow: hidden;
-    transition: transform 0.3s ease;
-    filter: contrast(1.2) brightness(0.9) saturate(1.1);
-    will-change: transform, filter;
-    box-shadow: 
-      inset 0 0 100px rgba(100, 20, 20, 0.3),
-      0 0 80px rgba(0, 0, 0, 0.8);
+    max-width: 500px;
+    max-height: 500px;
   }
   
   .retina-sphere {
@@ -890,57 +339,10 @@ body {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: radial-gradient(circle at center, 
-      #500000 0%, 
-      #400000 20%, 
-      #300000 40%,
-      #200000 70%,
-      #100000 100%);
-    transform: rotateX(15deg) translateZ(50px);
-    box-shadow: 
-      inset 0 0 200px rgba(220, 80, 80, 0.3),
-      inset 0 0 80px rgba(255, 120, 120, 0.2),
-      0 0 120px rgba(0, 0, 0, 0.9);
+    background: radial-gradient(circle at center, #570000 0%, #400000 20%, #300000 40%, #200000 70%, #100000 100%);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), 0 0 60px rgba(0, 0, 0, 0.6);
+    transform-style: preserve-3d;
     overflow: hidden;
-  }
-  
-  .retina-sphere::after {
-    content: '';
-    position: absolute;
-    width: 200%;
-    height: 200%;
-    left: -50%;
-    top: -50%;
-    background-image: 
-      radial-gradient(circle at 50% 50%, 
-        rgba(255, 180, 180, 0.08) 0.5%, 
-        transparent 1.2%),
-      repeating-linear-gradient(
-        45deg,
-        transparent 0px,
-        transparent 2px,
-        rgba(255, 255, 255, 0.03) 2px,
-        rgba(255, 255, 255, 0.03) 3px
-      ),
-      repeating-linear-gradient(
-        -45deg,
-        transparent 0px,
-        transparent 3px,
-        rgba(150, 50, 50, 0.05) 3px,
-        rgba(150, 50, 50, 0.05) 5px
-      );
-    background-size: 
-      60px 60px,
-      100% 100%,
-      100% 100%;
-    transform: rotate(15deg);
-    animation: textureMove 120s linear infinite;
-    pointer-events: none;
-  }
-  
-  @keyframes textureMove {
-    0% { transform: rotate(15deg) translate(0,0); }
-    100% { transform: rotate(15deg) translate(200px,200px); }
   }
   
   .retina-texture {
@@ -948,1221 +350,1819 @@ body {
     width: 100%;
     height: 100%;
     background: 
-      radial-gradient(circle at 50% 50%, rgba(255,200,200,0.2) 0%, rgba(255,150,150,0.15) 80%),
-      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M${Array.from({length:50},(_,i)=>`${Math.random()*100},${Math.random()*100}`).join(" ")}" stroke="rgba(180,80,80,0.08)" fill="none" stroke-width="0.5"/></svg>');
-    background-size: 100%, 15px 15px;
-    opacity: 0.8;
+      radial-gradient(circle at 30% 30%, transparent 60%, rgba(0, 0, 0, 0.3) 100%),
+      repeating-linear-gradient(45deg, rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px, transparent 1px, transparent 20px);
     border-radius: 50%;
-    mix-blend-mode: overlay;
-    filter: contrast(1.3);
-    will-change: transform;
+  }
+  
+  .retina-nerve {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 15%;
+    height: 8%;
+    background: radial-gradient(circle, rgba(209, 85, 85, 0.8) 0%, rgba(180, 40, 40, 0.6) 100%);
+    border-radius: 50% 50% 0 0;
+  }
+  
+  .optic-disc {
+    position: absolute;
+    bottom: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10%;
+    height: 5%;
+    background: radial-gradient(circle, rgba(206, 88, 25, 0.8) 0%, rgba(180, 40, 40, 0.6) 100%);
+    border-radius: 50%;
+    box-shadow: inset 0 0 20px rgba(191, 78, 78, 0.6), 0 0 25px rgba(220, 80, 80, 0.5);
+  }
+  
+  .optic-cup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 50%;
+    height: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
   }
   
   .macula {
     position: absolute;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle at center, 
-      rgba(255,230,200,0.7) 0%, 
-      rgba(255,210,170,0.5) 60%, 
-      transparent 100%);
-    border-radius: 50%;
-    top: 50%;
+    top: 40%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-    box-shadow: 
-      0 0 40px rgba(255, 220, 150, 0.4),
-      inset 0 0 15px rgba(255, 200, 100, 0.5);
-    animation: pulse 4s ease-in-out infinite;
-  }
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
-    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    transform: translateX(-50%);
+    width: 8%;
+    height: 8%;
+    background: radial-gradient(circle, rgba(255, 255, 200, 0.3) 0%, rgba(255, 255, 150, 0.2) 50%, transparent 100%);
+    border-radius: 50%;
   }
   
   .blood-vessels {
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: 3;
-    pointer-events: none;
-    filter: drop-shadow(0 0 3px rgba(80, 0, 0, 0.7));
-    will-change: transform;
-  }
-  
-  .blood-vessels-animated {
-    animation: vesselPulse 3s ease-in-out infinite;
-  }
-  
-  @keyframes vesselPulse {
-    0%, 100% { opacity: 0.7; transform: scale(1); }
-    50% { opacity: 0.9; transform: scale(1.01); }
-  }
-  
-  .retina-nerve {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><path d="M0,0 Q50,50 100,0 T200,0" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/></svg>') center/cover;
-    pointer-events: none;
-    opacity: 0.6;
-    z-index: 4;
-  }
-  
-  .optic-disc {
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    background: radial-gradient(circle at center, 
-      rgba(220,120,120,0.5) 0%, 
-      rgba(200,100,100,0.4) 100%);
-    border-radius: 50%;
-    top: 50%;
-    left: 25%;
-    transform: translate(-50%, -50%);
-    box-shadow: 
-      inset 0 0 20px rgba(220,80,80,0.6), 
-      0 0 25px rgba(220,80,80,0.5);
-    z-index: 5;
-    animation: discPulse 5s ease-in-out infinite;
-  }
-  
-  @keyframes discPulse {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.03); }
-  }
-  
-  .optic-cup {
-    position: absolute;
-    width: 35px;
-    height: 35px;
-    background: radial-gradient(circle at center, 
-      rgba(220,80,80,0.6) 0%, 
-      rgba(200,60,60,0.5) 100%);
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: inset 0 0 15px rgba(180,50,50,0.7);
-    z-index: 6;
-  }
-  
-  /* ================== LUZ ENDOILUMINADOR - EFECTOS DINÁMICOS MEJORADOS ================== */
-  #light-mask {
-    position: absolute;
     top: 0;
     left: 0;
+  }
+  
+  #light-mask {
+    position: absolute;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.95);
-    mask-image: radial-gradient(
-      circle at var(--light-x, 50%) var(--light-y, 50%), 
-      transparent var(--light-size, 80px), 
-      black calc(var(--light-size, 80px) + 80px)
-    );
-    -webkit-mask-image: radial-gradient(
-      circle at var(--light-x, 50%) var(--light-y, 50%), 
-      transparent var(--light-size, 80px), 
-      black calc(var(--light-size, 80px) + 80px)
-    );
-    transition: all 0.15s ease-out;
+    border-radius: 50%;
+    background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
+      transparent 0%, 
+      rgba(0, 0, 0, 0.8) calc(var(--light-size, 100px) * 1.5), 
+      rgba(0, 0, 0, 0.9) 100%);
     pointer-events: none;
-    z-index: 7;
-    will-change: mask-image, -webkit-mask-image;
+    z-index: 6;
   }
   
   #light-reflection {
     position: absolute;
     width: 100%;
     height: 100%;
-    background: radial-gradient(
-      circle at var(--light-x, 50%) var(--light-y, 50%), 
-      rgba(255,255,240,0.95) calc(var(--light-size, 80px)*0.1), 
-      rgba(255,220,180,0.6) calc(var(--light-size, 80px)*0.3), 
-      transparent var(--light-size, 80px)
-    );
-    opacity: 0;
-    transition: opacity 0.25s ease, transform 0.25s ease;
     border-radius: 50%;
+    background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
+      rgba(255, 255, 255, 0.3) 0%, 
+      rgba(255, 255, 255, 0.1) var(--light-size, 100px), 
+      transparent calc(var(--light-size, 100px) * 1.5));
     pointer-events: none;
-    z-index: 8;
-    mix-blend-mode: soft-light;
-    filter: blur(1.5px);
-    will-change: opacity, transform;
+    z-index: 7;
+    opacity: 0;
+    transition: opacity 0.3s;
   }
   
   .light-scatter {
     position: absolute;
-    width: 300%;
-    height: 300%;
-    left: -100%;
-    top: -100%;
-    background: radial-gradient(
-      circle at var(--light-x, 50%) var(--light-y, 50%),
-      rgba(255, 230, 200, 0.15) 0%,
-      transparent 80%
-    );
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at var(--light-x, 50%) var(--light-y, 50%), 
+      rgba(255, 255, 255, 0.05) 0%, 
+      transparent 70%);
     pointer-events: none;
-    z-index: 9;
+    z-index: 4;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    will-change: background, opacity;
+    transition: opacity 0.3s;
   }
   
   .light-scatter.active {
-    opacity: 0.7;
+    opacity: 1;
   }
   
   .specular-highlight {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(
-      circle at var(--light-x, 50%) var(--light-y, 50%),
-      rgba(255, 255, 255, 0.5) 0%,
-      transparent 70%
-    );
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+    top: calc(var(--light-y, 50%) - 15px);
+    left: calc(var(--light-x, 50%) - 15px);
     pointer-events: none;
-    z-index: 10;
-    mix-blend-mode: overlay;
+    z-index: 8;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s;
   }
   
   .specular-highlight.active {
-    opacity: 0.4;
+    opacity: 0.6;
   }
   
-  /* ================== INSTRUMENTOS QUIRÚRGICOS 3D MEJORADOS ================== */
+  /* Instrumentos */
   .instrument {
     position: absolute;
-    left: 50%;
+    width: 40px;
+    height: 120px;
     top: 50%;
-    transform: translate(-50%, -50%) translateZ(0);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transform-style: preserve-3d;
     display: none;
     z-index: 10;
-    transition: transform 0.1s ease-out;
-    will-change: transform;
-    transform-style: preserve-3d;
-    perspective: 1000px;
   }
   
   .instrument-body {
     position: relative;
     width: 100%;
     height: 100%;
-    transform-style: preserve-3d;
-    transition: all 0.2s ease;
+    background: linear-gradient(to right, #555 0%, #777 50%, #555 100%);
+    border-radius: 5px;
+    transform: rotateX(75deg);
+    transform-origin: bottom center;
+  }
+  
+  .instrument-tip {
+    width: 10px;
+    height: 30px;
+    background: linear-gradient(to right, #333 0%, #666 50%, #333 100%);
+    border-radius: 0 0 5px 5px;
+  }
+  
+  .instrument-side {
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    background: linear-gradient(to right, #444 0%, #666 50%, #444 100%);
+    top: 50%;
+    transform: translateY(-50%) rotateX(90deg);
+    transform-origin: top center;
+  }
+  
+  .instrument-light-reflection {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      rgba(255,255,255,0.3) 0%,
+      rgba(255,255,255,0.1) 50%,
+      transparent 100%
+    );
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 3;
   }
   
   .instrument-shadow {
     position: absolute;
-    width: 120%;
-    height: 120%;
-    left: -10%;
-    top: -10%;
-    background: radial-gradient(
-      ellipse at center,
-      rgba(0,0,0,0.4) 0%,
-      transparent 70%
-    );
-    transform: rotateX(75deg) translateZ(-10px);
-    pointer-events: none;
-    z-index: -1;
-    filter: blur(5px);
-    opacity: 0.7;
-    transition: all 0.3s ease;
-  }
-  
-  /* Vitrectomo 3D mejorado */
-  #vitrectome {
-    width: 2.5mm;
-    height: 15mm;
-    transform-style: preserve-3d;
-  }
-  
-  #vitrectome .instrument-body {
-    background: linear-gradient(to bottom, 
-      #999 0%, 
-      #ccc 10%, 
-      #eee 20%, 
-      #fff 40%, 
-      #ddd 60%, 
-      #aaa 80%,
-      #888 100%);
-    border: 1px solid #777;
-    border-radius: 1.2mm;
-    box-shadow: 
-      0 0 1.5mm rgba(0,0,0,0.7),
-      0 0 3mm rgba(255,255,255,0.15),
-      inset 0 0 5px rgba(255,255,255,0.3);
-    transform: rotateX(10deg);
-  }
-  
-  #vitrectome::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(1px);
-    width: 3mm;
-    height: 1mm;
-    background: linear-gradient(to right, #aaa, #ddd, #aaa);
-    border-radius: 0.5mm;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    z-index: 2;
-  }
-  
-  #vitrectome::after {
-    content: '';
-    position: absolute;
-    bottom: -1mm;
-    left: 50%;
-    transform: translateX(-50%) translateZ(-1px);
-    width: 1.8mm;
-    height: 1.8mm;
-    background: radial-gradient(circle, 
-      #fff 0%, 
-      #bbb 50%, 
-      #888 100%);
-    border-radius: 50%;
-    box-shadow: 
-      0 0 0.8mm rgba(0,0,0,0.7),
-      0 0 1.5mm rgba(255,255,255,0.3),
-      inset 0 0 5px rgba(255,255,255,0.4);
-    z-index: 1;
-  }
-  
-  #vitrectome .instrument-tip {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(0);
-    width: 1.2mm;
-    height: 3mm;
-    background: linear-gradient(to bottom, #ccc, #999);
-    border-radius: 0.3mm;
-    box-shadow: 
-      inset 0 -1px 2px rgba(0,0,0,0.5),
-      0 0 5px rgba(255,255,255,0.2);
-  }
-  
-  #vitrectome .instrument-side {
-    position: absolute;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, #888, #aaa, #888);
-    transform: rotateY(90deg) translateZ(1.25mm);
-    border-radius: 1.2mm;
-    box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
-  }
-  
-  /* Sonda de Láser 3D mejorada */
-  #laser-probe {
-    width: 0.5mm;
-    height: 12mm;
-    transform-style: preserve-3d;
-  }
-  
-  #laser-probe .instrument-body {
-    background: linear-gradient(to bottom, 
-      #f00, 
-      #f90 20%, 
-      #ff0 30%, 
-      #f90 70%, 
-      #f00);
-    border-radius: 0.3mm;
-    box-shadow: 
-      0 0 1.5mm rgba(255,0,0,0.9),
-      0 0 3mm rgba(255,100,100,0.6),
-      inset 0 0 5px rgba(255,255,255,0.4);
-    transform: rotateX(10deg);
-  }
-  
-  #laser-probe::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(1px);
-    width: 1.5mm;
-    height: 1mm;
-    background: linear-gradient(to right, #aaa, #ddd, #aaa);
-    border-radius: 0.5mm;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    z-index: 2;
-  }
-  
-  #laser-probe .instrument-tip {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(0);
-    width: 0.8mm;
-    height: 1.5mm;
-    background: radial-gradient(circle, #fff, #f99);
+    height: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    bottom: -10px;
+    left: 0;
     border-radius: 50%;
-    box-shadow: 
-      0 0 5px rgba(255,100,100,0.8),
-      inset 0 0 3px rgba(255,255,255,0.8);
+    filter: blur(5px);
+    transform: rotateX(75deg) translateZ(-10px);
+    z-index: -1;
   }
   
-  /* Sonda de PFC */
-  #pfc-probe {
-    width: 0.8mm;
-    height: 13mm;
-    transform-style: preserve-3d;
-  }
-  
-  #pfc-probe .instrument-body {
-    background: linear-gradient(to bottom, 
-      #0af 0%, 
-      #5bf 30%, 
-      #8df 70%, 
-      #0af 100%);
-    border: 1px solid #07a;
-    border-radius: 0.5mm;
-    box-shadow: 
-      0 0 1.5mm rgba(0,100,255,0.7),
-      0 0 3mm rgba(100,200,255,0.4),
-      inset 0 0 5px rgba(255,255,255,0.6);
-    transform: rotateX(10deg);
-  }
-  
-  #pfc-probe::before {
-    content: '';
+  /* Efectos */
+  .vitreous-particle {
     position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(1px);
-    width: 2mm;
-    height: 1mm;
-    background: linear-gradient(to right, #aaa, #ddd, #aaa);
-    border-radius: 0.5mm;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    z-index: 2;
-  }
-  
-  #pfc-probe .instrument-tip {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(0);
-    width: 1mm;
-    height: 1.5mm;
-    background: radial-gradient(circle, #fff, #5bf);
-    border-radius: 50%;
-    box-shadow: 
-      0 0 5px rgba(0,150,255,0.8),
-      inset 0 0 3px rgba(255,255,255,0.8);
-  }
-  
-  /* Cauterio */
-  #cautery-probe {
-    width: 1.5mm;
-    height: 12mm;
-    transform-style: preserve-3d;
-  }
-  
-  #cautery-probe .instrument-body {
-    background: linear-gradient(to bottom, 
-      #ff3333 0%, 
-      #ff6666 20%, 
-      #ff9999 40%, 
-      #ff6666 70%, 
-      #ff3333 100%);
-    border: 1px solid #cc0000;
-    border-radius: 0.8mm;
-    box-shadow: 
-      0 0 1.5mm rgba(255,0,0,0.7),
-      0 0 3mm rgba(255,100,100,0.4),
-      inset 0 0 5px rgba(255,255,255,0.6);
-    transform: rotateX(10deg);
-  }
-  
-  #cautery-probe::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(1px);
-    width: 2mm;
-    height: 1mm;
-    background: linear-gradient(to right, #aaa, #ddd, #aaa);
-    border-radius: 0.5mm;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-    z-index: 2;
-  }
-  
-  #cautery-probe .instrument-tip {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%) translateZ(0);
-    width: 1.2mm;
-    height: 2mm;
-    background: radial-gradient(circle, #ff9999, #ff3333);
-    border-radius: 0.3mm;
-    box-shadow: 
-      0 0 5px rgba(255,100,100,0.8),
-      inset 0 0 3px rgba(255,255,255,0.8);
-    z-index: 1;
-  }
-  
-  /* Efecto de cauterio */
-  .cautery-effect {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    background: radial-gradient(circle, 
-      rgba(255,200,200,0.9) 0%, 
-      rgba(255,100,100,0.7) 70%, 
-      transparent 90%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 18;
-    animation: cauteryFade 1s ease-out forwards;
-    filter: blur(1.5px);
-    box-shadow: 0 0 20px rgba(255,100,100,0.8);
-  }
-  
-  @keyframes cauteryFade {
-    0% { transform: scale(0.8); opacity: 1; }
-    50% { transform: scale(1.5); opacity: 0.9; }
-    100% { transform: scale(1.5); opacity: 0; }
-  }
-  
-  /* Burbujas de PFC */
-  .pfc-bubble {
-    position: absolute;
-    background: rgba(100, 255, 255, 0.7);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 5;
-    filter: blur(1px);
-    box-shadow: 
-      0 0 10px rgba(100, 255, 255, 0.8),
-      inset 0 0 5px rgba(255, 255, 255, 0.8);
-    transform: translate(-50%, -50%);
-    will-change: transform, opacity;
-  }
-  
-  .instrument-active {
-    animation: instrumentVibrate 0.1s linear infinite;
-  }
-  
-  @keyframes instrumentVibrate {
-    0% { transform: translate(-50%, -50%) rotate(0.5deg) translateZ(0); }
-    50% { transform: translate(-50%, -50%) rotate(-0.5deg) translateZ(0); }
-    100% { transform: translate(-50%, -50%) rotate(0.5deg) translateZ(0); }
-  }
-  
-  /* ================== INTERFAZ DE USUARIO PROFESIONAL ================== */
-  .instrument-panel {
-    position: absolute;
-    top: 50%;
-    left: 20px;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.85);
-    padding: 15px 10px;
-    border-radius: 12px;
-    z-index: 5000;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 
-      0 6px 20px rgba(0,0,0,0.6),
-      inset 0 0 15px rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.15);
-  }
-  
-  .toggle-btn {
-    background: #1a3a8a;
-    color: white;
-    padding: 12px 18px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: clamp(0.85rem, 2.5vw, 1rem);
-    margin: 8px 5px;
-    min-width: 100px;
-    transition: all 0.2s;
-    font-weight: 500;
-    box-shadow: 
-      0 3px 8px rgba(0,0,0,0.4),
-      inset 0 0 8px rgba(255,255,255,0.15);
-    position: relative;
-    overflow: hidden;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  
-  .toggle-btn::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
     width: 5px;
     height: 5px;
-    background: rgba(255, 255, 255, 0.6);
-    opacity: 0;
-    border-radius: 100%;
-    transform: scale(1, 1) translate(-50%, -50%);
-    transform-origin: 50% 50%;
+    background-color: rgba(200, 200, 255, 0.7);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9;
+    animation: float 1.5s ease-out forwards;
   }
   
-  .toggle-btn:active::after {
-    animation: ripple 0.6s ease-out;
-  }
-  
-  @keyframes ripple {
-    0% {
-      transform: scale(0, 0);
-      opacity: 1;
-    }
-    20% {
-      transform: scale(25, 25);
-      opacity: 1;
-    }
-    100% {
+  @keyframes float {
+    to {
+      transform: translate(var(--tx, 0), var(--ty, 0));
       opacity: 0;
-      transform: scale(40, 40);
     }
   }
   
-  .toggle-btn.active {
-    background: #3b82f6;
-    box-shadow: 
-      0 0 20px #3b82f6,
-      0 0 40px rgba(59, 130, 246, 0.4);
-  }
-  
-  /* Panel de controles mejorado */
-  .control-panel {
+  .pfc-bubble {
     position: absolute;
-    right: 20px;
-    top: 190px;
-    background: rgba(10,10,20,0.95);
-    padding: 20px;
-    border-radius: 50px;
-    z-index: 5000;
-    font-size: clamp(0.75rem, 2vw, 0.9rem);
-    width: 180px;
-    max-height: 80vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    box-shadow: 
-      0 6px 20px rgba(18, 20, 41, 0.6),
-      inset 0 0 15px rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-  }
-  
-  .control-panel h3 {
-    margin: 0 0 15px 0;
-    color: #2990aa;
-    font-size: 1.1rem;
-    text-align: center;
-    border-bottom: 1px solid #444;
-    padding-bottom: 8px;
-  }
-  
-  .vital-sign {
-    display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
-    flex-wrap: wrap;
-  }
-  
-  .vital-label {
-    color: #aaa;
-    font-size: 0.85em;
-    width: 60%;
-  }
-  
-  .vital-value {
-    font-family: 'Courier New', monospace;
-    font-weight: bold;
-    font-size: 0.95em;
-    width: 40%;
-    text-align: right;
-    transition: color 0.3s;
-  }
-  
-  .normal { color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.4); }
-  .warning { color: #f39c12; text-shadow: 0 0 8px rgba(243, 156, 18, 0.4); }
-  .danger { color: #e74c3c; text-shadow: 0 0 8px rgba(231, 76, 60, 0.4); }
-  
-  .gauge-container {
-    width: 100%;
-    height: 10px;
-    background: #222;
-    border-radius: 5px;
-    margin: 8px 0 15px 0;
-    overflow: hidden;
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
-  }
-  
-  .gauge-level {
-    height: 100%;
-    border-radius: 5px;
-    transition: width 0.5s ease;
-    box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
-  }
-  
-  #iop-gauge .gauge-level {
-    background: linear-gradient(to right, #2ecc71, #f39c12, #e74c3c);
-  }
-  
-  #perfusion-gauge .gauge-level {
-    background: linear-gradient(to right, #3498db, #9b59b6);
-  }
-  
-  #vitreous-gauge .gauge-level {
-    background: linear-gradient(to right, #1abc9c, #f1c40f);
-  }
-  
-  #pfc-gauge .gauge-level {
-    background: linear-gradient(to right, #0af, #5bf);
-  }
-  
-  /* Joysticks mejorados */
-  .joystick-container {
-    position: absolute;
-    bottom: 1px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    z-index: 3000;
-  }
-  
-  #joystick-light-container {
-    left: 200px;
-  }
-  
-  #joystick-vitrectomo-container {
-    right: 180px;
-  }
-  
-  .joystick {
-    width: 100px;
-    height: 100px;
-    background: rgba(255,255,255,0.1);
-    border: 2px solid rgba(255,255,255,0.4);
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    touch-action: none;
-    position: relative;
-    box-shadow: 
-      0 6px 15px rgba(0,0,0,0.4),
-      inset 0 0 25px rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    will-change: transform;
+    background: radial-gradient(circle, rgba(100, 255, 255, 0.8) 0%, rgba(50, 200, 200, 0.6) 70%, transparent 100%);
+    pointer-events: none;
+    z-index: 11;
+    animation: float-up 2s ease-out forwards;
   }
   
-  .joystick .joystick-handle {
-    width: 40px;
-    height: 40px;
-    background: rgba(255,255,255,0.8);
-    border-radius: 50%;
+  @keyframes float-up {
+    to {
+      transform: translate(var(--tx, 0), var(--ty, -100px));
+      opacity: 0;
+    }
+  }
+  
+  .hemorrhage-overlay {
     position: absolute;
-    transition: transform 0.1s ease;
-    box-shadow: 
-      0 0 15px rgba(255,255,255,0.4),
-      inset 0 0 8px rgba(255,255,255,0.7);
-    will-change: transform;
-  }
-  
-  /* Controles Z mejorados */
-  .slider-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    background: rgba(0,0,0,0.7);
-    padding: 15px;
-    border-radius: 12px;
-    box-shadow: 
-      0 4px 10px rgba(0,0,0,0.4),
-      inset 0 0 8px rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-  }
-  
-  .slider-container label {
-    font-size: 0.8rem;
-    margin-bottom: 10px;
-    text-align: center;
-    color: #eee;
-    font-weight: 500;
-    text-shadow: 0 0 8px rgba(0,0,0,0.6);
-  }
-  
-  input[type="range"] {
-    width: 100%;
-    -webkit-appearance: none;
-    height: 10px;
-    background: #333;
-    border-radius: 5px;
-    margin: 8px 0 12px 0;
-    box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
-  }
-  
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 22px;
-    height: 22px;
-    background: #3b82f6;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid white;
-    box-shadow: 
-      0 0 8px rgba(0,0,0,0.7),
-      0 0 15px rgba(59, 130, 246, 0.7);
-    transition: all 0.2s;
-  }
-  
-  input[type="range"]::-webkit-slider-thumb:active {
-    transform: scale(1.2);
-    box-shadow: 
-      0 0 12px rgba(0,0,0,0.7),
-      0 0 20px rgba(59, 130, 246, 1);
-  }
-  
-  #btn-precionar {
-    background: linear-gradient(to bottom, #dc2626, #b91c1c);
-    color: white;
-    padding: 12px 15px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    margin-top: 8px;
-    width: 100%;
-    font-weight: bold;
-    box-shadow: 
-      0 4px 12px rgba(0,0,0,0.4),
-      0 0 15px rgba(220, 38, 38, 0.4);
-    transition: all 0.2s;
-    text-shadow: 0 0 8px rgba(0,0,0,0.4);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-  
-  #btn-precionar:active {
-    transform: scale(0.95);
-    box-shadow: 
-      0 2px 6px rgba(0,0,0,0.4),
-      0 0 8px rgba(220, 38, 38, 0.4);
-  }
-  
-  /* Mini mapa mejorado */
-  #miniMapContainer {
-    position: absolute;
-    top: 40px;
-    right: 30px;
-    width: 170px;
-    height: 120px;
-    overflow: hidden;
-    border-radius: 5px;
-    z-index: 2000;
-    background: rgba(0,0,0,0.85);
-    border: 1px solid rgba(255,255,255,0.15);
-    box-shadow: 
-      0 6px 15px rgba(0,0,0,0.5),
-      inset 0 0 15px rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-  }
-  
-  #eyeCrossSection {
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    display: block;
-    filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
+    background: radial-gradient(circle, rgba(180, 0, 0, 0.7) 0%, rgba(120, 0, 0, 0.5) 100%);
+    pointer-events: none;
+    z-index: 12;
+    opacity: 0;
+    display: none;
   }
   
   /* Indicador de profundidad */
   .depth-indicator {
     position: absolute;
-    bottom: 130px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
-    padding: 10px 20px;
-    border-radius: 25px;
-    color: white;
-    font-size: 0.85rem;
-    z-index: 2000;
-    display: flex;
-    align-items: center;
-    backdrop-filter: blur(8px);
-    box-shadow: 0 0 15px rgba(0,0,0,0.6);
-    border: 1px solid var(--depth-color, #3b82f6);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    background-color: #1e293b;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 20;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    color: var(--depth-color, #10b981);
   }
   
-  .depth-indicator::before {
-    content: '';
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 10px;
-    background: var(--depth-color, #3b82f6);
-    box-shadow: 0 0 8px var(--depth-color, #3b82f6);
-  }
-  
-  /* Efectos visuales mejorados */
-  .laser-spot {
-    width: 30px;
-    height: 30px;
-    background: radial-gradient(circle, 
-      rgba(255,80,80,0.95), 
-      rgba(255,0,0,0.8) 70%, 
-      transparent 90%);
-    border-radius: 50%;
-    position: absolute;
-    pointer-events: none;
-    animation: laser-fade 2.5s ease-out forwards;
-    z-index: 15;
-    filter: blur(1px);
-    will-change: transform, opacity;
-  }
-  
-  @keyframes laser-fade {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0.3); }
-  }
-  
-  .laser-burn-permanent {
-    width: 8px;
-    height: 8px;
-    background: radial-gradient(circle, 
-      white 0%, 
-      rgba(255,255,255,0.9) 60%, 
-      transparent 80%);
-    border-radius: 50%;
-    position: absolute;
-    pointer-events: none;
-    z-index: 16;
-    box-shadow: 0 0 15px rgba(255,120,120,0.6);
-    animation: burnPulse 3s infinite alternate;
-  }
-  
-  .vitreous-particle {
-    width: 6px;
-    height: 6px;
-    background: rgba(255,255,255,0.95);
-    border-radius: 50%;
-    position: absolute;
-    pointer-events: none;
-    animation: float-particle 1.5s ease-out forwards;
-    z-index: 12;
-    filter: blur(0.8px);
-    box-shadow: 0 0 8px rgba(255,255,255,0.9);
-    will-change: transform, opacity;
-  }
-  
-  @keyframes float-particle {
-    100% { transform: translate(var(--tx, 0px), var(--ty, 0px)); opacity: 0; }
-  }
-  
-  .injection-bubble {
-    position: absolute;
-    background: rgba(200,230,255,0.9);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 3;
-    filter: blur(1.5px);
-    animation: bubble-float 4s ease-in-out forwards;
-    box-shadow: 
-      0 0 8px rgba(100,150,255,0.7),
-      inset 0 0 5px rgba(255,255,255,0.7);
-    will-change: transform, opacity;
-  }
-  
-  @keyframes bubble-float {
-    100% { 
-      transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px));
+  /* Animaciones */
+  @keyframes slideIn {
+    from {
+      transform: translateY(-20px);
       opacity: 0;
     }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
-  
-  /* ================== NUEVOS ESTILOS PARA EL DESPRENDIMIENTO MEJORADO ================== */
-  #retinal-hole {
-    display: none;
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    background: radial-gradient(circle, 
-      rgba(255,255,255,0.8) 0%, 
-      rgba(200,0,0,0.6) 70%, 
-      transparent 100%);
-    border-radius: 50%;
-    z-index: 15;
-    box-shadow: 0 0 15px rgba(255,255,255,0.5);
-    border: 2px dashed rgba(255,255,255,0.7);
-    pointer-events: none;
-    animation: holePulse 2s infinite alternate;
-  }
-  
-  @keyframes holePulse {
-    0% { transform: scale(1); opacity: 0.8; }
-    50% { transform: scale(1.1); opacity: 1; }
-    100% { transform: scale(1); opacity: 0.8; }
-  }
-  
-  /* Burbujas de gas mejoradas */
-  .gas-bubble {
-    position: absolute;
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 6;
-    filter: blur(1px);
-    box-shadow: 
-      0 0 15px rgba(255, 255, 255, 0.9),
-      inset 0 0 8px rgba(255, 255, 255, 0.8);
-    transform: translate(-50%, -50%);
-    will-change: transform, opacity;
-    animation: bubbleFloat 4s ease-in-out forwards;
-  }
-  
-  .gas-bubble-large {
-    position: absolute;
-    width: 40%;
-    height: 40%;
-    background: radial-gradient(circle, 
-      rgba(255,255,255,0.95) 0%, 
-      rgba(220,220,255,0.8) 70%, 
-      transparent 100%);
-    border-radius: 50%;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 5;
-    filter: blur(2px);
-    box-shadow: 
-      0 0 30px rgba(255,255,255,0.9),
-      inset 0 0 20px rgba(255,255,255,0.8);
-    animation: largeBubblePulse 3s infinite alternate;
-  }
-  
-  @keyframes bubbleFloat {
-    0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-    50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; }
-    100% { transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px)) scale(1); opacity: 0; }
-  }
-  
-  @keyframes largeBubblePulse {
-    0% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-50%, -50%) scale(1.1); }
-    100% { transform: translate(-50%, -50%) scale(1); }
-  }
-  
-  /* Efecto de arrugas en la retina desprendida */
-  #retina-edge-detachment {
-    filter: url('#wrinkleFilter');
-  }
-  
-  /* Efecto de PFC mejorado */
-  #detached-retina-overlay {
-    transition: background 1.5s ease;
-  }
-  
-  /* ================== CASO CLÍNICO ================== */
-  #clinical-case {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    z-index: 20000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    padding: 20px;
-    box-sizing: border-box;
-    backdrop-filter: blur(5px);
-  }
-  
-  #clinical-case-content {
-    max-width: 800px;
-    background: rgba(20, 20, 40, 0.95);
-    padding: 30px;
-    border-radius: 15px;
-    border-left: 5px solid #3b82f6;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  }
-  
-  #clinical-case h2 {
-    color: #3b82f6;
-    margin-top: 0;
-    text-align: center;
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-  }
-  
-  #clinical-case h3 {
-    color: #10b981;
-    margin-bottom: 10px;
-    font-size: 1.3rem;
-  }
-  
-  #clinical-case ul {
-    padding-left: 20px;
-  }
-  
-  #clinical-case li {
-    margin-bottom: 8px;
-    line-height: 1.5;
-  }
-  
-  #start-simulation-btn {
-    background: #3b82f6;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    font-size: 1.2rem;
-    border-radius: 8px;
-    cursor: pointer;
-    margin-top: 30px;
-    transition: all 0.3s;
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-  }
-  
-  #start-simulation-btn:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
-    box-shadow: 0 7px 20px rgba(59, 130, 246, 0.6);
-  }
-  
-  #start-simulation-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-  }
-  
-  /* ================== RESPONSIVE ADJUSTMENTS ================== */
-  @media (max-width: 768px) {
-    .instrument-panel {
-      top: 10px;
-      left: 10px;
-      right: auto;
-      flex-direction: row;
-      flex-wrap: wrap;
+  /* ================== SISTEMA DE ALERTAS PROFESIONAL ================== */
+  #alert-system {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      width: 90%;
+      max-width: 600px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    
+    .alert-container {
+      display: none;
+      background: rgba(20, 20, 30, 0.95);
+      border-left: 5px solid;
+      border-radius: 8px;
+      padding: 15px 20px;
+      align-items: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      animation: alertSlideIn 0.3s ease-out forwards;
+      transform-origin: top center;
+      border-left-color: #ff5555;
+    }
+    
+    @keyframes alertSlideIn {
+      0% { opacity: 0; transform: translateY(-20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes alertSlideOut {
+      0% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+    
+    .alert-container#wall-collision-alert {
+      border-left-color: #ff9933;
+      background: rgba(40, 30, 10, 0.95);
+      animation: alertShake 0.5s ease-out forwards;
+    }
+    
+    @keyframes alertShake {
+      0%, 100% { transform: translateX(0) translateY(0); }
+      20% { transform: translateX(-10px) translateY(0); }
+      40% { transform: translateX(10px) translateY(0); }
+      60% { transform: translateX(-10px) translateY(0); }
+      80% { transform: translateX(10px) translateY(0); }
+    }
+    
+    .alert-container#vessel-damage-alert {
+      border-left-color: #ff3333;
+      background: rgba(40, 10, 10, 0.95);
+    }
+    
+    .alert-container#retina-detachment-alert {
+      border-left-color: #ff5555;
+      background: rgba(30, 10, 20, 0.95);
+    }
+    
+    .alert-container#lens-contact-alert {
+      border-left-color: #55aaff;
+      background: rgba(10, 20, 40, 0.95);
+    }
+    
+    .alert-container#high-iop-alert {
+      border-left-color: #ffcc00;
+      background: rgba(40, 30, 10, 0.95);
+    }
+    
+    .alert-container#retina-fixed-alert {
+      border-left-color: #00cc66;
+      background: rgba(10, 40, 20, 0.95);
+    }
+    
+    .alert-container#vitreous-removed-alert {
+      border-left-color: #55ff55;
+      background: rgba(10, 40, 10, 0.95);
+    }
+    
+    .alert-container#hole-located-alert {
+      border-left-color: #ffff55;
+      background: rgba(40, 40, 10, 0.95);
+    }
+    
+    .alert-container#gas-injected-alert {
+      border-left-color: #55aaff;
+      background: rgba(10, 20, 40, 0.95);
+    }
+    
+    .alert-icon {
+      font-size: 1.8rem;
+      margin-right: 15px;
+      flex-shrink: 0;
+    }
+    
+    .alert-content {
+      flex-grow: 1;
+    }
+    
+    .alert-content h3 {
+      margin: 0 0 5px 0;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    
+    .alert-content p {
+      margin: 0;
+      color: #ddd;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+    
+    .alert-timer {
+      height: 3px;
+      background: rgba(255,255,255,0.3);
+      margin-top: 8px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .alert-timer::after {
+      content: '';
+      display: block;
+      height: 100%;
+      width: 100%;
+      background: white;
+    }
+    
+    .alert-dismiss {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0 0 0 15px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      flex-shrink: 0;
+    }
+    
+    .alert-dismiss:hover {
+      opacity: 1;
+    }
+    
+    /* Efecto de hemorragia */
+    .hemorrhage-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(200, 0, 0, 0.5);
+      z-index: 9998;
+      pointer-events: none;
+      display: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    
+    /* Coágulos de sangre */
+    .blood-clot {
+      position: absolute;
+      background: radial-gradient(circle, rgba(180,0,0,0.9), rgba(120,0,0,0.7));
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 15;
+      box-shadow: 
+          0 0 10px rgba(180,0,0,0.8),
+          inset 0 0 5px rgba(255,255,255,0.3);
+      filter: blur(0.5px);
+      animation: clotPulse 2s infinite alternate;
+    }
+    
+    @keyframes clotPulse {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      100% { transform: translate(-50%, -50%) scale(1.05); }
+    }
+    
+    /* Burbujas subretinianas */
+    .subretinal-bubble {
+      position: absolute;
+      background: rgba(200, 50, 50, 0.6);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 14;
+      filter: blur(1px);
+      box-shadow: 
+        0 0 8px rgba(200, 50, 50, 0.7),
+        inset 0 0 3px rgba(255, 255, 255, 0.4);
+    }
+    
+    /* Marcas de cauterio */
+    .cautery-mark {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, 
+        white 0%, 
+        rgba(255,255,255,0.9) 60%, 
+        transparent 80%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 16;
+      box-shadow: 0 0 15px rgba(255,180,180,0.6);
+      animation: burnPulse 3s infinite alternate;
+    }
+    
+    @keyframes burnPulse {
+      0%, 100% { opacity: 0.8; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.1); }
+      100% { opacity: 0.8; transform: scale(1); }
+    }
+    
+    /* ================== ESTILOS BASE MEJORADOS ================== */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background: #0a0a12;
+      overflow: hidden;
+      font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+      color: #e0e0e0;
+    }
+    
+    #container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      perspective: 1200px;
+      background: radial-gradient(circle at center, #1a1a2a 0%, #0a0a12 100%);
+    }
+    
+    /* ================== RETINA CENTRAL - MEJORADA CON TEXTURAS REALISTAS ================== */
+    #eye-chamber {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
       justify-content: center;
-      padding: 8px;
-      width: calc(100% - 20px);
+      align-items: center;
+      touch-action: none;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.3) 0%, transparent 70%);
+    }
+    
+    .retina-container {
+      position: relative;
+      width: 80vmin;
+      height: 80vmin;
+      max-width: 600px;
+      max-height: 600px;
+      transform-style: preserve-3d;
+      perspective: 1200px;
+      border-radius: 50%;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+      filter: contrast(1.2) brightness(0.9) saturate(1.1);
+      will-change: transform, filter;
+      box-shadow: 
+        inset 0 0 100px rgba(100, 20, 20, 0.3),
+        0 0 80px rgba(0, 0, 0, 0.8);
+    }
+    
+    .retina-sphere {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, 
+        #500000 0%, 
+        #400000 20%, 
+        #300000 40%,
+        #200000 70%,
+        #100000 100%);
+      transform: rotateX(15deg) translateZ(50px);
+      box-shadow: 
+        inset 0 0 200px rgba(220, 80, 80, 0.3),
+        inset 0 0 80px rgba(255, 120, 120, 0.2),
+        0 0 120px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+    }
+    
+    .retina-sphere::after {
+      content: '';
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      left: -50%;
+      top: -50%;
+      background-image: 
+        radial-gradient(circle at 50% 50%, 
+          rgba(255, 180, 180, 0.08) 0.5%, 
+          transparent 1.2%),
+        repeating-linear-gradient(
+          45deg,
+          transparent 0px,
+          transparent 2px,
+          rgba(255, 255, 255, 0.03) 2px,
+          rgba(255, 255, 255, 0.03) 3px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          transparent 0px,
+          transparent 3px,
+          rgba(150, 50, 50, 0.05) 3px,
+          rgba(150, 50, 50, 0.05) 5px
+        );
+      background-size: 
+        60px 60px,
+        100% 100%,
+        100% 100%;
+      transform: rotate(15deg);
+      animation: textureMove 120s linear infinite;
+      pointer-events: none;
+    }
+    
+    @keyframes textureMove {
+      0% { transform: rotate(15deg) translate(0,0); }
+      100% { transform: rotate(15deg) translate(200px,200px); }
+    }
+    
+    .retina-texture {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 50% 50%, rgba(255,200,200,0.2) 0%, rgba(255,150,150,0.15) 80%),
+        url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path d="M${Array.from({length:50},(_,i)=>`${Math.random()*100},${Math.random()*100}`).join(" ")}" stroke="rgba(180,80,80,0.08)" fill="none" stroke-width="0.5"/></svg>');
+      background-size: 100%, 15px 15px;
+      opacity: 0.8;
+      border-radius: 50%;
+      mix-blend-mode: overlay;
+      filter: contrast(1.3);
+      will-change: transform;
+    }
+    
+    .macula {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle at center, 
+        rgba(255,230,200,0.7) 0%, 
+        rgba(255,210,170,0.5) 60%, 
+        transparent 100%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      box-shadow: 
+        0 0 40px rgba(255, 220, 150, 0.4),
+        inset 0 0 15px rgba(255, 200, 100, 0.5);
+      animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.9; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+    }
+    
+    .blood-vessels {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      filter: drop-shadow(0 0 3px rgba(80, 0, 0, 0.7));
+      will-change: transform;
+    }
+    
+    .blood-vessels-animated {
+      animation: vesselPulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes vesselPulse {
+      0%, 100% { opacity: 0.7; transform: scale(1); }
+      50% { opacity: 0.9; transform: scale(1.01); }
+    }
+    
+    .retina-nerve {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><path d="M0,0 Q50,50 100,0 T200,0" stroke="rgba(255,255,255,0.06)" stroke-width="1.5" fill="none"/></svg>') center/cover;
+      pointer-events: none;
+      opacity: 0.6;
+      z-index: 4;
+    }
+    
+    .optic-disc {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: radial-gradient(circle at center, 
+        rgba(220,120,120,0.5) 0%, 
+        rgba(200,100,100,0.4) 100%);
+      border-radius: 50%;
+      top: 50%;
+      left: 25%;
+      transform: translate(-50%, -50%);
+      box-shadow: 
+        inset 0 0 20px rgba(220,80,80,0.6), 
+        0 0 25px rgba(220,80,80,0.5);
+      z-index: 5;
+      animation: discPulse 5s ease-in-out infinite;
+    }
+    
+    @keyframes discPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.03); }
+    }
+    
+    .optic-cup {
+      position: absolute;
+      width: 35px;
+      height: 35px;
+      background: radial-gradient(circle at center, 
+        rgba(220,80,80,0.6) 0%, 
+        rgba(200,60,60,0.5) 100%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: inset 0 0 15px rgba(180,50,50,0.7);
+      z-index: 6;
+    }
+    
+    /* ================== LUZ ENDOILUMINADOR - EFECTOS DINÁMICOS MEJORADOS ================== */
+    #light-mask {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      mask-image: radial-gradient(
+        circle at var(--light-x, 50%) var(--light-y, 50%), 
+        transparent var(--light-size, 80px), 
+        black calc(var(--light-size, 80px) + 80px)
+      );
+      -webkit-mask-image: radial-gradient(
+        circle at var(--light-x, 50%) var(--light-y, 50%), 
+        transparent var(--light-size, 80px), 
+        black calc(var(--light-size, 80px) + 80px)
+      );
+      transition: all 0.15s ease-out;
+      pointer-events: none;
+      z-index: 7;
+      will-change: mask-image, -webkit-mask-image;
+    }
+    
+    #light-reflection {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(
+        circle at var(--light-x, 50%) var(--light-y, 50%), 
+        rgba(255,255,240,0.95) calc(var(--light-size, 80px)*0.1), 
+        rgba(255,220,180,0.6) calc(var(--light-size, 80px)*0.3), 
+        transparent var(--light-size, 80px)
+      );
+      opacity: 0;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 8;
+      mix-blend-mode: soft-light;
+      filter: blur(1.5px);
+      will-change: opacity, transform;
+    }
+    
+    .light-scatter {
+      position: absolute;
+      width: 300%;
+      height: 300%;
+      left: -100%;
+      top: -100%;
+      background: radial-gradient(
+        circle at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(255, 230, 200, 0.15) 0%,
+        transparent 80%
+      );
+      pointer-events: none;
+      z-index: 9;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      will-change: background, opacity;
+    }
+    
+    .light-scatter.active {
+      opacity: 0.7;
+    }
+    
+    .specular-highlight {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(
+        circle at var(--light-x, 50%) var(--light-y, 50%),
+        rgba(255, 255, 255, 0.5) 0%,
+        transparent 70%
+      );
+      pointer-events: none;
+      z-index: 10;
+      mix-blend-mode: overlay;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .specular-highlight.active {
+      opacity: 0.4;
+    }
+    
+    /* ================== INSTRUMENTOS QUIRÚRGICOS 3D MEJORADOS ================== */
+    .instrument {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) translateZ(0);
+      display: none;
+      z-index: 10;
+      transition: transform 0.1s ease-out;
+      will-change: transform;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+    
+    .instrument-body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: all 0.2s ease;
+    }
+    
+    .instrument-shadow {
+      position: absolute;
+      width: 120%;
+      height: 120%;
+      left: -10%;
+      top: -10%;
+      background: radial-gradient(
+        ellipse at center,
+        rgba(0,0,0,0.4) 0%,
+        transparent 70%
+      );
+      transform: rotateX(75deg) translateZ(-10px);
+      pointer-events: none;
+      z-index: -1;
+      filter: blur(5px);
+      opacity: 0.7;
+      transition: all 0.3s ease;
+    }
+    
+    /* Vitrectomo 3D mejorado */
+    #vitrectome {
+      width: 2.5mm;
+      height: 15mm;
+      transform-style: preserve-3d;
+    }
+    
+    #vitrectome .instrument-body {
+      background: linear-gradient(to bottom, 
+        #999 0%, 
+        #ccc 10%, 
+        #eee 20%, 
+        #fff 40%, 
+        #ddd 60%, 
+        #aaa 80%,
+        #888 100%);
+      border: 1px solid #777;
+      border-radius: 1.2mm;
+      box-shadow: 
+        0 0 1.5mm rgba(0,0,0,0.7),
+        0 0 3mm rgba(255,255,255,0.15),
+        inset 0 0 5px rgba(255,255,255,0.3);
+      transform: rotateX(10deg);
+    }
+    
+    #vitrectome::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(1px);
+      width: 3mm;
+      height: 1mm;
+      background: linear-gradient(to right, #aaa, #ddd, #aaa);
+      border-radius: 0.5mm;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+    
+    #vitrectome::after {
+      content: '';
+      position: absolute;
+      bottom: -1mm;
+      left: 50%;
+      transform: translateX(-50%) translateZ(-1px);
+      width: 1.8mm;
+      height: 1.8mm;
+      background: radial-gradient(circle, 
+        #fff 0%, 
+        #bbb 50%, 
+        #888 100%);
+      border-radius: 50%;
+      box-shadow: 
+        0 0 0.8mm rgba(0,0,0,0.7),
+        0 0 1.5mm rgba(255,255,255,0.3),
+        inset 0 0 5px rgba(255,255,255,0.4);
+      z-index: 1;
+    }
+    
+    #vitrectome .instrument-tip {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(0);
+      width: 1.2mm;
+      height: 3mm;
+      background: linear-gradient(to bottom, #ccc, #999);
+      border-radius: 0.3mm;
+      box-shadow: 
+        inset 0 -1px 2px rgba(0,0,0,0.5),
+        0 0 5px rgba(255,255,255,0.2);
+    }
+    
+    #vitrectome .instrument-side {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #888, #aaa, #888);
+      transform: rotateY(90deg) translateZ(1.25mm);
+      border-radius: 1.2mm;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+    }
+    
+    /* Sonda de Láser 3D mejorada */
+    #laser-probe {
+      width: 0.5mm;
+      height: 12mm;
+      transform-style: preserve-3d;
+    }
+    
+    #laser-probe .instrument-body {
+      background: linear-gradient(to bottom, 
+        #f00, 
+        #f90 20%, 
+        #ff0 30%, 
+        #f90 70%, 
+        #f00);
+      border-radius: 0.3mm;
+      box-shadow: 
+        0 0 1.5mm rgba(255,0,0,0.9),
+        0 0 3mm rgba(255,100,100,0.6),
+        inset 0 0 5px rgba(255,255,255,0.4);
+      transform: rotateX(10deg);
+    }
+    
+    #laser-probe::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(1px);
+      width: 1.5mm;
+      height: 1mm;
+      background: linear-gradient(to right, #aaa, #ddd, #aaa);
+      border-radius: 0.5mm;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+    
+    #laser-probe .instrument-tip {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(0);
+      width: 0.8mm;
+      height: 1.5mm;
+      background: radial-gradient(circle, #fff, #f99);
+      border-radius: 50%;
+      box-shadow: 
+        0 0 5px rgba(255,100,100,0.8),
+        inset 0 0 3px rgba(255,255,255,0.8);
+    }
+    
+    /* Sonda de PFC */
+    #pfc-probe {
+      width: 0.8mm;
+      height: 13mm;
+      transform-style: preserve-3d;
+    }
+    
+    #pfc-probe .instrument-body {
+      background: linear-gradient(to bottom, 
+        #0af 0%, 
+        #5bf 30%, 
+        #8df 70%, 
+        #0af 100%);
+      border: 1px solid #07a;
+      border-radius: 0.5mm;
+      box-shadow: 
+        0 0 1.5mm rgba(0,100,255,0.7),
+        0 0 3mm rgba(100,200,255,0.4),
+        inset 0 0 5px rgba(255,255,255,0.6);
+      transform: rotateX(10deg);
+    }
+    
+    #pfc-probe::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(1px);
+      width: 2mm;
+      height: 1mm;
+      background: linear-gradient(to right, #aaa, #ddd, #aaa);
+      border-radius: 0.5mm;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+    
+    #pfc-probe .instrument-tip {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(0);
+      width: 1mm;
+      height: 1.5mm;
+      background: radial-gradient(circle, #fff, #5bf);
+      border-radius: 50%;
+      box-shadow: 
+        0 0 5px rgba(0,150,255,0.8),
+        inset 0 0 3px rgba(255,255,255,0.8);
+    }
+    
+    /* Cauterio */
+    #cautery-probe {
+      width: 1.5mm;
+      height: 12mm;
+      transform-style: preserve-3d;
+    }
+    
+    #cautery-probe .instrument-body {
+      background: linear-gradient(to bottom, 
+        #ff3333 0%, 
+        #ff6666 20%, 
+        #ff9999 40%, 
+        #ff6666 70%, 
+        #ff3333 100%);
+      border: 1px solid #cc0000;
+      border-radius: 0.8mm;
+      box-shadow: 
+        0 0 1.5mm rgba(255,0,0,0.7),
+        0 0 3mm rgba(255,100,100,0.4),
+        inset 0 0 5px rgba(255,255,255,0.6);
+      transform: rotateX(10deg);
+    }
+    
+    #cautery-probe::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(1px);
+      width: 2mm;
+      height: 1mm;
+      background: linear-gradient(to right, #aaa, #ddd, #aaa);
+      border-radius: 0.5mm;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+      z-index: 2;
+    }
+    
+    #cautery-probe .instrument-tip {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateZ(0);
+      width: 1.2mm;
+      height: 2mm;
+      background: radial-gradient(circle, #ff9999, #ff3333);
+      border-radius: 0.3mm;
+      box-shadow: 
+        0 0 5px rgba(255,100,100,0.8),
+        inset 0 0 3px rgba(255,255,255,0.8);
+      z-index: 1;
+    }
+    
+    /* Efecto de cauterio */
+    .cautery-effect {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, 
+        rgba(255,200,200,0.9) 0%, 
+        rgba(255,100,100,0.7) 70%, 
+        transparent 90%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 18;
+      animation: cauteryFade 1s ease-out forwards;
+      filter: blur(1.5px);
+      box-shadow: 0 0 20px rgba(255,100,100,0.8);
+    }
+    
+    @keyframes cauteryFade {
+      0% { transform: scale(0.8); opacity: 1; }
+      50% { transform: scale(1.5); opacity: 0.9; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
+    
+    /* Burbujas de PFC */
+    .pfc-bubble {
+      position: absolute;
+      background: rgba(100, 255, 255, 0.7);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 5;
+      filter: blur(1px);
+      box-shadow: 
+        0 0 10px rgba(100, 255, 255, 0.8),
+        inset 0 0 5px rgba(255, 255, 255, 0.8);
+      transform: translate(-50%, -50%);
+      will-change: transform, opacity;
+    }
+    
+    .instrument-active {
+      animation: instrumentVibrate 0.1s linear infinite;
+    }
+    
+    @keyframes instrumentVibrate {
+      0% { transform: translate(-50%, -50%) rotate(0.5deg) translateZ(0); }
+      50% { transform: translate(-50%, -50%) rotate(-0.5deg) translateZ(0); }
+      100% { transform: translate(-50%, -50%) rotate(0.5deg) translateZ(0); }
+    }
+    
+    /* ================== INTERFAZ DE USUARIO PROFESIONAL ================== */
+    .instrument-panel {
+      position: absolute;
+      top: 50%;
+      left: 20px;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.85);
+      padding: 15px 10px;
+      border-radius: 12px;
+      z-index: 5000;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 
+        0 6px 20px rgba(0,0,0,0.6),
+        inset 0 0 15px rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
     }
     
     .toggle-btn {
-      padding: 10px 12px;
-      min-width: auto;
-      font-size: 0.8rem;
-      margin: 4px;
-      flex: 1 1 calc(33% - 8px);
-      max-width: calc(33% - 8px);
+      background: #1a3a8a;
+      color: white;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: clamp(0.85rem, 2.5vw, 1rem);
+      margin: 8px 5px;
+      min-width: 100px;
+      transition: all 0.2s;
+      font-weight: 500;
+      box-shadow: 
+        0 3px 8px rgba(0,0,0,0.4),
+        inset 0 0 8px rgba(255,255,255,0.15);
+      position: relative;
+      overflow: hidden;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
     
+    .toggle-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 5px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.6);
+      opacity: 0;
+      border-radius: 100%;
+      transform: scale(1, 1) translate(-50%, -50%);
+      transform-origin: 50% 50%;
+    }
+    
+    .toggle-btn:active::after {
+      animation: ripple 0.6s ease-out;
+    }
+    
+    @keyframes ripple {
+      0% {
+        transform: scale(0, 0);
+        opacity: 1;
+      }
+      20% {
+        transform: scale(25, 25);
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: scale(40, 40);
+      }
+    }
+    
+    .toggle-btn.active {
+      background: #3b82f6;
+      box-shadow: 
+        0 0 20px #3b82f6,
+        0 0 40px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* Panel de controles mejorado */
     .control-panel {
-      top: 120px;
-      right: 10px;
-      width: 150px;
-      padding: 12px;
+      position: absolute;
+      right: 20px;
+      top: 190px;
+      background: rgba(10,10,20,0.95);
+      padding: 20px;
+      border-radius: 50px;
+      z-index: 5000;
+      font-size: clamp(0.75rem, 2vw, 0.9rem);
+      width: 180px;
+      max-height: 80vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      box-shadow: 
+        0 6px 20px rgba(18, 20, 41, 0.6),
+        inset 0 0 15px rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
     }
     
-    #miniMapContainer {
-      top: 120px;
-      left: 10px;
-      width: 150px;
-      height: 110px;
+    .control-panel h3 {
+      margin: 0 0 15px 0;
+      color: #2990aa;
+      font-size: 1.1rem;
+      text-align: center;
+      border-bottom: 1px solid #444;
+      padding-bottom: 8px;
     }
     
+    .vital-sign {
+      display: flex;
+      justify-content: space-between;
+      margin: 15px 0;
+      flex-wrap: wrap;
+    }
+    
+    .vital-label {
+      color: #aaa;
+      font-size: 0.85em;
+      width: 60%;
+    }
+    
+    .vital-value {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      font-size: 0.95em;
+      width: 40%;
+      text-align: right;
+      transition: color 0.3s;
+    }
+    
+    .normal { color: #2ecc71; text-shadow: 0 0 8px rgba(46, 204, 113, 0.4); }
+    .warning { color: #f39c12; text-shadow: 0 0 8px rgba(243, 156, 18, 0.4); }
+    .danger { color: #e74c3c; text-shadow: 0 0 8px rgba(231, 76, 60, 0.4); }
+    
+    .gauge-container {
+      width: 100%;
+      height: 10px;
+      background: #222;
+      border-radius: 5px;
+      margin: 8px 0 15px 0;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+    }
+    
+    .gauge-level {
+      height: 100%;
+      border-radius: 5px;
+      transition: width 0.5s ease;
+      box-shadow: inset 0 0 8px rgba(255,255,255,0.3);
+    }
+    
+    #iop-gauge .gauge-level {
+      background: linear-gradient(to right, #2ecc71, #f39c12, #e74c3c);
+    }
+    
+    #perfusion-gauge .gauge-level {
+      background: linear-gradient(to right, #3498db, #9b59b6);
+    }
+    
+    #vitreous-gauge .gauge-level {
+      background: linear-gradient(to right, #1abc9c, #f1c40f);
+    }
+    
+    #pfc-gauge .gauge-level {
+      background: linear-gradient(to right, #0af, #5bf);
+    }
+    
+    /* Joysticks mejorados */
     .joystick-container {
-      bottom: 20px;
-      width: 45%;
+      position: absolute;
+      bottom: 1px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      z-index: 3000;
     }
     
     #joystick-light-container {
-      left: 10px;
+      left: 200px;
     }
     
     #joystick-vitrectomo-container {
-      right: 10px;
+      right: 180px;
     }
     
     .joystick {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.4);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      position: relative;
+      box-shadow: 
+        0 6px 15px rgba(0,0,0,0.4),
+        inset 0 0 25px rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      will-change: transform;
     }
     
     .joystick .joystick-handle {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      position: absolute;
+      transition: transform 0.1s ease;
+      box-shadow: 
+        0 0 15px rgba(255,255,255,0.4),
+        inset 0 0 8px rgba(255,255,255,0.7);
+      will-change: transform;
     }
     
+    /* Controles Z mejorados */
     .slider-container {
-      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      background: rgba(0,0,0,0.7);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 
+        0 4px 10px rgba(0,0,0,0.4),
+        inset 0 0 8px rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+    }
+    
+    .slider-container label {
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+      text-align: center;
+      color: #eee;
+      font-weight: 500;
+      text-shadow: 0 0 8px rgba(0,0,0,0.6);
+    }
+    
+    input[type="range"] {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 10px;
+      background: #333;
+      border-radius: 5px;
+      margin: 8px 0 12px 0;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      background: #3b82f6;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid white;
+      box-shadow: 
+        0 0 8px rgba(0,0,0,0.7),
+        0 0 15px rgba(59, 130, 246, 0.7);
+      transition: all 0.2s;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(1.2);
+      box-shadow: 
+        0 0 12px rgba(0,0,0,0.7),
+        0 0 20px rgba(59, 130, 246, 1);
     }
     
     #btn-precionar {
-      padding: 10px;
-      font-size: 0.9rem;
+      background: linear-gradient(to bottom, #dc2626, #b91c1c);
+      color: white;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      margin-top: 8px;
+      width: 100%;
+      font-weight: bold;
+      box-shadow: 
+        0 4px 12px rgba(0,0,0,0.4),
+        0 0 15px rgba(220, 38, 38, 0.4);
+      transition: all 0.2s;
+      text-shadow: 0 0 8px rgba(0,0,0,0.4);
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     
+    #btn-precionar:active {
+      transform: scale(0.95);
+      box-shadow: 
+        0 2px 6px rgba(0,0,0,0.4),
+        0 0 8px rgba(220, 38, 38, 0.4);
+    }
+    
+    /* Mini mapa mejorado */
+    #miniMapContainer {
+      position: absolute;
+      top: 40px;
+      right: 30px;
+      width: 170px;
+      height: 120px;
+      overflow: hidden;
+      border-radius: 5px;
+      z-index: 2000;
+      background: rgba(0,0,0,0.85);
+      border: 1px solid rgba(255,255,255,0.15);
+      box-shadow: 
+        0 6px 15px rgba(0,0,0,0.5),
+        inset 0 0 15px rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+    }
+    
+    #eyeCrossSection {
+      width: 100%;
+      height: 100%;
+      display: block;
+      filter: drop-shadow(0 0 8px rgba(0,0,0,0.7));
+    }
+    
+    /* Indicador de profundidad */
     .depth-indicator {
-      bottom: 110px;
-      font-size: 0.8rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .retina-container {
-      width: 95vmin;
-      height: 95vmin;
-    }
-    
-    .toggle-btn {
-      font-size: 0.7rem;
-      padding: 8px 10px;
-    }
-    
-    .joystick {
-      width: 70px;
-      height: 70px;
+      position: absolute;
+      bottom: 130px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      padding: 10px 20px;
+      border-radius: 25px;
+      color: white;
+      font-size: 0.85rem;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 0 15px rgba(0,0,0,0.6);
+      border: 1px solid var(--depth-color, #3b82f6);
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
     
-    .joystick .joystick-handle {
+    .depth-indicator::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 10px;
+      background: var(--depth-color, #3b82f6);
+      box-shadow: 0 0 8px var(--depth-color, #3b82f6);
+    }
+    
+    /* Efectos visuales mejorados */
+    .laser-spot {
       width: 30px;
       height: 30px;
+      background: radial-gradient(circle, 
+        rgba(255,80,80,0.95), 
+        rgba(255,0,0,0.8) 70%, 
+        transparent 90%);
+      border-radius: 50%;
+      position: absolute;
+      pointer-events: none;
+      animation: laser-fade 2.5s ease-out forwards;
+      z-index: 15;
+      filter: blur(1px);
+      will-change: transform, opacity;
     }
     
-    .control-panel {
-      width: 130px;
-      padding: 10px;
+    @keyframes laser-fade {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.3); }
     }
     
-    #miniMapContainer {
-      width: 130px;
-      height: 95px;
+    .laser-burn-permanent {
+      width: 8px;
+      height: 8px;
+      background: radial-gradient(circle, 
+        white 0%, 
+        rgba(255,255,255,0.9) 60%, 
+        transparent 80%);
+      border-radius: 50%;
+      position: absolute;
+      pointer-events: none;
+      z-index: 16;
+      box-shadow: 0 0 15px rgba(255,120,120,0.6);
+      animation: burnPulse 3s infinite alternate;
     }
     
-    .depth-indicator {
-      bottom: 100px;
-      font-size: 0.75rem;
-      padding: 8px 15px;
+    .vitreous-particle {
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 50%;
+      position: absolute;
+      pointer-events: none;
+      animation: float-particle 1.5s ease-out forwards;
+      z-index: 12;
+      filter: blur(0.8px);
+      box-shadow: 0 0 8px rgba(255,255,255,0.9);
+      will-change: transform, opacity;
     }
-  }
-  /* Sistema de alertas */
+    
+    @keyframes float-particle {
+      100% { transform: translate(var(--tx, 0px), var(--ty, 0px)); opacity: 0; }
+    }
+    
+    .injection-bubble {
+      position: absolute;
+      background: rgba(200,230,255,0.9);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 3;
+      filter: blur(1.5px);
+      animation: bubble-float 4s ease-in-out forwards;
+      box-shadow: 
+        0 0 8px rgba(100,150,255,0.7),
+        inset 0 0 5px rgba(255,255,255,0.7);
+      will-change: transform, opacity;
+    }
+    
+    @keyframes bubble-float {
+      100% { 
+        transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px));
+        opacity: 0;
+      }
+    }
+    
+    /* ================== NUEVOS ESTILOS PARA EL DESPRENDIMIENTO MEJORADO ================== */
+    #retinal-hole {
+      display: none;
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, 
+        rgba(255,255,255,0.8) 0%, 
+        rgba(200,0,0,0.6) 70%, 
+        transparent 100%);
+      border-radius: 50%;
+      z-index: 15;
+      box-shadow: 0 0 15px rgba(255,255,255,0.5);
+      border: 2px dashed rgba(255,255,255,0.7);
+      pointer-events: none;
+      animation: holePulse 2s infinite alternate;
+    }
+    
+    @keyframes holePulse {
+      0% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 0.8; }
+    }
+    
+    /* Burbujas de gas mejoradas */
+    .gas-bubble {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 6;
+      filter: blur(1px);
+      box-shadow: 
+        0 0 15px rgba(255, 255, 255, 0.9),
+        inset 0 0 8px rgba(255, 255, 255, 0.8);
+      transform: translate(-50%, -50%);
+      will-change: transform, opacity;
+      animation: bubbleFloat 4s ease-in-out forwards;
+    }
+    
+    .gas-bubble-large {
+      position: absolute;
+      width: 40%;
+      height: 40%;
+      background: radial-gradient(circle, 
+        rgba(255,255,255,0.95) 0%, 
+        rgba(220,220,255,0.8) 70%, 
+        transparent 100%);
+      border-radius: 50%;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      filter: blur(2px);
+      box-shadow: 
+        0 0 30px rgba(255,255,255,0.9),
+        inset 0 0 20px rgba(255,255,255,0.8);
+      animation: largeBubblePulse 3s infinite alternate;
+    }
+    
+    @keyframes bubbleFloat {
+      0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+      50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.9; }
+      100% { transform: translate(calc(var(--tx)*1px), calc(var(--ty)*1px)) scale(1); opacity: 0; }
+    }
+    
+    @keyframes largeBubblePulse {
+      0% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.1); }
+      100% { transform: translate(-50%, -50%) scale(1); }
+    }
+    
+    /* Efecto de arrugas en la retina desprendida */
+    #retina-edge-detachment {
+      filter: url('#wrinkleFilter');
+    }
+    
+    /* Efecto de PFC mejorado */
+    #detached-retina-overlay {
+      transition: background 1.5s ease;
+    }
+    
+    /* ================== CASO CLÍNICO ================== */
+    #clinical-case {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 20000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      backdrop-filter: blur(5px);
+    }
+    
+    #clinical-case-content {
+      max-width: 800px;
+      background: rgba(20, 20, 40, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      border-left: 5px solid #3b82f6;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+    
+    #clinical-case h2 {
+      color: #3b82f6;
+      margin-top: 0;
+      text-align: center;
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+    }
+    
+    #clinical-case h3 {
+      color: #10b981;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+    }
+    
+    #clinical-case ul {
+      padding-left: 20px;
+    }
+    
+    #clinical-case li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    
+    #start-simulation-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 30px;
+      transition: all 0.3s;
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+    }
+    
+    #start-simulation-btn:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+      box-shadow: 0 7px 20px rgba(59, 130, 246, 0.6);
+    }
+    
+    #start-simulation-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+    }
+    
+    /* ================== RESPONSIVE ADJUSTMENTS ================== */
+    @media (max-width: 768px) {
+      .instrument-panel {
+        top: 10px;
+        left: 10px;
+        right: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 8px;
+        width: calc(100% - 20px);
+      }
+      
+      .toggle-btn {
+        padding: 10px 12px;
+        min-width: auto;
+        font-size: 0.8rem;
+        margin: 4px;
+        flex: 1 1 calc(33% - 8px);
+        max-width: calc(33% - 8px);
+      }
+      
+      .control-panel {
+        top: 120px;
+        right: 10px;
+        width: 150px;
+        padding: 12px;
+      }
+      
+      #miniMapContainer {
+        top: 120px;
+        left: 10px;
+        width: 150px;
+        height: 110px;
+      }
+      
+      .joystick-container {
+        bottom: 20px;
+        width: 45%;
+      }
+      
+      #joystick-light-container {
+        left: 10px;
+      }
+      
+      #joystick-vitrectomo-container {
+        right: 10px;
+      }
+      
+      .joystick {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .joystick .joystick-handle {
+        width: 35px;
+        height: 35px;
+      }
+      
+      .slider-container {
+        padding: 10px;
+      }
+      
+      #btn-precionar {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+      
+      .depth-indicator {
+        bottom: 110px;
+        font-size: 0.8rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .retina-container {
+        width: 95vmin;
+        height: 95vmin;
+      }
+      
+      .toggle-btn {
+        font-size: 0.7rem;
+        padding: 8px 10px;
+      }
+      
+      .joystick {
+        width: 70px;
+        height: 70px;
+      }
+      
+      .joystick .joystick-handle {
+        width: 30px;
+        height: 30px;
+      }
+      
+      .control-panel {
+        width: 130px;
+        padding: 10px;
+      }
+      
+      #miniMapContainer {
+        width: 130px;
+        height: 95px;
+      }
+      
+      .depth-indicator {
+        bottom: 100px;
+        font-size: 0.75rem;
+        padding: 8px 15px;
+      }
+    }
+    /* Sistema de alertas */
     #alert-system {
       position: fixed;
       top: 20px;
@@ -2557,56 +2557,216 @@ body {
       box-shadow: 0 0 5px rgba(255,255,255,0.6);
     }
 
-    /* Instrumento mejorado */
-    #fixed-instrument {
+    /* Efecto de sangre mejorado */
+    .blood-extraction {
       position: absolute;
-      width: 8px;
-      height: 150px;
-      background: linear-gradient(to bottom, #888, #aaa);
-      border-radius: 5px;
-      bottom: 10%;
-      right: 10%;
-      transform-origin: bottom center;
-      z-index: 10;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-      transition: transform 0.2s ease-out;
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, 
+        rgba(200,0,0,0.8) 0%, 
+        rgba(150,0,0,0.6) 50%, 
+        transparent 80%);
+      border-radius: 50%;
       pointer-events: none;
+      z-index: 13;
+      transform: scale(0);
+      filter: blur(2px);
     }
-
-    #fixed-instrument-tip {
+    
+    /* Estilos para el instrumento único - PALO GRIS */
+    .instrument-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 30;
+    }
+    
+    .instrument-rod {
+      position: absolute;
+      height: 8px;
+      background: linear-gradient(to right, #888, #ccc);
+      border-radius: 4px;
+      transform-origin: left center;
+      z-index: 30;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+    
+    .instrument-tip {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #ccc;
+      z-index: 31;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      transform: translate(-50%, -50%);
+    }
+    
+    .instrument-base {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #555;
+      z-index: 29;
+      box-shadow: 0 0 15px rgba(0,0,0,0.7);
+    }
+    
+    .instrument-tip.active-vitrectomo {
+      background: #3b82f6;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
+    }
+    
+    .instrument-tip.active-laser {
+      background: #ff5555;
+      box-shadow: 0 0 15px rgba(255, 85, 85, 0.7);
+    }
+    
+    .instrument-tip.active-cautery {
+      background: #ff9900;
+      box-shadow: 0 0 15px rgba(255, 153, 0, 0.7);
+    }
+    
+    /* Retina y efectos visuales */
+    .retina-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      background: radial-gradient(circle at center, #400000 0%, #200000 100%);
+    }
+    
+    .blood-vessels {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+    
+    .macula {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(200, 200, 100, 0.3);
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% + 100px), translateY(-50%);
+      box-shadow: 0 0 20px rgba(200, 200, 100, 0.5);
+    }
+    
+    .optic-disc {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(220, 80, 80, 0.5);
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% - 80px), translateY(-50%));
+      box-shadow: inset 0 0 20px rgba(220,80,80,0.6), 0 0 25px rgba(220,80,80,0.5);
+    }
+    
+    .optic-cup {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(180, 60, 60, 0.7);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    .retina-nerve {
       position: absolute;
       width: 15px;
-      height: 15px;
-      background: #ccc;
+      height: 80px;
+      background: rgba(220, 80, 80, 0.5);
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% - 80px), translateY(-50%) rotate(30deg);
+    }
+    
+    #hemorrhage-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
-      top: -7px;
+      background: radial-gradient(circle at center, rgba(180,0,0,0.8) 0%, rgba(120,0,0,0.7) 50%, rgba(80,0,0,0.6) 100%);
+      z-index: 13;
+    }
+    
+    #light-reflection {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at var(--light-x) var(--light-y), 
+                  rgba(255,255,255,0.1) 0%, 
+                  transparent calc(var(--light-size) / 2));
+      z-index: 11;
+    }
+    
+    .light-scatter {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: radial-gradient(circle at var(--light-x) var(--light-y), 
+                  rgba(255,255,255,0.03) 0%, 
+                  transparent 70%);
+      z-index: 10;
+      opacity: 0;
+    }
+    
+    .light-scatter.active {
+      opacity: 0.5;
+    }
+    
+    .specular-highlight {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: white;
+      filter: blur(5px);
+      transform: translate(calc(var(--light-x) - 15px), translateY(calc(var(--light-y) - 15px));
+      z-index: 12;
+      opacity: 0;
+    }
+    
+    .specular-highlight.active {
+      opacity: 0.3;
+    }
+    
+    /* Indicador de profundidad */
+    .depth-indicator {
+      position: absolute;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 11;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.7);
+      color: var(--depth-color, white);
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      z-index: 1000;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-
-    #fixed-instrument-shaft {
+    
+    /* Efecto de hemorragia */
+    .hemorrhage-overlay {
       position: absolute;
-      width: 6px;
+      width: 100%;
       height: 100%;
-      background: linear-gradient(to bottom, #bbb, #888);
-      border-radius: 3px;
-      top: 0;
-      left: 1px;
-      z-index: 12;
-    }
-
-    #fixed-instrument-handle {
-      position: absolute;
-      width: 15px;
-      height: 30px;
-      background: #555;
-      border-radius: 5px;
-      bottom: -30px;
-      left: -3px;
-      z-index: 9;
-      box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      background: radial-gradient(circle, rgba(200,0,0,0.7) 0%, transparent 70%);
+      z-index: 25;
+      opacity: 0;
+      display: none;
     }
   </style>
 </head>
@@ -2839,12 +2999,12 @@ body {
         <div id="light-scatter" class="light-scatter"></div>
         <div id="specular-highlight" class="specular-highlight"></div>
         
-        <!-- Instrumento mejorado -->
-        <div id="fixed-instrument">
-          <div id="fixed-instrument-tip"></div>
-          <div id="fixed-instrument-shaft"></div>
-          <div id="fixed-instrument-handle"></div>
-          <div class="instrument-action-indicator">Vitrectomía</div>
+        <!-- Instrumento único completo -->
+        <div class="instrument-container">
+          <div id="instrument-base" class="instrument-base"></div>
+          <div id="instrument-rod" class="instrument-rod"></div>
+          <div id="instrument-tip" class="instrument-tip"></div>
+          <div id="instrument-action-indicator" class="instrument-action-indicator">Vitrectomía</div>
         </div>
         
         <!-- Coágulos de sangre -->
@@ -2869,7 +3029,7 @@ body {
 let lightJoystickX = 50, lightJoystickY = 50;
 let vitrectomoJoystickX = 50, vitrectomoJoystickY = 50;
 let currentDepth = parseInt(document.getElementById('vitrectomo-z-slider').value);
-let activeInstrument = 'fixed-instrument';
+let activeInstrument = null;
 let iop = 20; // mmHg (valor inicial ajustado a 20)
 let perfusion = 95; // %
 let hemorrhageRemoved = 0; // %
@@ -2916,6 +3076,9 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initSimulation() {
+  // Configurar el instrumento único
+  setupSingleInstrument();
+  
   initJoysticks();
   setupEventListeners();
   setupAlertDismissButtons();
@@ -2926,6 +3089,52 @@ function initSimulation() {
   createInitialHemorrhage();
   
   requestAnimationFrame(updateInstrumentPositions);
+}
+
+function setupSingleInstrument() {
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  
+  // Configurar la base del instrumento (fija en la parte inferior derecha)
+  const base = document.getElementById('instrument-base');
+  base.style.left = (retinaRect.width * 0.85 - 15) + 'px';
+  base.style.top = (retinaRect.height * 0.85 - 15) + 'px';
+  
+  // Configurar la punta del instrumento (inicialmente en el centro)
+  const tip = document.getElementById('instrument-tip');
+  tip.style.left = (retinaRect.width / 2) + 'px';
+  tip.style.top = (retinaRect.height / 2) + 'px';
+  
+  // Actualizar el palo para que conecte base y punta
+  updateInstrumentRod();
+}
+
+function updateInstrumentRod() {
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  const base = document.getElementById('instrument-base');
+  const baseRect = base.getBoundingClientRect();
+  const tip = document.getElementById('instrument-tip');
+  const tipRect = tip.getBoundingClientRect();
+  const rod = document.getElementById('instrument-rod');
+  
+  // Posiciones absolutas
+  const baseX = baseRect.left - retinaRect.left + baseRect.width/2;
+  const baseY = baseRect.top - retinaRect.top + baseRect.height/2;
+  const tipX = tipRect.left - retinaRect.left + tipRect.width/2;
+  const tipY = tipRect.top - retinaRect.top + tipRect.height/2;
+  
+  // Calcular longitud y ángulo
+  const dx = tipX - baseX;
+  const dy = tipY - baseY;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  
+  // Posicionar y rotar el palo
+  rod.style.width = length + 'px';
+  rod.style.left = baseX + 'px';
+  rod.style.top = baseY + 'px';
+  rod.style.transform = `rotate(${angle}deg)`;
 }
 
 function createInitialHemorrhage() {
@@ -3024,30 +3233,30 @@ function checkWallCollision() {
   const miniMapRect = document.getElementById('miniMapContainer').getBoundingClientRect();
   const retinaRect = document.getElementById('retina').getBoundingClientRect();
   
-  // Verificar colisión para el instrumento activo
-  if (activeInstrument) {
-    const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
-    const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
-    const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
-    
-    // Coordenadas relativas al mini mapa
-    const relX = (instrumentCenterX - retinaRect.left) / retinaRect.width * miniMapRect.width;
-    const relY = (instrumentCenterY - retinaRect.top) / retinaRect.height * miniMapRect.height;
-    
-    // Verificar contacto con retina en mini mapa
-    const retinaWall = document.getElementById('retina-wall');
-    const retinaX = 400 * (miniMapRect.width / 800);
-    const retinaY = 300 * (miniMapRect.height / 600);
-    const retinaRadius = 250 * (miniMapRect.width / 800);
-    
-    const distance = Math.sqrt(Math.pow(relX - retinaX, 2) + Math.pow(relY - retinaY, 2));
-    
-    // Solo mostrar alerta si estamos en el borde (90% del radio)
-    if (distance > retinaRadius * 1.1 && !wallCollisionActive) {
-      showAlert('wall-collision-alert');
-      return true;
-    }
+  // Verificar colisión para la punta del instrumento
+  const tip = document.getElementById('instrument-tip');
+  const tipRect = tip.getBoundingClientRect();
+  const tipCenterX = tipRect.left + tipRect.width/2;
+  const tipCenterY = tipRect.top + tipRect.height/2;
+  
+  // Coordenadas relativas al mini mapa
+  const relX = (tipCenterX - retinaRect.left) / retinaRect.width * miniMapRect.width;
+  const relY = (tipCenterY - retinaRect.top) / retinaRect.height * miniMapRect.height;
+  
+  // Verificar contacto con retina en mini mapa
+  const retinaWall = document.getElementById('retina-wall');
+  const retinaX = 400 * (miniMapRect.width / 800);
+  const retinaY = 300 * (miniMapRect.height / 600);
+  const retinaRadius = 250 * (miniMapRect.width / 800);
+  
+  const distance = Math.sqrt(Math.pow(relX - retinaX, 2) + Math.pow(relY - retinaY, 2));
+  
+  // Solo mostrar alerta si estamos en el borde (90% del radio)
+  if (distance > retinaRadius * 1.1 && !wallCollisionActive) {
+    showAlert('wall-collision-alert');
+    return true;
   }
+  
   // Verificar colisión para el endoiluminador
   const lightPosX = retinaRect.left + retinaRect.width * lightJoystickX / 100;
   const lightPosY = retinaRect.top + retinaRect.height * lightJoystickY / 100;
@@ -3057,13 +3266,9 @@ function checkWallCollision() {
   const lightRelY = (lightPosY - retinaRect.top) / retinaRect.height * miniMapRect.height;
   
   // Verificar contacto con retina para el endoiluminador
-  const retinaX = 400 * (miniMapRect.width / 800);
-  const retinaY = 300 * (miniMapRect.height / 600);
-  const retinaRadius = 250 * (miniMapRect.width / 800);
-  
   const lightDistance = Math.sqrt(Math.pow(lightRelX - retinaX, 2) + Math.pow(lightRelY - retinaY, 2));
   
-  if (lightDistance > retinaRadius * 1.1 && !wallCollisionActive) {
+  if (lightDistance > retinaRadius * 1.2 && !wallCollisionActive) {
     showAlert('wall-collision-alert');
     return true;
   }
@@ -3075,16 +3280,17 @@ function checkVesselDamage() {
   if (currentDepth > -200 || !hemorrhageActive) return false;
   
   const retinaRect = document.getElementById('retina').getBoundingClientRect();
-  const instrumentRect = document.getElementById(activeInstrument).getBoundingClientRect();
+  const tip = document.getElementById('instrument-tip');
+  const tipRect = tip.getBoundingClientRect();
   
-  const instrumentCenterX = instrumentRect.left + instrumentRect.width/2;
-  const instrumentCenterY = instrumentRect.top + instrumentRect.height/2;
+  const tipCenterX = tipRect.left + tipRect.width/2;
+  const tipCenterY = tipRect.top + tipRect.height/2;
   
   const bloodVessels = document.querySelector('.blood-vessels');
   const bloodVesselsRect = bloodVessels.getBoundingClientRect();
   
-  const relX = instrumentCenterX - bloodVesselsRect.left;
-  const relY = instrumentCenterY - bloodVesselsRect.top;
+  const relX = tipCenterX - bloodVesselsRect.left;
+  const relY = tipCenterY - bloodVesselsRect.top;
   
   const proximityThreshold = 30;
   const vesselProximity = Math.abs(relX - bloodVesselsRect.width/2) < proximityThreshold && 
@@ -3101,7 +3307,7 @@ function checkVesselDamage() {
       easing: 'easeOutQuad'
     });
     
-    createBloodClots(5, {x: instrumentCenterX, y: instrumentCenterY});
+    createBloodClots(5, {x: tipCenterX, y: tipCenterY});
     
     perfusion -= 15;
     iop += 5;
@@ -3160,6 +3366,9 @@ function removeBloodClot(index) {
   if (index >= 0 && index < bloodClots.length) {
     const clot = bloodClots[index];
     if (clot.element.parentNode) {
+      // Efecto de extracción de sangre
+      createBloodExtractionEffect(clot.x + clot.size/2, clot.y + clot.size/2, clot.size);
+      
       anime({
         targets: clot.element,
         opacity: 0,
@@ -3198,6 +3407,8 @@ function removeBloodClot(index) {
           if (procedureStep === 0) {
             procedureStep = 1;
             document.getElementById('btn-cautery').classList.add('active');
+            activeInstrument = 'cautery';
+            updateInstrumentTipAppearance();
           }
         }
       });
@@ -3205,23 +3416,52 @@ function removeBloodClot(index) {
   }
 }
 
-function removeNearbyBloodClots(instrument, offsetX, offsetY) {
-  const retinaRect = document.getElementById('retina').getBoundingClientRect();
-  const instrumentRect = instrument.getBoundingClientRect();
+function createBloodExtractionEffect(x, y, size) {
+  const retina = document.getElementById('retina');
+  const bloodEffect = document.createElement('div');
+  bloodEffect.className = 'blood-extraction';
+  bloodEffect.style.left = `${x - 20}px`;
+  bloodEffect.style.top = `${y - 20}px`;
   
-  // Calcular posición central del instrumento relativa a la retina
-  const instrumentCenterX = retinaRect.width/2 + offsetX;
-  const instrumentCenterY = retinaRect.height/2 + offsetY;
+  // Ajustar tamaño según el coágulo
+  const effectSize = Math.max(20, Math.min(60, size * 2));
+  bloodEffect.style.width = `${effectSize}px`;
+  bloodEffect.style.height = `${effectSize}px`;
+  
+  anime({
+    targets: bloodEffect,
+    scale: [0, 1.5],
+    opacity: [1, 0],
+    duration: 800,
+    easing: 'easeOutQuad',
+    complete: () => {
+      if (bloodEffect.parentNode) {
+        bloodEffect.parentNode.removeChild(bloodEffect);
+      }
+    }
+  });
+  
+  retina.appendChild(bloodEffect);
+}
+
+function removeNearbyBloodClots() {
+  const retinaRect = document.getElementById('retina').getBoundingClientRect();
+  const tip = document.getElementById('instrument-tip');
+  const tipRect = tip.getBoundingClientRect();
+  
+  // Calcular posición central de la punta relativa a la retina
+  const tipCenterX = tipRect.left - retinaRect.left + tipRect.width/2;
+  const tipCenterY = tipRect.top - retinaRect.top + tipRect.height/2;
   
   // Hacer una copia del array para evitar problemas al modificar durante la iteración
   const clotsToCheck = [...bloodClots];
   
   clotsToCheck.forEach((clot, index) => {
-    const dx = instrumentCenterX - clot.x;
-    const dy = instrumentCenterY - clot.y;
+    const dx = tipCenterX - clot.x;
+    const dy = tipCenterY - clot.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     
-    if (distance < clot.size + instrumentRect.width/2) {
+    if (distance < clot.size + tipRect.width/2) {
       // Encontrar el índice real en el array bloodClots
       const realIndex = bloodClots.findIndex(c => 
         c.x === clot.x && c.y === clot.y && c.size === clot.size
@@ -3331,9 +3571,7 @@ function initJoystick(joystickElement, updateCallback, type) {
       
       if (!touch) return;
       touchId = touch.identifier;
-      if (type === 'vitrectomo') {
-        activeTouchId = touchId;
-      }
+      activeTouchId = touchId;
       handleMove(e);
     } else {
       handleMove(e);
@@ -3400,9 +3638,7 @@ function initJoystick(joystickElement, updateCallback, type) {
     
     isDragging = false;
     touchId = null;
-    if (type === 'vitrectomo') {
-      activeTouchId = null;
-    }
+    activeTouchId = null;
     
     // Suavizar el retorno a la posición central con anime.js
     anime({
@@ -3413,23 +3649,17 @@ function initJoystick(joystickElement, updateCallback, type) {
       easing: 'easeOutElastic(1, 0.5)'
     });
     
-    // Resetear posición cuando se suelta
+    // Solo resetear la posición del joystick, no del instrumento
     if (type === 'light') {
-      updateCallback(50, 50);
-    } else {
       updateCallback(50, 50);
     }
   }
   
-  // Eventos táctiles
+  // Eventos táctiles mejorados para multitouch
   joystickElement.addEventListener('touchstart', handleStart, { passive: false });
   document.addEventListener('touchmove', (e) => {
-    if (type === 'vitrectomo' && activeTouchId !== null) {
-      const touches = Array.from(e.touches);
-      if (touches.some(t => t.identifier === activeTouchId)) {
-        handleMove(e);
-      }
-    } else if (type === 'light') {
+    if (isDragging) {
+      e.preventDefault();
       handleMove(e);
     }
   }, { passive: false });
@@ -3450,38 +3680,42 @@ function updateInstrumentPositions() {
 }
 
 function updateInstrumentPosition(normX, normY) {
-  const retinaRect = document.getElementById('retina').getBoundingClientRect();
-  const maxOffset = retinaRect.width / 2;
-  const offsetX = (normX - 50) / 50 * maxOffset * 0.9;
-  const offsetY = (normY - 50) / 50 * maxOffset * 0.9;
+  const retina = document.getElementById('retina');
+  const retinaRect = retina.getBoundingClientRect();
+  const base = document.getElementById('instrument-base');
+  const tip = document.getElementById('instrument-tip');
+  const rod = document.getElementById('instrument-rod');
   
-  if(activeInstrument) {
-    const instr = document.getElementById(activeInstrument);
-    if(instr) {
-      // Calcular el ángulo de rotación basado en la posición del joystick
-      const angle = Math.atan2(offsetY, offsetX) * (180 / Math.PI);
-      
-      // Calcular la longitud del instrumento basada en la profundidad
-      const depthFactor = (currentDepth + 250) / 200; // Normalizar entre 0 y 1
-      const length = 100 + (150 * depthFactor); // Longitud entre 100px y 250px
-      
-      // Aplicar transformaciones al instrumento
-      instr.style.transform = `rotate(${angle}deg)`;
-      instr.style.height = `${length}px`;
-      
-      // Posicionar el instrumento
-      instr.style.bottom = `${10 + (1 - depthFactor) * 20}%`;
-      instr.style.right = `${10 + (1 - depthFactor) * 20}%`;
-      
-      checkWallCollision();
-      
-      if (currentDepth <= -200) {
-        checkVesselDamage();
-      }
-      
-      updateDepthIndicator();
-    }
+  // Calcular posición de la punta basada en el joystick
+  const maxOffset = retinaRect.width * 0.4; // Reducir el rango para que no salga de la retina
+  const offsetX = (normX - 50) / 50 * maxOffset;
+  const offsetY = (normY - 50) / 50 * maxOffset;
+  
+  // Posición absoluta de la punta
+  const tipX = retinaRect.width / 2 + offsetX;
+  const tipY = retinaRect.height / 2 + offsetY;
+  
+  // Posición de la base (fija en la parte inferior derecha)
+  const baseX = retinaRect.width * 0.85;
+  const baseY = retinaRect.height * 0.85;
+  
+  // Actualizar posición de la punta
+  tip.style.left = tipX + 'px';
+  tip.style.top = tipY + 'px';
+  
+  // Actualizar el palo para que conecte base y punta
+  updateInstrumentRod();
+  
+  // Actualizar profundidad
+  tip.style.transform = `translateZ(${currentDepth}px)`;
+  
+  checkWallCollision();
+  
+  if (currentDepth <= -200) {
+    checkVesselDamage();
   }
+  
+  updateDepthIndicator();
 }
 
 function updateDepthIndicator() {
@@ -3565,29 +3799,29 @@ function updateMiniRightLine(normX, normY) {
   }
 }
 
-/* ================== GESTIÓN DE INSTRUMENTOS ================== */
+/* ================== GESTIÓN DE INSTRUMENTOS MEJORADAS ================== */
 function setupEventListeners() {
-  document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo'));
-  document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser'));
-  document.getElementById('btn-cautery').addEventListener('click', () => toggleInstrument('btn-cautery'));
+  document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectomo'));
+  document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser'));
+  document.getElementById('btn-cautery').addEventListener('click', () => toggleInstrument('btn-cautery', 'cautery'));
   
   // Mejorar los eventos para el botón de acción
   const actionButton = document.getElementById('btn-precionar');
   
   // Eventos de ratón
-  actionButton.addEventListener('mousedown', startVitrectomyAction);
-  actionButton.addEventListener('mouseup', stopVitrectomyAction);
-  actionButton.addEventListener('mouseleave', stopVitrectomyAction);
+  actionButton.addEventListener('mousedown', startAction);
+  actionButton.addEventListener('mouseup', stopAction);
+  actionButton.addEventListener('mouseleave', stopAction);
   
   // Eventos táctiles mejorados
   actionButton.addEventListener('touchstart', function(e) {
     e.preventDefault();
-    startVitrectomyAction();
+    startAction();
   }, { passive: false });
   
   actionButton.addEventListener('touchend', function(e) {
     e.preventDefault();
-    stopVitrectomyAction();
+    stopAction();
   });
   
   document.getElementById('vitrectomo-z-slider').addEventListener('input', function() {
@@ -3600,41 +3834,62 @@ function setupEventListeners() {
   });
 }
 
-function startVitrectomyAction() {
+function startAction() {
+  if (!activeInstrument) return;
+  
   isActionButtonPressed = true;
   
   // Mostrar indicador de acción
-  const actionIndicator = document.querySelector('#fixed-instrument .instrument-action-indicator');
+  const actionIndicator = document.getElementById('instrument-action-indicator');
   if (actionIndicator) {
     actionIndicator.classList.add('active');
+    
+    // Actualizar texto según el instrumento activo
+    if (activeInstrument === 'vitrectomo') {
+      actionIndicator.textContent = "Vitrectomía";
+    } else if (activeInstrument === 'laser') {
+      actionIndicator.textContent = "Aplicando láser";
+    } else if (activeInstrument === 'cautery') {
+      actionIndicator.textContent = "Coagulando";
+    }
   }
   
-  // Iniciar el efecto de vitrectomía continuo
+  // Iniciar el efecto continuo
   vitrectomyInterval = setInterval(() => {
-    if (!isActionButtonPressed) {
+    if (!isActionButtonPressed || !activeInstrument) {
       clearInterval(vitrectomyInterval);
       return;
     }
     
-    const instrument = document.getElementById('fixed-instrument');
     const retinaRect = document.getElementById('retina').getBoundingClientRect();
-    const instrumentRect = instrument.getBoundingClientRect();
-    
-    // Calcular posición de la punta del instrumento
-    const tip = document.getElementById('fixed-instrument-tip');
+    const tip = document.getElementById('instrument-tip');
     const tipRect = tip.getBoundingClientRect();
-    const x = tipRect.left + tipRect.width/2 - retinaRect.left;
-    const y = tipRect.top + tipRect.height/2 - retinaRect.top;
+    
+    // Calcular posición relativa al centro de la retina
+    const offsetX = tipRect.left - retinaRect.left + tipRect.width/2 - retinaRect.width/2;
+    const offsetY = tipRect.top - retinaRect.top + tipRect.height/2 - retinaRect.height/2;
     
     // Crear efecto visual
-    createVitrectomyEffect(tipRect.left + tipRect.width/2, tipRect.top + tipRect.height/2);
-    
-    // Remover coágulos cercanos
-    removeNearbyBloodClots(instrument, x, y);
-    
-    // Actualizar parámetros fisiológicos
-    iop = Math.max(18, iop - 0.1);
-    perfusion = Math.min(100, perfusion + 0.05);
+    if (activeInstrument === 'vitrectomo') {
+      createVitrectomyEffect(tipRect.left + tipRect.width/2, tipRect.top + tipRect.height/2);
+      removeNearbyBloodClots();
+      
+      // Actualizar parámetros fisiológicos
+      iop = Math.max(18, iop - 0.1);
+      perfusion = Math.min(100, perfusion + 0.05);
+    } else if (activeInstrument === 'laser' && procedureStep === 2) {
+      laserFunction({ 
+        clientX: tipRect.left + tipRect.width/2, 
+        clientY: tipRect.top + tipRect.height/2,
+        preventDefault: () => {}
+      });
+    } else if (activeInstrument === 'cautery' && procedureStep === 1) {
+      cauteryFunction({ 
+        clientX: tipRect.left + tipRect.width/2, 
+        clientY: tipRect.top + tipRect.height/2,
+        preventDefault: () => {}
+      });
+    }
     
     // Actualizar UI inmediatamente
     updateVitals();
@@ -3642,16 +3897,16 @@ function startVitrectomyAction() {
   }, 100); // Ejecutar cada 100ms mientras se mantenga presionado
 }
 
-function stopVitrectomyAction() {
+function stopAction() {
   isActionButtonPressed = false;
   
   // Ocultar indicador de acción
-  const actionIndicator = document.querySelector('#fixed-instrument .instrument-action-indicator');
+  const actionIndicator = document.getElementById('instrument-action-indicator');
   if (actionIndicator) {
     actionIndicator.classList.remove('active');
   }
   
-  // Detener el efecto de vitrectomía continuo
+  // Detener el efecto continuo
   if (vitrectomyInterval) {
     clearInterval(vitrectomyInterval);
     vitrectomyInterval = null;
@@ -3708,93 +3963,44 @@ function createVitrectomyEffect(x, y) {
   }
 }
 
-function toggleInstrument(btnId) {
+function toggleInstrument(btnId, instrumentType) {
   const btn = document.getElementById(btnId);
   
   if(btn.classList.contains('active')) {
     btn.classList.remove('active');
-    // Actualizar el indicador de acción según el botón presionado
-    const actionIndicator = document.querySelector('#fixed-instrument .instrument-action-indicator');
-    if (actionIndicator) {
-      if (btnId === 'btn-vitrectomo') {
-        actionIndicator.textContent = 'Vitrectomía';
-      } else if (btnId === 'btn-laser') {
-        actionIndicator.textContent = 'Aplicando láser';
-      } else if (btnId === 'btn-cautery') {
-        actionIndicator.textContent = 'Coagulando';
-      }
+    activeInstrument = null;
+    isActionButtonPressed = false;
+    
+    // Resetear apariencia de la punta
+    const tip = document.getElementById('instrument-tip');
+    tip.className = 'instrument-tip';
+    
+    // Detener cualquier intervalo activo
+    if (vitrectomyInterval) {
+      clearInterval(vitrectomyInterval);
+      vitrectomyInterval = null;
     }
   } else {
     document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
     
     btn.classList.add('active');
+    activeInstrument = instrumentType;
     
-    // Actualizar el indicador de acción según el botón presionado
-    const actionIndicator = document.querySelector('#fixed-instrument .instrument-action-indicator');
-    if (actionIndicator) {
-      if (btnId === 'btn-vitrectomo') {
-        actionIndicator.textContent = 'Vitrectomía';
-      } else if (btnId === 'btn-laser') {
-        actionIndicator.textContent = 'Aplicando láser';
-      } else if (btnId === 'btn-cautery') {
-        actionIndicator.textContent = 'Coagulando';
-      }
-    }
+    // Actualizar apariencia de la punta según el instrumento
+    updateInstrumentTipAppearance();
   }
 }
 
-function handleMainAction() {
-  const instrument = document.getElementById('fixed-instrument');
-  const retinaRect = document.getElementById('retina').getBoundingClientRect();
-  const instRect = instrument.getBoundingClientRect();
+function updateInstrumentTipAppearance() {
+  const tip = document.getElementById('instrument-tip');
+  tip.className = 'instrument-tip';
   
-  // Mostrar indicador de acción
-  const actionIndicator = instrument.querySelector('.instrument-action-indicator');
-  if (actionIndicator) {
-    actionIndicator.classList.add('active');
-    setTimeout(() => actionIndicator.classList.remove('active'), 1000);
-  }
-  
-  // Calcular posición de la punta del instrumento
-  const tip = document.getElementById('fixed-instrument-tip');
-  const tipRect = tip.getBoundingClientRect();
-  const x = tipRect.left + tipRect.width/2 - retinaRect.left;
-  const y = tipRect.top + tipRect.height/2 - retinaRect.top;
-  
-  const syntheticEvent = { 
-    clientX: retinaRect.left + x, 
-    clientY: retinaRect.top + y,
-    preventDefault: () => {}
-  };
-  
-  const activeBtn = document.querySelector('.toggle-btn.active');
-  if (!activeBtn) return;
-  
-  switch(activeBtn.id) {
-    case 'btn-laser':
-      if (procedureStep === 2) {
-        laserFunction(syntheticEvent);
-      }
-      break;
-    case 'btn-vitrectomo':
-      createVitrectomyEffect(syntheticEvent.clientX, syntheticEvent.clientY);
-      removeNearbyBloodClots(instrument, x, y);
-      if (bloodClots.length === 0 && procedureStep === 0) {
-        procedureStep = 1;
-        document.getElementById('btn-cautery').classList.add('active');
-      }
-      break;
-    case 'btn-cautery':
-      cauteryFunction(syntheticEvent);
-      if (cauteryPoints >= 15 && procedureStep === 1) {
-        procedureStep = 2;
-        document.getElementById('btn-laser').classList.add('active');
-      }
-      break;
-  }
-  
-  if (currentDepth <= -200 && (activeBtn.id === 'btn-vitrectomo' || activeBtn.id === 'btn-cautery')) {
-    checkVesselDamage();
+  if (activeInstrument === 'vitrectomo') {
+    tip.classList.add('active-vitrectomo');
+  } else if (activeInstrument === 'laser') {
+    tip.classList.add('active-laser');
+  } else if (activeInstrument === 'cautery') {
+    tip.classList.add('active-cautery');
   }
 }
 
@@ -3946,6 +4152,14 @@ function cauteryFunction(e) {
   perfusion += 1;
   iop = Math.min(30, iop + 0.3);
   updateVitals();
+  
+  // Avanzar al siguiente paso si se completan los puntos de cauterio
+  if (cauteryPoints >= 15 && procedureStep === 1) {
+    procedureStep = 2;
+    document.getElementById('btn-laser').classList.add('active');
+    activeInstrument = 'laser';
+    updateInstrumentTipAppearance();
+  }
 }
 
 function isInSensitiveArea(x, y) {
