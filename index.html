@@ -1,6 +1,4 @@
----
-layout: none
----
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +8,7 @@ layout: none
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <style>
-      
+        
 /* Estilos base */
 body {
   margin: 0;
@@ -2164,7 +2162,7 @@ body {
       padding: 8px 15px;
     }
   }
-  /* Sistema de alertas */
+        /* Sistema de alertas */
         #alert-system {
           position: fixed;
           top: 20px;
@@ -2625,11 +2623,6 @@ body {
           box-shadow: 0 0 15px rgba(255, 85, 85, 0.7);
         }
         
-        .instrument-tip.active-cautery {
-          background: #ff9900;
-          box-shadow: 0 0 15px rgba(255, 153, 0, 0.7);
-        }
-        
         .instrument-tip.active-forceps {
           background: #00cc66;
           box-shadow: 0 0 15px rgba(0, 204, 102, 0.7);
@@ -2681,10 +2674,25 @@ body {
           transition: transform 0.3s ease;
         }
         
+        .foreign-body.embedded {
+          box-shadow: 
+            0 0 15px rgba(0,0,0,0.5),
+            inset 0 0 20px rgba(0,0,0,0.5);
+          border: 2px solid rgba(100,0,0,0.7);
+        }
+        
         .foreign-body.grabbed {
           transform: translate(-50%, -50%) scale(1.2);
-          box-shadow: 0 0 20px rgba(0, 204, 102, 0.5);
+          box-shadow: 
+            0 0 20px rgba(0, 204, 102, 0.5),
+            0 0 30px rgba(0, 204, 102, 0.3);
           z-index: 32;
+          animation: shake 0.3s infinite alternate;
+        }
+        
+        @keyframes shake {
+          0% { transform: translate(-50%, -50%) scale(1.2) rotate(-2deg); }
+          100% { transform: translate(-50%, -50%) scale(1.2) rotate(2deg); }
         }
         
         .foreign-body-particle {
@@ -2751,6 +2759,12 @@ body {
           stroke: #ff5555;
           stroke-width: 2;
           fill: rgba(255,100,100,0.3);
+        }
+        
+        #oct-forceps {
+          stroke: #00cc66;
+          stroke-width: 2;
+          fill: none;
         }
         
         .oct-scanline {
@@ -2869,7 +2883,7 @@ body {
         <div class="alert-icon">👁️</div>
         <div class="alert-content">
           <h3>PÉRDIDA DE VISIÓN</h3>
-          <p>¡Precaución! Se ha aplicado cauterio en la mácula. Riesgo de pérdida visual permanente.</p>
+          <p>¡Precaución! Se ha aplicado láser en la mácula. Riesgo de pérdida visual permanente.</p>
           <div class="alert-timer"></div>
         </div>
         <button class="alert-dismiss">×</button>
@@ -2935,7 +2949,6 @@ body {
       <button class="toggle-btn" id="btn-vitrectomo">Vitrectomo</button>
       <button class="toggle-btn" id="btn-forceps">Pinzas</button>
       <button class="toggle-btn" id="btn-laser">Láser</button>
-      <button class="toggle-btn" id="btn-cautery">Cauterio</button>
     </div>
 
     <!-- PANEL DE PARÁMETROS -->
@@ -3036,7 +3049,7 @@ body {
         </div>
         
         <!-- Cuerpo extraño -->
-        <div id="foreign-body" class="foreign-body"></div>
+        <div id="foreign-body" class="foreign-body embedded"></div>
         
         <!-- Coágulos de sangre -->
         <div id="blood-clots"></div>
@@ -3063,6 +3076,7 @@ body {
             <path id="oct-choroid" class="oct-layer" d="M0,60 Q75,50 150,60 T300,60" />
             <path id="oct-sclera" class="oct-layer" d="M0,80 Q75,70 150,80 T300,80" />
             <path id="oct-foreign-body" d="" />
+            <path id="oct-forceps" d="" />
           </pattern>
         </defs>
         <rect width="300" height="120" fill="url(#octPattern)" />
@@ -3091,7 +3105,6 @@ let retinaStatus = 'Estable';
 let foreignBodyPresent = true;
 let bloodClots = [];
 let laserBurns = [];
-let cauteryMarks = [];
 let hemorrhageActive = false;
 let wallCollisionActive = false;
 let retinaDetached = false;
@@ -3109,6 +3122,8 @@ let foreignBodySize = 0;
 let laserPoints = 0;
 let isGrasping = false;
 let foreignBodyGrabbed = false;
+let graspProgress = 0;
+let resistanceOvercome = false;
 
 /* ================== INICIALIZACIÓN ================== */
 document.addEventListener('DOMContentLoaded', function() {
@@ -3193,6 +3208,9 @@ function updateInstrumentRod() {
   rod.style.left = baseX + 'px';
   rod.style.top = baseY + 'px';
   rod.style.transform = `rotate(${angle}deg)`;
+  
+  // Actualizar OCT para mostrar la pinza
+  updateOCTScan();
 }
 
 function createForeignBody() {
@@ -3206,12 +3224,13 @@ function createForeignBody() {
   
   foreignBodyX = retinaRect.width/2 + Math.cos(angle) * distance;
   foreignBodyY = retinaRect.height/2 + Math.sin(angle) * distance;
-  foreignBodySize = 25 + Math.random() * 15; // Tamaño entre 25-40px
+  foreignBodySize = 40 + Math.random() * 20; // Tamaño entre 40-60px (aumentado para mejor visualización)
   
   foreignBody.style.left = `${foreignBodyX}px`;
   foreignBody.style.top = `${foreignBodyY}px`;
   foreignBody.style.width = `${foreignBodySize}px`;
   foreignBody.style.height = `${foreignBodySize}px`;
+  foreignBody.classList.add('embedded');
   
   // Actualizar OCT para mostrar el cuerpo extraño
   updateOCTScan();
@@ -3221,48 +3240,104 @@ function updateOCTScan() {
   const retina = document.getElementById('retina');
   const retinaRect = retina.getBoundingClientRect();
   const octForeignBody = document.getElementById('oct-foreign-body');
+  const octForceps = document.getElementById('oct-forceps');
+  const tip = document.getElementById('instrument-tip');
+  const tipRect = tip.getBoundingClientRect();
   
-  if (!foreignBodyPresent) {
+  // Calcular posición relativa de la punta del instrumento
+  const tipRelX = (tipRect.left - retinaRect.left + tipRect.width/2) / retinaRect.width * 300;
+  const tipRelY = (tipRect.top - retinaRect.top + tipRect.height/2) / retinaRect.height * 120;
+  
+  // Capas de retina normales (sin distorsión)
+  let retinaPath = "M0,40 Q75,30 150,40 T300,40";
+  let choroidPath = "M0,60 Q75,50 150,60 T300,60";
+  let scleraPath = "M0,80 Q75,70 150,80 T300,80";
+  
+  if (foreignBodyPresent) {
+    // Calcular posición relativa del cuerpo extraño
+    const relX = (foreignBodyX / retinaRect.width) * 300;
+    const relY = (foreignBodyY / retinaRect.height) * 120;
+    const relSize = (foreignBodySize / retinaRect.width) * 100;
+    
+    // Crear forma de cuerpo extraño en OCT
+    const octPath = `
+      M${relX-relSize/2},${relY-relSize/3} 
+      Q${relX-relSize/4},${relY-relSize/2} ${relX},${relY-relSize/3}
+      T${relX+relSize/2},${relY-relSize/3}
+      Q${relX+relSize/4},${relY+relSize/3} ${relX},${relY+relSize/2}
+      T${relX-relSize/2},${relY-relSize/3}
+      Z
+    `;
+    
+    octForeignBody.setAttribute('d', octPath);
+    
+    // Distorsionar capas de retina donde está el cuerpo extraño
+    retinaPath = `
+      M0,40 
+      Q${relX-relSize},30 ${relX-relSize/2},${relY-relSize/3} 
+      Q${relX},${relY-relSize/2} ${relX+relSize/2},${relY-relSize/3}
+      Q${relX+relSize},30 300,40
+    `;
+    
+    choroidPath = `
+      M0,60 
+      Q${relX-relSize},50 ${relX-relSize/2},${relY-relSize/6} 
+      Q${relX},${relY} ${relX+relSize/2},${relY-relSize/6}
+      Q${relX+relSize},50 300,60
+    `;
+    
+    // Mostrar pinza en OCT solo si está activa
+    if (activeInstrument === 'forceps') {
+      const distance = Math.sqrt(Math.pow(tipRelX - relX, 2) + Math.pow(tipRelY - relY, 2));
+      
+      if (distance < relSize * 1.5) {
+        // Efecto de pinza acercándose al objeto
+        let forcepsPath = `M${tipRelX},${tipRelY} L${relX},${relY}`;
+        
+        // Si está agarrando, mostrar efecto de extracción con resistencia
+        if (foreignBodyGrabbed) {
+          if (!resistanceOvercome) {
+            // Mostrar resistencia visual en OCT (el objeto se mueve menos que la pinza)
+            const moveRatio = graspProgress / 200; // 0 a 1
+            const midX = relX + (tipRelX - relX) * moveRatio * 0.5;
+            const midY = relY + (tipRelY - relY) * moveRatio * 0.5;
+            
+            forcepsPath = `M${tipRelX},${tipRelY} L${midX},${midY}`;
+            
+            // Actualizar posición del objeto en OCT mientras hay resistencia
+            const objPath = `
+              M${relX-relSize/2},${relY-relSize/3} 
+              Q${relX-relSize/4},${relY-relSize/2} ${relX},${relY-relSize/3}
+              T${relX+relSize/2},${relY-relSize/3}
+              Q${relX+relSize/4},${relY+relSize/3} ${relX},${relY+relSize/2}
+              T${relX-relSize/2},${relY-relSize/3}
+              Z
+              M${relX},${relY} L${midX},${midY}
+            `;
+            octForeignBody.setAttribute('d', objPath);
+          } else {
+            // Cuando se supera la resistencia, el objeto sigue completamente a la pinza
+            forcepsPath = `M${tipRelX},${tipRelY} L${tipRelX},${tipRelY}`;
+            octForeignBody.setAttribute('d', octPath + ` M${relX},${relY} L${tipRelX},${tipRelY}`);
+          }
+        }
+        
+        octForceps.setAttribute('d', forcepsPath);
+      } else {
+        octForceps.setAttribute('d', '');
+      }
+    } else {
+      octForceps.setAttribute('d', '');
+    }
+  } else {
     octForeignBody.setAttribute('d', '');
-    return;
+    octForceps.setAttribute('d', '');
   }
   
-  // Calcular posición relativa del cuerpo extraño
-  const relX = (foreignBodyX / retinaRect.width) * 300;
-  const relY = (foreignBodyY / retinaRect.height) * 120;
-  const relSize = (foreignBodySize / retinaRect.width) * 100;
-  
-  // Crear forma de cuerpo extraño en OCT
-  const octPath = `
-    M${relX-relSize/2},${relY-relSize/3} 
-    Q${relX-relSize/4},${relY-relSize/2} ${relX},${relY-relSize/3}
-    T${relX+relSize/2},${relY-relSize/3}
-    Q${relX+relSize/4},${relY+relSize/3} ${relX},${relY+relSize/2}
-    T${relX-relSize/2},${relY-relSize/3}
-    Z
-  `;
-  
-  octForeignBody.setAttribute('d', octPath);
-  
-  // Distorsionar capas de retina donde está el cuerpo extraño
-  const retinaDistortion = `
-    M0,40 
-    Q${relX-relSize},30 ${relX-relSize/2},${relY-relSize/3} 
-    Q${relX},${relY-relSize/2} ${relX+relSize/2},${relY-relSize/3}
-    Q${relX+relSize},30 300,40
-  `;
-  
-  document.getElementById('oct-retina').setAttribute('d', retinaDistortion);
-  
-  // Distorsión similar para coroides
-  const choroidDistortion = `
-    M0,60 
-    Q${relX-relSize},50 ${relX-relSize/2},${relY-relSize/6} 
-    Q${relX},${relY} ${relX+relSize/2},${relY-relSize/6}
-    Q${relX+relSize},50 300,60
-  `;
-  
-  document.getElementById('oct-choroid').setAttribute('d', choroidDistortion);
+  // Actualizar capas de retina
+  document.getElementById('oct-retina').setAttribute('d', retinaPath);
+  document.getElementById('oct-choroid').setAttribute('d', choroidPath);
+  document.getElementById('oct-sclera').setAttribute('d', scleraPath);
 }
 
 /* ================== SISTEMA DE ALERTAS ================== */
@@ -3803,9 +3878,31 @@ function updateInstrumentPosition(normX, normY) {
   // Si el cuerpo extraño está agarrado, moverlo con la punta
   if (foreignBodyGrabbed) {
     const foreignBody = document.getElementById('foreign-body');
-    foreignBody.style.left = `${tipX}px`;
-    foreignBody.style.top = `${tipY}px`;
+    
+    // Aplicar resistencia al movimiento inicial
+    if (!resistanceOvercome) {
+      // El objeto se mueve menos que la pinza
+      const moveRatio = graspProgress / 200; // 0 a 1
+      const newX = foreignBodyX + (tipX - foreignBodyX) * moveRatio * 0.5;
+      const newY = foreignBodyY + (tipY - foreignBodyY) * moveRatio * 0.5;
+      
+      foreignBody.style.left = `${newX}px`;
+      foreignBody.style.top = `${newY}px`;
+    } else {
+      // Cuando se supera la resistencia, el objeto sigue completamente a la pinza
+      foreignBody.style.left = `${tipX}px`;
+      foreignBody.style.top = `${tipY}px`;
+    }
+    
+    // Verificar si está cerca del punto de entrada para extraerlo
+    const distanceToBase = Math.sqrt(Math.pow(tipX - baseX, 2) + Math.pow(tipY - baseY, 2));
+    if (distanceToBase < 50) {
+      removeForeignBody();
+    }
   }
+  
+  // Actualizar visualización OCT
+  updateOCTScan();
 }
 
 function checkForeignBodyGrasp() {
@@ -3825,39 +3922,86 @@ function checkForeignBodyGrasp() {
   const distance = Math.sqrt(dx * dx + dy * dy);
   
   // Si está lo suficientemente cerca y se está accionando el instrumento
-  if (distance < foreignBodySize && isActionButtonPressed && !isGrasping) {
-    // Agarrar el cuerpo extraño
-    isGrasping = true;
+  if (distance < foreignBodySize * 1.2 && isActionButtonPressed) {
+    if (!isGrasping) {
+      // Comenzar a agarrar el cuerpo extraño
+      isGrasping = true;
+      graspProgress = 0;
+      resistanceOvercome = false;
+      
+      // Actualizar indicador de acción
+      const actionIndicator = document.getElementById('instrument-action-indicator');
+      actionIndicator.textContent = "Agarrando...";
+      actionIndicator.classList.add('active');
+      
+      // Efecto visual de agarre
+      foreignBody.classList.remove('embedded');
+      tip.classList.add('grasping');
+    }
+    
+    // Incrementar progreso de agarre
+    graspProgress += 1;
+    
+    // Si se ha completado el agarre y superado la resistencia
+    if (graspProgress >= 200 && !resistanceOvercome) {
+      resistanceOvercome = true;
+      
+      // Efecto visual de que el objeto se libera
+      createForeignBodyReleaseEffect();
+      
+      // Actualizar indicador
+      const actionIndicator = document.getElementById('instrument-action-indicator');
+      actionIndicator.textContent = "Cuerpo extraño agarrado";
+    } else if (!resistanceOvercome) {
+      // Mostrar progreso de superación de resistencia
+      const actionIndicator = document.getElementById('instrument-action-indicator');
+      actionIndicator.textContent = `Superando resistencia... ${Math.min(100, Math.round(graspProgress / 2))}%`;
+    }
+    
     foreignBodyGrabbed = true;
-    foreignBody.classList.add('grabbed');
-    tip.classList.add('grasping');
+  } else if (isGrasping && !isActionButtonPressed) {
+    // Si se soltó el botón antes de completar el agarre
+    isGrasping = false;
+    graspProgress = 0;
+    resistanceOvercome = false;
+    foreignBodyGrabbed = false;
+    foreignBody.classList.add('embedded');
+    tip.classList.remove('grasping');
     
-    // Actualizar indicador de acción
     const actionIndicator = document.getElementById('instrument-action-indicator');
-    actionIndicator.textContent = "Agarrando cuerpo extraño";
-    actionIndicator.classList.add('active');
+    actionIndicator.classList.remove('active');
+  }
+}
+
+function createForeignBodyReleaseEffect() {
+  const foreignBody = document.getElementById('foreign-body');
+  
+  // Crear partículas de polvo/metal al liberar el cuerpo extraño
+  for (let i = 0; i < 5; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'foreign-body-particle';
+    particle.style.left = `${foreignBodyX}px`;
+    particle.style.top = `${foreignBodyY}px`;
+    particle.style.setProperty('--tx', Math.random() * 40 - 20);
+    particle.style.setProperty('--ty', Math.random() * 40 - 20);
+    document.getElementById('retina').appendChild(particle);
     
-    // Después de 2 segundos, permitir mover el cuerpo extraño
     setTimeout(() => {
-      if (isActionButtonPressed) {
-        // El usuario sigue presionando, puede mover el cuerpo extraño
-        foreignBodyGrabbed = true;
-      } else {
-        // El usuario soltó el botón, soltar el cuerpo extraño
-        releaseForeignBody();
+      if (particle.parentNode) {
+        particle.parentNode.removeChild(particle);
       }
     }, 2000);
-  } else if (distance < foreignBodySize && foreignBodyGrabbed && !isActionButtonPressed) {
-    // Soltar el cuerpo extraño si se suelta el botón de acción
-    releaseForeignBody();
   }
 }
 
 function releaseForeignBody() {
   isGrasping = false;
+  graspProgress = 0;
+  resistanceOvercome = false;
   foreignBodyGrabbed = false;
   const foreignBody = document.getElementById('foreign-body');
   foreignBody.classList.remove('grabbed');
+  foreignBody.classList.add('embedded');
   const tip = document.getElementById('instrument-tip');
   tip.classList.remove('grasping');
   
@@ -3869,6 +4013,7 @@ function releaseForeignBody() {
 function removeForeignBody() {
   foreignBodyPresent = false;
   foreignBodyGrabbed = false;
+  resistanceOvercome = false;
   const foreignBody = document.getElementById('foreign-body');
   foreignBody.style.display = 'none';
   document.getElementById('foreign-body-value').textContent = 'Removido';
@@ -4045,7 +4190,6 @@ function setupEventListeners() {
   document.getElementById('btn-vitrectomo').addEventListener('click', () => toggleInstrument('btn-vitrectomo', 'vitrectomo'));
   document.getElementById('btn-forceps').addEventListener('click', () => toggleInstrument('btn-forceps', 'forceps'));
   document.getElementById('btn-laser').addEventListener('click', () => toggleInstrument('btn-laser', 'laser'));
-  document.getElementById('btn-cautery').addEventListener('click', () => toggleInstrument('btn-cautery', 'cautery'));
   
   // Mejorar los eventos para el botón de acción
   const actionButton = document.getElementById('btn-precionar');
@@ -4091,8 +4235,6 @@ function startAction() {
       actionIndicator.textContent = "Vitrectomía";
     } else if (activeInstrument === 'laser') {
       actionIndicator.textContent = "Aplicando láser";
-    } else if (activeInstrument === 'cautery') {
-      actionIndicator.textContent = "Coagulando";
     } else if (activeInstrument === 'forceps') {
       actionIndicator.textContent = "Agarrando";
     }
@@ -4146,23 +4288,32 @@ function startAction() {
         clientY: tipRect.top + tipRect.height/2,
         preventDefault: () => {}
       });
-    } else if (activeInstrument === 'cautery') {
-      cauteryFunction({ 
-        clientX: tipRect.left + tipRect.width/2, 
-        clientY: tipRect.top + tipRect.height/2,
-        preventDefault: () => {}
-      });
     } else if (activeInstrument === 'forceps' && foreignBodyGrabbed) {
       // Mover el cuerpo extraño con la pinza
       const foreignBody = document.getElementById('foreign-body');
-      foreignBody.style.left = `${tipRect.left - retinaRect.left + tipRect.width/2}px`;
-      foreignBody.style.top = `${tipRect.top - retinaRect.top + tipRect.height/2}px`;
       
-      // Si el cuerpo extraño está cerca del borde, extraerlo
-      if (tipRect.left < retinaRect.left + 50 || 
-          tipRect.top < retinaRect.top + 50 || 
-          tipRect.left > retinaRect.left + retinaRect.width - 50 || 
-          tipRect.top > retinaRect.top + retinaRect.height - 50) {
+      // Aplicar resistencia al movimiento inicial
+      if (!resistanceOvercome) {
+        const moveRatio = graspProgress / 200; // 0 a 1
+        const newX = foreignBodyX + (tipRect.left - retinaRect.left + tipRect.width/2 - foreignBodyX) * moveRatio * 0.5;
+        const newY = foreignBodyY + (tipRect.top - retinaRect.top + tipRect.height/2 - foreignBodyY) * moveRatio * 0.5;
+        
+        foreignBody.style.left = `${newX}px`;
+        foreignBody.style.top = `${newY}px`;
+      } else {
+        foreignBody.style.left = `${tipRect.left - retinaRect.left + tipRect.width/2}px`;
+        foreignBody.style.top = `${tipRect.top - retinaRect.top + tipRect.height/2}px`;
+      }
+      
+      // Verificar si está cerca del punto de entrada para extraerlo
+      const base = document.getElementById('instrument-base');
+      const baseRect = base.getBoundingClientRect();
+      const distanceToBase = Math.sqrt(
+        Math.pow(tipRect.left + tipRect.width/2 - baseRect.left - baseRect.width/2, 2) + 
+        Math.pow(tipRect.top + tipRect.height/2 - baseRect.top - baseRect.height/2, 2)
+      );
+      
+      if (distanceToBase < 50) {
         removeForeignBody();
       }
     }
@@ -4189,7 +4340,7 @@ function stopAction() {
   }
   
   // Si estábamos agarrando el cuerpo extraño, soltarlo
-  if (isGrasping) {
+  if (isGrasping && !foreignBodyGrabbed) {
     releaseForeignBody();
   }
 }
@@ -4283,8 +4434,6 @@ function updateInstrumentTipAppearance() {
     tip.classList.add('active-vitrectomo');
   } else if (activeInstrument === 'laser') {
     tip.classList.add('active-laser');
-  } else if (activeInstrument === 'cautery') {
-    tip.classList.add('active-cautery');
   } else if (activeInstrument === 'forceps') {
     tip.classList.add('active-forceps');
   }
@@ -4369,73 +4518,6 @@ function laserFunction(e) {
       laserSpot.parentNode.removeChild(laserSpot);
     }
   }, 2500);
-}
-
-function cauteryFunction(e) {
-  const retina = document.getElementById('retina');
-  const retinaRect = retina.getBoundingClientRect();
-  
-  // Verificar que no esté en la mácula, nervio óptico o vasos sanguíneos
-  if (isInSensitiveArea(e.clientX, e.clientY)) {
-    return;
-  }
-  
-  // Verificar que no esté demasiado cerca de otro punto de cauterio
-  const tooClose = cauteryMarks.some(mark => {
-    const dx = e.clientX - retinaRect.left - mark.x;
-    const dy = e.clientY - retinaRect.top - mark.y;
-    return Math.sqrt(dx * dx + dy * dy) < 30;
-  });
-  
-  if (tooClose) return;
-  
-  // Efecto visual de cauterio temporal
-  const cauteryEffect = document.createElement('div');
-  cauteryEffect.className = 'cautery-effect';
-  cauteryEffect.style.left = (e.clientX - retinaRect.left - 15) + 'px';
-  cauteryEffect.style.top = (e.clientY - retinaRect.top - 15) + 'px';
-  
-  anime({
-    targets: cauteryEffect,
-    scale: [0.5, 1.3, 1],
-    opacity: [0, 1, 0],
-    duration: 1000,
-    easing: 'easeOutQuad',
-    complete: () => {
-      if (cauteryEffect.parentNode) {
-        cauteryEffect.parentNode.removeChild(cauteryEffect);
-      }
-    }
-  });
-  
-  retina.appendChild(cauteryEffect);
-  
-  // Crear marca permanente de cauterio (punto blanco)
-  const burnMark = document.createElement('div');
-  burnMark.className = 'laser-burn-permanent';
-  burnMark.style.left = (e.clientX - retinaRect.left - 3) + 'px';
-  burnMark.style.top = (e.clientY - retinaRect.top - 3) + 'px';
-  
-  anime({
-    targets: burnMark,
-    scale: [0, 1],
-    opacity: [0, 1],
-    duration: 500,
-    easing: 'easeOutElastic'
-  });
-  
-  document.getElementById('permanent-marks').appendChild(burnMark);
-  
-  cauteryMarks.push({
-    element: burnMark,
-    x: e.clientX - retinaRect.left - 3,
-    y: e.clientY - retinaRect.top - 3
-  });
-  
-  // Actualizar parámetros fisiológicos
-  perfusion += 1;
-  iop = Math.min(30, iop + 0.3);
-  updateVitals();
 }
 
 function isInSensitiveArea(x, y) {
